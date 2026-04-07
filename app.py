@@ -258,12 +258,8 @@ if not st.session_state.done:
 
                     name = st.session_state.lead.get("name", "Cliente")
 
-                    if score == "HOT":
-                        closing = f"🔥 ¡Excelente, {name}! Tu perfil es prioritario. Un agente te contactará en las próximas horas. ¡Gracias por tu interés!"
-                    elif score == "WARM":
-                        closing = f"✅ ¡Gracias, {name}! Hemos registrado tu información. Un agente te contactará pronto con opciones que se ajusten a tu perfil."
-                    else:
-                        closing = f"📋 ¡Gracias, {name}! Hemos guardado tus datos. Cuando estés listo para avanzar, estaremos aquí para ayudarte."
+                    # Same closing message for ALL users — score is hidden
+                    closing = f"¡Gracias, {name}! Hemos registrado tu información. En breve uno de nuestros agentes se pondrá en contacto contigo."
 
                     st.session_state.chat_history.append(("bot", closing))
                     st.session_state.done = True
@@ -273,32 +269,9 @@ if not st.session_state.done:
                 st.warning("Por favor escribe una respuesta antes de continuar.")
 
 # ─────────────────────────────────────────────
-#  COMPLETION SUMMARY CARD
+#  COMPLETION — user sees nothing except reset button
 # ─────────────────────────────────────────────
 if st.session_state.done:
-    lead  = st.session_state.lead
-    score = lead.get("score", "COLD")
-
-    if score == "HOT":
-        badge = '<span class="score-hot">🔥 HOT</span>'
-    elif score == "WARM":
-        badge = '<span class="score-warm">⚠️ WARM</span>'
-    else:
-        badge = '<span class="score-cold">🧊 COLD</span>'
-
-    st.markdown(f"""
-    <div class="summary-card">
-        <h3>📋 Resumen del Lead</h3>
-        <p><b>Nombre:</b> {lead.get('name','—')}</p>
-        <p><b>Teléfono:</b> {lead.get('phone','—')}</p>
-        <p><b>Tipo de propiedad:</b> {lead.get('property_type','—')}</p>
-        <p><b>Zona:</b> {lead.get('area','—')}</p>
-        <p><b>Presupuesto:</b> ${lead.get('budget','—')}</p>
-        <p><b>Plazo:</b> {lead.get('timeline','—')} meses</p>
-        <p><b>Clasificación:</b> {badge}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
     if st.button("🔄 Nueva Conversación"):
         for key in ["step", "chat_history", "lead", "done", "greeted"]:
             del st.session_state[key]
