@@ -1,4 +1,7 @@
 import streamlit as st
+import gspread
+from google.oauth2.service_account import Credentials
+from datetime import datetime
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -10,7 +13,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-#  CUSTOM CSS  (WhatsApp-style dark chat UI)
+#  CUSTOM CSS
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -22,7 +25,6 @@ html, body, [class*="css"] {
     color: #f0f0f0;
 }
 
-/* Header */
 .lb-header {
     background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 100%);
     border-radius: 16px;
@@ -36,7 +38,6 @@ html, body, [class*="css"] {
 .lb-header h1 { margin: 0; font-size: 1.6rem; color: #fff; }
 .lb-header p  { margin: 0; font-size: 0.85rem; color: #b7e4c7; }
 
-/* Chat bubbles */
 .chat-wrap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
 
 .bubble-bot {
@@ -66,23 +67,6 @@ html, body, [class*="css"] {
 .label-bot  { font-size: 0.7rem; color: #74c69d; margin-bottom: 3px; }
 .label-user { font-size: 0.7rem; color: #95d5b2; margin-bottom: 3px; text-align: right; }
 
-/* Score badge */
-.score-hot  { background:#e63946; color:#fff; padding:4px 12px; border-radius:20px; font-weight:700; font-size:0.85rem; }
-.score-warm { background:#f4a261; color:#fff; padding:4px 12px; border-radius:20px; font-weight:700; font-size:0.85rem; }
-.score-cold { background:#457b9d; color:#fff; padding:4px 12px; border-radius:20px; font-weight:700; font-size:0.85rem; }
-
-/* Summary card */
-.summary-card {
-    background: #1a2e22;
-    border: 1px solid #2d6a4f;
-    border-radius: 16px;
-    padding: 20px 24px;
-    margin-top: 16px;
-}
-.summary-card h3 { color: #74c69d; margin-top: 0; }
-.summary-card p  { margin: 6px 0; font-size: 0.9rem; }
-
-/* Input area */
 .stTextInput > div > div > input {
     background: #1a2e22 !important;
     color: #fff !important;
@@ -104,13 +88,37 @@ div.stButton > button {
     transition: opacity 0.2s;
 }
 div.stButton > button:hover { opacity: 0.85; }
-
 .stTextInput label { color: #74c69d !important; font-size: 0.85rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  CONVERSATION STEPS  (ordered list)
+#  GOOGLE SHEETS CONNECTION
+# ─────────────────────────────────────────────
+@st.cache_resource
+def get_sheet():
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=scopes
+    )
+    client = gspread.authorize(creds)
+    sheet  = client.open("LeadBoost Leads").sheet1
+
+    # Add headers if sheet is empty
+    if sheet.row_count == 0 or sheet.cell(1, 1).value is None:
+        sheet.append_row([
+            "Timestamp", "Name", "Phone",
+            "Property Type", "Area",
+            "Budget (USD)", "Timeline (months)", "Score"
+        ])
+    return sheet
+
+# ─────────────────────────────────────────────
+#  CONVERSATION STEPS
 # ─────────────────────────────────────────────
 STEPS = [
     {
@@ -163,7 +171,6 @@ def score_lead(lead):
         timeline = int(str(lead.get("timeline", "99")).strip())
     except ValueError:
         return "COLD"
-
     if budget >= 80000 and timeline <= 2:
         return "HOT"
     elif budget >= 40000 and timeline <= 6:
@@ -172,29 +179,23 @@ def score_lead(lead):
         return "COLD"
 
 # ─────────────────────────────────────────────
-#  SAVE LEAD  (CSV)
+#  SAVE LEAD TO GOOGLE SHEETS
 # ─────────────────────────────────────────────
-import csv, os
-from datetime import datetime
-
 def save_lead(lead):
-    filepath = "leads.csv"
-    fieldnames = ["timestamp", "name", "phone", "property_type", "area", "budget", "timeline", "score"]
-    file_exists = os.path.exists(filepath)
-    with open(filepath, "a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow({
-            "timestamp":     datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "name":          lead.get("name", ""),
-            "phone":         lead.get("phone", ""),
-            "property_type": lead.get("property_type", ""),
-            "area":          lead.get("area", ""),
-            "budget":        lead.get("budget", ""),
-            "timeline":      lead.get("timeline", ""),
-            "score":         lead.get("score", ""),
-        })
+    try:
+        sheet = get_sheet()
+        sheet.append_row([
+            datetime.now().strftime("%Y-%m-%d %H:%M"),
+            lead.get("name", ""),
+            lead.get("phone", ""),
+            lead.get("property_type", ""),
+            lead.get("area", ""),
+            lead.get("budget", ""),
+            lead.get("timeline", ""),
+            lead.get("score", ""),
+        ])
+    except Exception as e:
+        st.error(f"Error guardando lead: {e}")
 
 # ─────────────────────────────────────────────
 #  HEADER
@@ -210,7 +211,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  FIRST BOT MESSAGE (greeting)
+#  FIRST BOT MESSAGE
 # ─────────────────────────────────────────────
 if not st.session_state.greeted:
     st.session_state.chat_history.append(("bot", STEPS[0]["question"]))
@@ -234,33 +235,26 @@ st.markdown('</div>', unsafe_allow_html=True)
 if not st.session_state.done:
     current_step = st.session_state.step
     if current_step < len(STEPS):
-        step_info = STEPS[current_step]
+        step_info  = STEPS[current_step]
         user_input = st.text_input(step_info["label"], key=f"input_{current_step}")
 
         if st.button("Enviar ➤"):
             if user_input.strip():
-                # Save user answer
                 st.session_state.chat_history.append(("user", user_input.strip()))
                 st.session_state.lead[step_info["key"]] = user_input.strip()
 
-                # Move to next step
                 next_step = current_step + 1
 
                 if next_step < len(STEPS):
-                    # Ask next question
                     st.session_state.chat_history.append(("bot", STEPS[next_step]["question"]))
                     st.session_state.step = next_step
                 else:
-                    # All questions answered — score and close
                     score = score_lead(st.session_state.lead)
                     st.session_state.lead["score"] = score
                     save_lead(st.session_state.lead)
 
-                    name = st.session_state.lead.get("name", "Cliente")
-
-                    # Same closing message for ALL users — score is hidden
+                    name    = st.session_state.lead.get("name", "Cliente")
                     closing = f"¡Gracias, {name}! Hemos registrado tu información. En breve uno de nuestros agentes se pondrá en contacto contigo."
-
                     st.session_state.chat_history.append(("bot", closing))
                     st.session_state.done = True
 
@@ -269,10 +263,10 @@ if not st.session_state.done:
                 st.warning("Por favor escribe una respuesta antes de continuar.")
 
 # ─────────────────────────────────────────────
-#  COMPLETION — user sees nothing except reset button
+#  COMPLETION
 # ─────────────────────────────────────────────
 if st.session_state.done:
     if st.button("🔄 Nueva Conversación"):
         for key in ["step", "chat_history", "lead", "done", "greeted"]:
             del st.session_state[key]
-        st.rerun()
+        st.rerun() 
