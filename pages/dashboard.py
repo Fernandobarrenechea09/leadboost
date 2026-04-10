@@ -1,6 +1,6 @@
 import streamlit as st
-import csv
-import os
+import gspread
+from google.oauth2.service_account import Credentials
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -74,7 +74,7 @@ div.stButton > button {
 # ─────────────────────────────────────────────
 #  PASSWORD GATE
 # ─────────────────────────────────────────────
-OWNER_PASSWORD = "leadboost2024"   # ← Change this to your own password
+OWNER_PASSWORD = "leadboost2024"
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -102,15 +102,32 @@ if not st.session_state.authenticated:
     st.stop()
 
 # ─────────────────────────────────────────────
-#  LOAD LEADS FROM CSV
+#  GOOGLE SHEETS CONNECTION
+# ─────────────────────────────────────────────
+@st.cache_resource
+def get_sheet():
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=scopes
+    )
+    client = gspread.authorize(creds)
+    return client.open("LeadBoost Leads").sheet1
+
+# ─────────────────────────────────────────────
+#  LOAD LEADS
 # ─────────────────────────────────────────────
 def load_leads():
-    filepath = "leads.csv"
-    if not os.path.exists(filepath):
+    try:
+        sheet  = get_sheet()
+        rows   = sheet.get_all_records()
+        return rows
+    except Exception as e:
+        st.error(f"Error cargando leads: {e}")
         return []
-    with open(filepath, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        return list(reader)
 
 leads = load_leads()
 
@@ -131,56 +148,39 @@ st.markdown("""
 #  STATS ROW
 # ─────────────────────────────────────────────
 total = len(leads)
-hot   = sum(1 for l in leads if l.get("score") == "HOT")
-warm  = sum(1 for l in leads if l.get("score") == "WARM")
-cold  = sum(1 for l in leads if l.get("score") == "COLD")
+hot   = sum(1 for l in leads if l.get("Score") == "HOT")
+warm  = sum(1 for l in leads if l.get("Score") == "WARM")
+cold  = sum(1 for l in leads if l.get("Score") == "COLD")
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.markdown(f"""
-    <div class="stat-card">
-        <h2 style="color:#74c69d">{total}</h2>
-        <p>Total Leads</p>
-    </div>
-    """, unsafe_allow_html=True)
-
+    st.markdown(f'<div class="stat-card"><h2 style="color:#74c69d">{total}</h2><p>Total Leads</p></div>', unsafe_allow_html=True)
 with col2:
-    st.markdown(f"""
-    <div class="stat-card">
-        <h2 style="color:#e63946">{hot} 🔥</h2>
-        <p>HOT Leads</p>
-    </div>
-    """, unsafe_allow_html=True)
-
+    st.markdown(f'<div class="stat-card"><h2 style="color:#e63946">{hot} 🔥</h2><p>HOT Leads</p></div>', unsafe_allow_html=True)
 with col3:
-    st.markdown(f"""
-    <div class="stat-card">
-        <h2 style="color:#f4a261">{warm} ⚠️</h2>
-        <p>WARM Leads</p>
-    </div>
-    """, unsafe_allow_html=True)
-
+    st.markdown(f'<div class="stat-card"><h2 style="color:#f4a261">{warm} ⚠️</h2><p>WARM Leads</p></div>', unsafe_allow_html=True)
 with col4:
-    st.markdown(f"""
-    <div class="stat-card">
-        <h2 style="color:#457b9d">{cold} 🧊</h2>
-        <p>COLD Leads</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div class="stat-card"><h2 style="color:#457b9d">{cold} 🧊</h2><p>COLD Leads</p></div>', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────
+#  REFRESH BUTTON
+# ─────────────────────────────────────────────
+if st.button("🔄 Actualizar Leads"):
+    st.cache_resource.clear()
+    st.rerun()
 
 # ─────────────────────────────────────────────
 #  FILTER
 # ─────────────────────────────────────────────
 filter_score = st.selectbox(
     "Filtrar por clasificación",
-    ["Todos", "HOT", "WARM", "COLD"],
-    index=0
+    ["Todos", "HOT", "WARM", "COLD"]
 )
 
-filtered = leads if filter_score == "Todos" else [l for l in leads if l.get("score") == filter_score]
+filtered = leads if filter_score == "Todos" else [l for l in leads if l.get("Score") == filter_score]
 
 # ─────────────────────────────────────────────
 #  LEADS TABLE
@@ -190,8 +190,8 @@ st.markdown(f"### 📋 Leads ({len(filtered)})")
 if not filtered:
     st.info("No hay leads registrados aún.")
 else:
-    for lead in reversed(filtered):  # newest first
-        score = lead.get("score", "COLD")
+    for lead in reversed(filtered):
+        score = lead.get("Score", "COLD")
 
         if score == "HOT":
             badge = '<span class="score-hot">🔥 HOT</span>'
@@ -204,16 +204,16 @@ else:
         <div style="background:#1a2e22; border:1px solid #2d6a4f; border-radius:14px;
                     padding:16px 20px; margin-bottom:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <b style="font-size:1rem;">👤 {lead.get('name','—')}</b>
+                <b style="font-size:1rem;">👤 {lead.get('Name','—')}</b>
                 {badge}
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; font-size:0.88rem; color:#b7e4c7;">
-                <span>📞 {lead.get('phone','—')}</span>
-                <span>🏠 {lead.get('property_type','—')}</span>
-                <span>📍 {lead.get('area','—')}</span>
-                <span>💵 ${lead.get('budget','—')}</span>
-                <span>⏱️ {lead.get('timeline','—')} meses</span>
-                <span>🕐 {lead.get('timestamp','—')}</span>
+                <span>📞 {lead.get('Phone','—')}</span>
+                <span>🏠 {lead.get('Property Type','—')}</span>
+                <span>📍 {lead.get('Area','—')}</span>
+                <span>💵 ${lead.get('Budget (USD)','—')}</span>
+                <span>⏱️ {lead.get('Timeline (months)','—')} meses</span>
+                <span>🕐 {lead.get('Timestamp','—')}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
