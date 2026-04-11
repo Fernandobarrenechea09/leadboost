@@ -1,6 +1,8 @@
 import streamlit as st
 from supabase import create_client
 from datetime import datetime
+import anthropic
+import json
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -92,58 +94,45 @@ div.stButton > button:hover { opacity: 0.85; }
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  SUPABASE CONNECTION
+#  CONNECTIONS
 # ─────────────────────────────────────────────
 @st.cache_resource
 def get_supabase():
-    url = st.secrets["SUPABASE_URL"]
-    key = st.secrets["SUPABASE_KEY"]
-    return create_client(url, key)
+    return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+
+@st.cache_resource
+def get_claude():
+    return anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_KEY"])
 
 # ─────────────────────────────────────────────
-#  CONVERSATION STEPS
+#  SYSTEM PROMPT FOR CLAUDE
 # ─────────────────────────────────────────────
-STEPS = [
-    {
-        "key":      "name",
-        "question": "👋 ¡Hola! Soy LeadBoost, tu asistente inmobiliario virtual.\n\nPara comenzar, ¿cuál es tu nombre?",
-        "label":    "Tu nombre completo",
-    },
-    {
-        "key":      "property_type",
-        "question": "¿Qué tipo de propiedad estás buscando?\n\n🏠 Casa  |  🏢 Departamento  |  🏗️ Terreno  |  🏪 Local comercial",
-        "label":    "Tipo de propiedad",
-    },
-    {
-        "key":      "area",
-        "question": "¿En qué zona o barrio de la ciudad te interesa la propiedad?",
-        "label":    "Zona o barrio preferido",
-    },
-    {
-        "key":      "budget",
-        "question": "¿Cuál es tu presupuesto aproximado en dólares?\n\nEjemplo: 80000  o  150000",
-        "label":    "Presupuesto en USD",
-    },
-    {
-        "key":      "timeline",
-        "question": "¿En cuántos meses planeas comprar o rentar?\n\nEjemplo: 1  o  3  o  12",
-        "label":    "Plazo en meses",
-    },
-    {
-        "key":      "phone",
-        "question": "¡Perfecto! Por último, ¿cuál es tu número de teléfono para que un agente te contacte?",
-        "label":    "Número de teléfono",
-    },
-]
+SYSTEM_PROMPT = """Eres LeadBoost, un asistente inmobiliario virtual para agencias de bienes raíces en Bolivia. Tu trabajo es tener una conversación natural en español con potenciales compradores o arrendatarios de propiedades y recopilar la siguiente información:
+
+1. Nombre completo
+2. Tipo de propiedad (Casa, Departamento, Terreno, Local comercial)
+3. Zona o barrio de preferencia
+4. Presupuesto aproximado en dólares
+5. Plazo en meses para comprar o rentar
+6. Número de teléfono
+
+Reglas importantes:
+- Conversa de forma natural y amigable en español
+- Haz las preguntas de forma conversacional, no como un formulario
+- Si el usuario da múltiple información en un solo mensaje, extráela toda
+- Cuando tengas TODA la información, responde con un JSON al final de tu mensaje en este formato exacto:
+  LEAD_COMPLETO:{"name":"...","property_type":"...","area":"...","budget":"...","timeline":"...","phone":"..."}
+- Solo incluye LEAD_COMPLETO cuando tengas los 6 datos completos
+- Mantén un tono profesional pero cálido
+- Si el usuario escribe en español informal, responde igual de informalmente"""
 
 # ─────────────────────────────────────────────
 #  SESSION STATE INIT
 # ─────────────────────────────────────────────
-if "step"         not in st.session_state: st.session_state.step         = 0
-if "chat_history" not in st.session_state: st.session_state.chat_history = []
-if "lead"         not in st.session_state: st.session_state.lead         = {}
-if "done"         not in st.session_state: st.session_state.done         = False
-if "greeted"      not in st.session_state: st.session_state.greeted      = False
+if "chat_history"    not in st.session_state: st.session_state.chat_history    = []
+if "messages"        not in st.session_state: st.session_state.messages        = []
+if "done"            not in st.session_state: st.session_state.done            = False
+if "greeted"         not in st.session_state: st.session_state.greeted         = False
 
 # ─────────────────────────────────────────────
 #  LEAD SCORING
@@ -181,6 +170,35 @@ def save_lead(lead):
         st.error(f"Error guardando lead: {e}")
 
 # ─────────────────────────────────────────────
+#  GET AI RESPONSE
+# ─────────────────────────────────────────────
+def get_ai_response(messages):
+    try:
+        claude   = get_claude()
+        response = claude.messages.create(
+            model      = "claude-haiku-4-5-20251001",
+            max_tokens = 1000,
+            system     = SYSTEM_PROMPT,
+            messages   = messages
+        )
+        return response.content[0].text
+    except Exception as e:
+        return f"Lo siento, hubo un error. Por favor intenta de nuevo. ({e})"
+
+# ─────────────────────────────────────────────
+#  CHECK IF LEAD IS COMPLETE
+# ─────────────────────────────────────────────
+def extract_lead(response_text):
+    if "LEAD_COMPLETO:" in response_text:
+        try:
+            json_str = response_text.split("LEAD_COMPLETO:")[1].strip()
+            lead     = json.loads(json_str)
+            return lead
+        except:
+            return None
+    return None
+
+# ─────────────────────────────────────────────
 #  HEADER
 # ─────────────────────────────────────────────
 st.markdown("""
@@ -197,7 +215,9 @@ st.markdown("""
 #  FIRST BOT MESSAGE
 # ─────────────────────────────────────────────
 if not st.session_state.greeted:
-    st.session_state.chat_history.append(("bot", STEPS[0]["question"]))
+    greeting = "👋 ¡Hola! Soy LeadBoost, tu asistente inmobiliario virtual. Estoy aquí para ayudarte a encontrar la propiedad perfecta en Bolivia. ¿Me puedes decir tu nombre y qué tipo de propiedad estás buscando?"
+    st.session_state.chat_history.append(("bot", greeting))
+    st.session_state.messages.append({"role": "assistant", "content": greeting})
     st.session_state.greeted = True
 
 # ─────────────────────────────────────────────
@@ -205,7 +225,9 @@ if not st.session_state.greeted:
 # ─────────────────────────────────────────────
 st.markdown('<div class="chat-wrap">', unsafe_allow_html=True)
 for sender, msg in st.session_state.chat_history:
-    msg_html = msg.replace("\n", "<br>")
+    # Hide the LEAD_COMPLETO JSON from user
+    display_msg = msg.split("LEAD_COMPLETO:")[0].strip() if "LEAD_COMPLETO:" in msg else msg
+    msg_html    = display_msg.replace("\n", "<br>")
     if sender == "bot":
         st.markdown(f'<div class="label-bot">🤖 LeadBoost</div><div class="bubble-bot">{msg_html}</div>', unsafe_allow_html=True)
     else:
@@ -216,40 +238,38 @@ st.markdown('</div>', unsafe_allow_html=True)
 #  CONVERSATION LOOP
 # ─────────────────────────────────────────────
 if not st.session_state.done:
-    current_step = st.session_state.step
-    if current_step < len(STEPS):
-        step_info  = STEPS[current_step]
-        user_input = st.text_input(step_info["label"], key=f"input_{current_step}")
+    user_input = st.text_input("Escribe tu mensaje...", key=f"input_{len(st.session_state.messages)}")
 
-        if st.button("Enviar ➤"):
-            if user_input.strip():
-                st.session_state.chat_history.append(("user", user_input.strip()))
-                st.session_state.lead[step_info["key"]] = user_input.strip()
+    if st.button("Enviar ➤"):
+        if user_input.strip():
+            # Add user message
+            st.session_state.chat_history.append(("user", user_input.strip()))
+            st.session_state.messages.append({"role": "user", "content": user_input.strip()})
 
-                next_step = current_step + 1
+            # Get AI response
+            ai_response = get_ai_response(st.session_state.messages)
 
-                if next_step < len(STEPS):
-                    st.session_state.chat_history.append(("bot", STEPS[next_step]["question"]))
-                    st.session_state.step = next_step
-                else:
-                    score = score_lead(st.session_state.lead)
-                    st.session_state.lead["score"] = score
-                    save_lead(st.session_state.lead)
+            # Add AI response to history
+            st.session_state.chat_history.append(("bot", ai_response))
+            st.session_state.messages.append({"role": "assistant", "content": ai_response})
 
-                    name    = st.session_state.lead.get("name", "Cliente")
-                    closing = f"¡Gracias, {name}! Hemos registrado tu información. En breve uno de nuestros agentes se pondrá en contacto contigo."
-                    st.session_state.chat_history.append(("bot", closing))
-                    st.session_state.done = True
+            # Check if lead is complete
+            lead = extract_lead(ai_response)
+            if lead:
+                score        = score_lead(lead)
+                lead["score"] = score
+                save_lead(lead)
+                st.session_state.done = True
 
-                st.rerun()
-            else:
-                st.warning("Por favor escribe una respuesta antes de continuar.")
+            st.rerun()
+        else:
+            st.warning("Por favor escribe un mensaje antes de continuar.")
 
 # ─────────────────────────────────────────────
 #  COMPLETION
 # ─────────────────────────────────────────────
 if st.session_state.done:
     if st.button("🔄 Nueva Conversación"):
-        for key in ["step", "chat_history", "lead", "done", "greeted"]:
+        for key in ["chat_history", "messages", "done", "greeted"]:
             del st.session_state[key]
         st.rerun()
