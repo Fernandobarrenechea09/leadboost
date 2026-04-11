@@ -1,6 +1,5 @@
 import streamlit as st
-import gspread
-from google.oauth2.service_account import Credentials
+from supabase import create_client
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -102,34 +101,25 @@ if not st.session_state.authenticated:
     st.stop()
 
 # ─────────────────────────────────────────────
-#  GOOGLE SHEETS CONNECTION
+#  SUPABASE CONNECTION
 # ─────────────────────────────────────────────
 @st.cache_resource
-def get_sheet():
-    scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive"
-    ]
-    creds = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=scopes
-    )
-    client = gspread.authorize(creds)
-    return client.open("LeadBoost Leads").sheet1
+def get_supabase():
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    return create_client(url, key)
 
 # ─────────────────────────────────────────────
 #  LOAD LEADS
 # ─────────────────────────────────────────────
 def load_leads():
     try:
-        sheet  = get_sheet()
-        rows   = sheet.get_all_records()
-        return rows
+        supabase = get_supabase()
+        response = supabase.table("leads").select("*").order("id", desc=True).execute()
+        return response.data
     except Exception as e:
         st.error(f"Error cargando leads: {e}")
         return []
-
-leads = load_leads()
 
 # ─────────────────────────────────────────────
 #  HEADER
@@ -145,12 +135,21 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
+#  REFRESH BUTTON
+# ─────────────────────────────────────────────
+if st.button("🔄 Actualizar Leads"):
+    st.cache_resource.clear()
+    st.rerun()
+
+leads = load_leads()
+
+# ─────────────────────────────────────────────
 #  STATS ROW
 # ─────────────────────────────────────────────
 total = len(leads)
-hot   = sum(1 for l in leads if l.get("Score") == "HOT")
-warm  = sum(1 for l in leads if l.get("Score") == "WARM")
-cold  = sum(1 for l in leads if l.get("Score") == "COLD")
+hot   = sum(1 for l in leads if l.get("score") == "HOT")
+warm  = sum(1 for l in leads if l.get("score") == "WARM")
+cold  = sum(1 for l in leads if l.get("score") == "COLD")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -166,13 +165,6 @@ with col4:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  REFRESH BUTTON
-# ─────────────────────────────────────────────
-if st.button("🔄 Actualizar Leads"):
-    st.cache_resource.clear()
-    st.rerun()
-
-# ─────────────────────────────────────────────
 #  FILTER
 # ─────────────────────────────────────────────
 filter_score = st.selectbox(
@@ -180,7 +172,7 @@ filter_score = st.selectbox(
     ["Todos", "HOT", "WARM", "COLD"]
 )
 
-filtered = leads if filter_score == "Todos" else [l for l in leads if l.get("Score") == filter_score]
+filtered = leads if filter_score == "Todos" else [l for l in leads if l.get("score") == filter_score]
 
 # ─────────────────────────────────────────────
 #  LEADS TABLE
@@ -190,8 +182,8 @@ st.markdown(f"### 📋 Leads ({len(filtered)})")
 if not filtered:
     st.info("No hay leads registrados aún.")
 else:
-    for lead in reversed(filtered):
-        score = lead.get("Score", "COLD")
+    for lead in filtered:
+        score = lead.get("score", "COLD")
 
         if score == "HOT":
             badge = '<span class="score-hot">🔥 HOT</span>'
@@ -204,16 +196,16 @@ else:
         <div style="background:#1a2e22; border:1px solid #2d6a4f; border-radius:14px;
                     padding:16px 20px; margin-bottom:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <b style="font-size:1rem;">👤 {lead.get('Name','—')}</b>
+                <b style="font-size:1rem;">👤 {lead.get('name','—')}</b>
                 {badge}
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; font-size:0.88rem; color:#b7e4c7;">
-                <span>📞 {lead.get('Phone','—')}</span>
-                <span>🏠 {lead.get('Property Type','—')}</span>
-                <span>📍 {lead.get('Area','—')}</span>
-                <span>💵 ${lead.get('Budget (USD)','—')}</span>
-                <span>⏱️ {lead.get('Timeline (months)','—')} meses</span>
-                <span>🕐 {lead.get('Timestamp','—')}</span>
+                <span>📞 {lead.get('phone','—')}</span>
+                <span>🏠 {lead.get('property_type','—')}</span>
+                <span>📍 {lead.get('area','—')}</span>
+                <span>💵 ${lead.get('budget','—')}</span>
+                <span>⏱️ {lead.get('timeline','—')} meses</span>
+                <span>🕐 {lead.get('timestamp','—')}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
