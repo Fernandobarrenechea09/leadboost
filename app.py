@@ -1,6 +1,5 @@
 import streamlit as st
-import gspread
-from google.oauth2.service_account import Credentials
+from supabase import create_client
 from datetime import datetime
 
 # ─────────────────────────────────────────────
@@ -93,29 +92,13 @@ div.stButton > button:hover { opacity: 0.85; }
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  GOOGLE SHEETS CONNECTION
+#  SUPABASE CONNECTION
 # ─────────────────────────────────────────────
 @st.cache_resource
-def get_sheet():
-    scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive"
-    ]
-    creds = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=scopes
-    )
-    client = gspread.authorize(creds)
-    sheet  = client.open("LeadBoost Leads").sheet1
-
-    # Add headers if sheet is empty
-    if sheet.row_count == 0 or sheet.cell(1, 1).value is None:
-        sheet.append_row([
-            "Timestamp", "Name", "Phone",
-            "Property Type", "Area",
-            "Budget (USD)", "Timeline (months)", "Score"
-        ])
-    return sheet
+def get_supabase():
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    return create_client(url, key)
 
 # ─────────────────────────────────────────────
 #  CONVERSATION STEPS
@@ -179,21 +162,21 @@ def score_lead(lead):
         return "COLD"
 
 # ─────────────────────────────────────────────
-#  SAVE LEAD TO GOOGLE SHEETS
+#  SAVE LEAD TO SUPABASE
 # ─────────────────────────────────────────────
 def save_lead(lead):
     try:
-        sheet = get_sheet()
-        sheet.append_row([
-            datetime.now().strftime("%Y-%m-%d %H:%M"),
-            lead.get("name", ""),
-            lead.get("phone", ""),
-            lead.get("property_type", ""),
-            lead.get("area", ""),
-            lead.get("budget", ""),
-            lead.get("timeline", ""),
-            lead.get("score", ""),
-        ])
+        supabase = get_supabase()
+        supabase.table("leads").insert({
+            "timestamp":     datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "name":          lead.get("name", ""),
+            "phone":         lead.get("phone", ""),
+            "property_type": lead.get("property_type", ""),
+            "area":          lead.get("area", ""),
+            "budget":        lead.get("budget", ""),
+            "timeline":      lead.get("timeline", ""),
+            "score":         lead.get("score", ""),
+        }).execute()
     except Exception as e:
         st.error(f"Error guardando lead: {e}")
 
@@ -269,4 +252,4 @@ if st.session_state.done:
     if st.button("🔄 Nueva Conversación"):
         for key in ["step", "chat_history", "lead", "done", "greeted"]:
             del st.session_state[key]
-        st.rerun() 
+        st.rerun()
