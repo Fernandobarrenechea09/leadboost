@@ -3,6 +3,9 @@ from supabase import create_client
 from datetime import datetime
 import anthropic
 import json
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -112,7 +115,7 @@ SYSTEM_PROMPT = """Eres LeadBoost, un asistente inmobiliario virtual para agenci
 Los 6 datos que necesitas son:
 1. Nombre completo
 2. Tipo de propiedad (Casa, Departamento, Terreno, Local comercial)
-3. Zona o barrio de preferencia — SIEMPRE debe incluir la ciudad (Santa Cruz, La Paz, Cochabamba, etc.). Si el usuario dice solo "el centro" o un barrio sin ciudad, pregunta en qué ciudad está ese barrio antes de continuar.
+3. Zona o barrio de preferencia
 4. Presupuesto aproximado en dólares (solo el número, ejemplo: 150000)
 5. Plazo en meses para comprar o rentar (solo el número, ejemplo: 2)
 6. Número de teléfono
@@ -180,6 +183,49 @@ def score_lead(lead):
         return "WARM"
     else:
         return "COLD"
+
+# ─────────────────────────────────────────────
+#  SEND EMAIL NOTIFICATION
+# ─────────────────────────────────────────────
+def send_email(lead):
+    try:
+        score      = lead.get("score", "COLD")
+        score_emoji = "🔥" if score == "HOT" else "⚠️" if score == "WARM" else "🧊"
+
+        sender     = "fbarrenecheam09@gmail.com"
+        receiver   = "fbarrenecheam09@gmail.com"
+        password   = st.secrets["EMAIL_PASSWORD"]
+
+        subject = f"{score_emoji} Nuevo Lead {score} - LeadBoost"
+
+        body = f"""
+Nuevo lead registrado en LeadBoost:
+
+📋 Nombre:           {lead.get('name', '—')}
+📞 Teléfono:         {lead.get('phone', '—')}
+🏠 Tipo propiedad:   {lead.get('property_type', '—')}
+📍 Zona:             {lead.get('area', '—')}
+💵 Presupuesto:      ${lead.get('budget', '—')}
+⏱️  Plazo:            {lead.get('timeline', '—')} meses
+🎯 Clasificación:    {score_emoji} {score}
+🕐 Fecha:            {datetime.now().strftime('%Y-%m-%d %H:%M')}
+
+---
+LeadBoost · Asistente Inmobiliario Inteligente · Bolivia
+        """
+
+        msg = MIMEMultipart()
+        msg["From"]    = sender
+        msg["To"]      = receiver
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body, "plain"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender, password)
+            server.sendmail(sender, receiver, msg.as_string())
+
+    except Exception as e:
+        pass  # Silent fail — don't interrupt user experience
 
 # ─────────────────────────────────────────────
 #  SAVE LEAD TO SUPABASE
@@ -285,16 +331,7 @@ if not st.session_state.done:
                 score         = score_lead(lead)
                 lead["score"] = score
                 save_lead(lead)
-
-                name = lead.get("name", "Cliente")
-                if score == "HOT":
-                    closing = f"🏠 ¡{name}, tu solicitud es una prioridad para nosotros! Uno de nuestros mejores agentes te llamará en las próximas horas con opciones exclusivas. ¡Gracias por confiar en LeadBoost!"
-                elif score == "WARM":
-                    closing = f"✅ ¡Gracias, {name}! Hemos registrado tu información. Un agente te contactará pronto con las mejores opciones disponibles para tu perfil."
-                else:
-                    closing = f"📋 ¡Gracias, {name}! Hemos guardado tu información. Cuando estés listo para avanzar, nuestro equipo estará disponible para ayudarte."
-
-                st.session_state.chat_history.append(("bot", closing))
+                send_email(lead)
                 st.session_state.done = True
 
             st.rerun()
