@@ -290,8 +290,10 @@ if timed:
     st.markdown("<br>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  FILTERS
+#  SEARCH + FILTERS
 # ─────────────────────────────────────────────
+search = st.text_input("🔍 Buscar por nombre o telefono...", placeholder="Ej: Carlos o 76543210")
+
 f1,f2 = st.columns(2)
 with f1: filter_score  = st.selectbox("Filtrar por clasificacion", ["Todos","HOT","WARM","COLD"])
 with f2: filter_status = st.selectbox("Filtrar por estado", ["Todos","Nuevo","Contactado","Visitado","Cerrado"])
