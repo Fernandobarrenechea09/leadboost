@@ -285,6 +285,16 @@ if not st.session_state.done:
                 score         = score_lead(lead)
                 lead["score"] = score
                 save_lead(lead)
+
+                name = lead.get("name", "Cliente")
+                if score == "HOT":
+                    closing = f"🏠 ¡{name}, tu solicitud es una prioridad para nosotros! Uno de nuestros mejores agentes te llamará en las próximas horas con opciones exclusivas. ¡Gracias por confiar en LeadBoost!"
+                elif score == "WARM":
+                    closing = f"✅ ¡Gracias, {name}! Hemos registrado tu información. Un agente te contactará pronto con las mejores opciones disponibles para tu perfil."
+                else:
+                    closing = f"📋 ¡Gracias, {name}! Hemos guardado tu información. Cuando estés listo para avanzar, nuestro equipo estará disponible para ayudarte."
+
+                st.session_state.chat_history.append(("bot", closing))
                 st.session_state.done = True
 
             st.rerun()
