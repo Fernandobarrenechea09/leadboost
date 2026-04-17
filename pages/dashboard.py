@@ -50,6 +50,11 @@ html, body, [class*="css"] {
 .score-warm { background:#f4a261; color:#fff; padding:3px 12px; border-radius:20px; font-weight:700; font-size:0.8rem; }
 .score-cold { background:#457b9d; color:#fff; padding:3px 12px; border-radius:20px; font-weight:700; font-size:0.8rem; }
 
+.status-nuevo     { background:#2d6a4f; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+.status-contactado{ background:#f4a261; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+.status-visitado  { background:#457b9d; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+.status-cerrado   { background:#74c69d; color:#1a2e22; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+
 div.stButton > button {
     background: linear-gradient(135deg, #2d6a4f, #1b4332);
     color: white;
@@ -120,6 +125,16 @@ def load_leads():
         return []
 
 # ─────────────────────────────────────────────
+#  UPDATE LEAD STATUS
+# ─────────────────────────────────────────────
+def update_status(lead_id, new_status):
+    try:
+        supabase = get_supabase()
+        supabase.table("leads").update({"status": new_status}).eq("id", lead_id).execute()
+    except Exception as e:
+        st.error(f"Error actualizando estado: {e}")
+
+# ─────────────────────────────────────────────
 #  HEADER
 # ─────────────────────────────────────────────
 st.markdown("""
@@ -150,7 +165,6 @@ warm  = sum(1 for l in leads if l.get("score") == "WARM")
 cold  = sum(1 for l in leads if l.get("score") == "COLD")
 
 col1, col2, col3, col4 = st.columns(4)
-
 with col1:
     st.markdown(f'<div class="stat-card"><h2 style="color:#74c69d">{total}</h2><p>Total Leads</p></div>', unsafe_allow_html=True)
 with col2:
@@ -165,12 +179,17 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ─────────────────────────────────────────────
 #  FILTER
 # ─────────────────────────────────────────────
-filter_score = st.selectbox(
-    "Filtrar por clasificación",
-    ["Todos", "HOT", "WARM", "COLD"]
-)
+col_f1, col_f2 = st.columns(2)
+with col_f1:
+    filter_score = st.selectbox("Filtrar por clasificación", ["Todos", "HOT", "WARM", "COLD"])
+with col_f2:
+    filter_status = st.selectbox("Filtrar por estado", ["Todos", "Nuevo", "Contactado", "Visitado", "Cerrado"])
 
-filtered = leads if filter_score == "Todos" else [l for l in leads if l.get("score") == filter_score]
+filtered = leads
+if filter_score != "Todos":
+    filtered = [l for l in filtered if l.get("score") == filter_score]
+if filter_status != "Todos":
+    filtered = [l for l in filtered if l.get("status", "Nuevo") == filter_status]
 
 # ─────────────────────────────────────────────
 #  LEADS TABLE
@@ -181,12 +200,15 @@ if not filtered:
     st.info("No hay leads registrados aún.")
 else:
     for lead in filtered:
-        score = lead.get("score", "COLD")
-        name  = lead.get("name", "—")
-        phone = lead.get("phone", "").replace("+", "").replace(" ", "").replace("-", "")
+        lead_id       = lead.get("id")
+        score         = lead.get("score", "COLD")
+        status        = lead.get("status", "Nuevo")
+        name          = lead.get("name", "—")
+        phone         = lead.get("phone", "").replace("+", "").replace(" ", "").replace("-", "")
         property_type = lead.get("property_type", "")
-        area  = lead.get("area", "")
+        area          = lead.get("area", "")
 
+        # Score badge
         if score == "HOT":
             badge = '<span class="score-hot">🔥 HOT</span>'
         elif score == "WARM":
@@ -194,17 +216,26 @@ else:
         else:
             badge = '<span class="score-cold">🧊 COLD</span>'
 
-        # Build WhatsApp link with pre-written message
-        wa_text = f"Hola {name}, soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interés en {property_type} en {area}. ¿Tienes un momento para hablar?"
-        wa_text_encoded = wa_text.replace(" ", "%20").replace(",", "%2C").replace(".", "%2E").replace("¿", "%C2%BF").replace("?", "%3F")
-        wa_link = f"https://wa.me/591{phone}?text={wa_text_encoded}"
+        # Status badge
+        status_class = f"status-{status.lower()}"
+        status_emoji = {"Nuevo": "🆕", "Contactado": "📞", "Visitado": "🏠", "Cerrado": "✅"}.get(status, "🆕")
+        status_badge = f'<span class="{status_class}">{status_emoji} {status}</span>'
 
+        # WhatsApp link
+        wa_text = f"Hola {name}, soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interés en {property_type} en {area}. ¿Tienes un momento para hablar?"
+        wa_encoded = wa_text.replace(" ", "%20").replace(",", "%2C").replace("¿", "%C2%BF").replace("?", "%3F")
+        wa_link = f"https://wa.me/591{phone}?text={wa_encoded}"
+
+        # Lead card
         st.markdown(f"""
         <div style="background:#1a2e22; border:1px solid #2d6a4f; border-radius:14px;
-                    padding:16px 20px; margin-bottom:12px;">
+                    padding:16px 20px; margin-bottom:4px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <b style="font-size:1rem;">👤 {name}</b>
-                {badge}
+                <div style="display:flex; gap:8px; align-items:center;">
+                    {status_badge}
+                    {badge}
+                </div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;
                         font-size:0.88rem; color:#b7e4c7; margin-bottom:14px;">
@@ -218,11 +249,24 @@ else:
             <a href="{wa_link}" target="_blank"
                style="display:inline-block; background:#25d366; color:#fff;
                       padding:8px 18px; border-radius:10px; text-decoration:none;
-                      font-weight:600; font-size:0.85rem; letter-spacing:0.3px;">
+                      font-weight:600; font-size:0.85rem;">
                 📱 Contactar por WhatsApp
             </a>
         </div>
         """, unsafe_allow_html=True)
+
+        # Status buttons
+        STATUS_OPTIONS = ["Nuevo", "Contactado", "Visitado", "Cerrado"]
+        cols = st.columns(4)
+        for i, s in enumerate(STATUS_OPTIONS):
+            with cols[i]:
+                is_current = status == s
+                label = f"✓ {s}" if is_current else s
+                if st.button(label, key=f"status_{lead_id}_{s}", disabled=is_current):
+                    update_status(lead_id, s)
+                    st.rerun()
+
+        st.markdown("<div style='margin-bottom:16px'></div>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 #  LOGOUT
@@ -230,4 +274,4 @@ else:
 st.markdown("---")
 if st.button("🚪 Cerrar sesión"):
     st.session_state.authenticated = False
-    st.rerun()
+    st.rerun() 
