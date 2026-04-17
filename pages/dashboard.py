@@ -1,7 +1,9 @@
 import streamlit as st
 from supabase import create_client
-import csv
 import io
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -137,6 +139,101 @@ def update_status(lead_id, new_status):
         st.error(f"Error actualizando estado: {e}")
 
 # ─────────────────────────────────────────────
+#  GENERATE STYLED EXCEL
+# ─────────────────────────────────────────────
+def generate_excel(leads):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "LeadBoost Leads"
+
+    # Colors
+    header_fill  = PatternFill("solid", fgColor="1B4332")
+    hot_fill     = PatternFill("solid", fgColor="FADADD")
+    warm_fill    = PatternFill("solid", fgColor="FFF3CD")
+    cold_fill    = PatternFill("solid", fgColor="D6EAF8")
+    alt_fill     = PatternFill("solid", fgColor="F0F7F4")
+
+    header_font  = Font(bold=True, color="FFFFFF", size=11)
+    bold_font    = Font(bold=True, size=10)
+    normal_font  = Font(size=10)
+
+    thin_border  = Border(
+        left   = Side(style="thin", color="CCCCCC"),
+        right  = Side(style="thin", color="CCCCCC"),
+        top    = Side(style="thin", color="CCCCCC"),
+        bottom = Side(style="thin", color="CCCCCC")
+    )
+
+    center = Alignment(horizontal="center", vertical="center")
+    left   = Alignment(horizontal="left",   vertical="center")
+
+    # Headers
+    headers = ["#", "Fecha", "Nombre", "Teléfono", "Tipo Propiedad", "Zona", "Presupuesto (USD)", "Plazo (meses)", "Clasificación", "Estado"]
+    col_widths = [5, 18, 22, 15, 18, 18, 18, 14, 14, 14]
+
+    for col_num, (header, width) in enumerate(zip(headers, col_widths), 1):
+        cell             = ws.cell(row=1, column=col_num, value=header)
+        cell.fill        = header_fill
+        cell.font        = header_font
+        cell.alignment   = center
+        cell.border      = thin_border
+        ws.column_dimensions[get_column_letter(col_num)].width = width
+
+    ws.row_dimensions[1].height = 28
+
+    # Data rows
+    for row_num, lead in enumerate(leads, 2):
+        score  = lead.get("score", "COLD")
+        status = lead.get("status", "Nuevo")
+
+        # Row color based on score
+        if score == "HOT":
+            row_fill = hot_fill
+        elif score == "WARM":
+            row_fill = warm_fill
+        else:
+            row_fill = cold_fill if row_num % 2 == 0 else alt_fill
+
+        # Score emoji
+        score_display = {"HOT": "🔥 HOT", "WARM": "⚠️ WARM", "COLD": "🧊 COLD"}.get(score, score)
+
+        # Status emoji
+        status_display = {
+            "Nuevo":      "🆕 Nuevo",
+            "Contactado": "📞 Contactado",
+            "Visitado":   "🏠 Visitado",
+            "Cerrado":    "✅ Cerrado"
+        }.get(status, status)
+
+        row_data = [
+            row_num - 1,
+            lead.get("timestamp", ""),
+            lead.get("name", ""),
+            lead.get("phone", ""),
+            lead.get("property_type", ""),
+            lead.get("area", ""),
+            lead.get("budget", ""),
+            lead.get("timeline", ""),
+            score_display,
+            status_display,
+        ]
+
+        for col_num, value in enumerate(row_data, 1):
+            cell           = ws.cell(row=row_num, column=col_num, value=value)
+            cell.fill      = row_fill
+            cell.border    = thin_border
+            cell.alignment = center if col_num in [1, 7, 8, 9, 10] else left
+            cell.font      = bold_font if col_num == 3 else normal_font
+
+        ws.row_dimensions[row_num].height = 22
+
+    # Save to buffer
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+# ─────────────────────────────────────────────
 #  HEADER
 # ─────────────────────────────────────────────
 st.markdown("""
@@ -163,18 +260,12 @@ with btn_col1:
 
 with btn_col2:
     if leads:
-        output     = io.StringIO()
-        fieldnames = ["id", "timestamp", "name", "phone", "property_type", "area", "budget", "timeline", "score", "status"]
-        writer     = csv.DictWriter(output, fieldnames=fieldnames, extrasaction="ignore")
-        writer.writeheader()
-        writer.writerows(leads)
-        csv_data = output.getvalue()
-
+        excel_buffer = generate_excel(leads)
         st.download_button(
-            label     = "⬇️ Exportar CSV",
-            data      = csv_data,
-            file_name = "leadboost_leads.csv",
-            mime      = "text/csv"
+            label     = "⬇️ Exportar Excel",
+            data      = excel_buffer,
+            file_name = "leadboost_leads.xlsx",
+            mime      = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
 # ─────────────────────────────────────────────
@@ -229,7 +320,6 @@ else:
         property_type = lead.get("property_type", "")
         area          = lead.get("area", "")
 
-        # Score badge
         if score == "HOT":
             badge = '<span class="score-hot">🔥 HOT</span>'
         elif score == "WARM":
@@ -237,17 +327,14 @@ else:
         else:
             badge = '<span class="score-cold">🧊 COLD</span>'
 
-        # Status badge
         status_class = f"status-{status.lower()}"
         status_emoji = {"Nuevo": "🆕", "Contactado": "📞", "Visitado": "🏠", "Cerrado": "✅"}.get(status, "🆕")
         status_badge = f'<span class="{status_class}">{status_emoji} {status}</span>'
 
-        # WhatsApp link
         wa_text    = f"Hola {name}, soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interés en {property_type} en {area}. ¿Tienes un momento para hablar?"
         wa_encoded = wa_text.replace(" ", "%20").replace(",", "%2C").replace("¿", "%C2%BF").replace("?", "%3F")
         wa_link    = f"https://wa.me/591{phone}?text={wa_encoded}"
 
-        # Lead card
         st.markdown(f"""
         <div style="background:#1a2e22; border:1px solid #2d6a4f; border-radius:14px;
                     padding:16px 20px; margin-bottom:4px;">
@@ -276,7 +363,6 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-        # Status buttons
         STATUS_OPTIONS = ["Nuevo", "Contactado", "Visitado", "Cerrado"]
         cols = st.columns(4)
         for i, s in enumerate(STATUS_OPTIONS):
@@ -295,4 +381,4 @@ else:
 st.markdown("---")
 if st.button("🚪 Cerrar sesión"):
     st.session_state.authenticated = False
-    st.rerun()   
+    st.rerun()
