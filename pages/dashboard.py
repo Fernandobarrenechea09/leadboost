@@ -299,6 +299,9 @@ with f1: filter_score  = st.selectbox("Filtrar por clasificacion", ["Todos","HOT
 with f2: filter_status = st.selectbox("Filtrar por estado", ["Todos","Nuevo","Contactado","Visitado","Cerrado"])
 
 filtered = leads
+if search.strip():
+    q = search.strip().lower()
+    filtered = [l for l in filtered if q in l.get("name","").lower() or q in l.get("phone","").lower()]
 if filter_score  != "Todos": filtered = [l for l in filtered if l.get("score")==filter_score]
 if filter_status != "Todos": filtered = [l for l in filtered if l.get("status","Nuevo")==filter_status]
 
