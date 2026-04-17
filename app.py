@@ -139,8 +139,18 @@ if "greeted"         not in st.session_state: st.session_state.greeted         =
 # ─────────────────────────────────────────────
 def score_lead(lead):
     try:
-        budget   = int(str(lead.get("budget", "0")).replace(",", "").replace(".", "").replace("$", "").strip())
-        timeline = int(str(lead.get("timeline", "99")).strip())
+        # Clean budget — handle "120,000" / "120.000" / "120 mil" / "120000"
+        budget_str = str(lead.get("budget", "0")).lower().replace("$", "").replace(" ", "")
+        if "mil" in budget_str:
+            budget_str = budget_str.replace("mil", "").strip()
+            budget = int(float(budget_str.replace(",", ".")) * 1000)
+        else:
+            budget_str = budget_str.replace(".", "").replace(",", "")
+            budget = int(budget_str)
+        # Clean timeline — handle "2 meses" / "2 mes" / "2"
+        timeline_str = str(lead.get("timeline", "99")).lower()
+        timeline_str = timeline_str.replace("meses", "").replace("mes", "").strip()
+        timeline = int(timeline_str)
     except ValueError:
         return "COLD"
     if budget >= 80000 and timeline <= 2:
