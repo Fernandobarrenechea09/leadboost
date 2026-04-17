@@ -6,7 +6,7 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from datetime import datetime
 from urllib.parse import quote
-
+import pandas as pd
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
 # ─────────────────────────────────────────────
@@ -273,7 +273,20 @@ with c3: st.markdown(f'<div class="stat-card"><h2 style="color:#f4a261">{warm} �
 with c4: st.markdown(f'<div class="stat-card"><h2 style="color:#457b9d">{cold} 🧊</h2><p>COLD Leads</p></div>', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
-
+# ─────────────────────────────────────────────
+#  LEADS OVER TIME CHART
+# ─────────────────────────────────────────────
+if leads:
+    st.markdown("### 📈 Leads por Día")
+    dates = [l.get("timestamp","")[:10] for l in leads if l.get("timestamp")]
+    if dates:
+        df = pd.DataFrame({"fecha": dates})
+        df["fecha"] = pd.to_datetime(df["fecha"])
+        chart_data = df.groupby("fecha").size().reset_index(name="leads")
+        chart_data = chart_data.sort_values("fecha")
+        chart_data = chart_data.rename(columns={"fecha": "Fecha", "leads": "Leads"})
+        st.line_chart(chart_data.set_index("Fecha"))
+    st.markdown("<br>", unsafe_allow_html=True)
 # ─────────────────────────────────────────────
 #  RESPONSE TIME TRACKER
 # ─────────────────────────────────────────────
