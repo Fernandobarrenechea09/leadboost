@@ -105,9 +105,7 @@ if not st.session_state.authenticated:
 # ─────────────────────────────────────────────
 @st.cache_resource
 def get_supabase():
-    url = st.secrets["SUPABASE_URL"]
-    key = st.secrets["SUPABASE_KEY"]
-    return create_client(url, key)
+    return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 # ─────────────────────────────────────────────
 #  LOAD LEADS
@@ -184,6 +182,10 @@ if not filtered:
 else:
     for lead in filtered:
         score = lead.get("score", "COLD")
+        name  = lead.get("name", "—")
+        phone = lead.get("phone", "").replace("+", "").replace(" ", "").replace("-", "")
+        property_type = lead.get("property_type", "")
+        area  = lead.get("area", "")
 
         if score == "HOT":
             badge = '<span class="score-hot">🔥 HOT</span>'
@@ -192,21 +194,33 @@ else:
         else:
             badge = '<span class="score-cold">🧊 COLD</span>'
 
+        # Build WhatsApp link with pre-written message
+        wa_text = f"Hola {name}, soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interés en {property_type} en {area}. ¿Tienes un momento para hablar?"
+        wa_text_encoded = wa_text.replace(" ", "%20").replace(",", "%2C").replace(".", "%2E").replace("¿", "%C2%BF").replace("?", "%3F")
+        wa_link = f"https://wa.me/591{phone}?text={wa_text_encoded}"
+
         st.markdown(f"""
         <div style="background:#1a2e22; border:1px solid #2d6a4f; border-radius:14px;
                     padding:16px 20px; margin-bottom:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <b style="font-size:1rem;">👤 {lead.get('name','—')}</b>
+                <b style="font-size:1rem;">👤 {name}</b>
                 {badge}
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; font-size:0.88rem; color:#b7e4c7;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;
+                        font-size:0.88rem; color:#b7e4c7; margin-bottom:14px;">
                 <span>📞 {lead.get('phone','—')}</span>
-                <span>🏠 {lead.get('property_type','—')}</span>
-                <span>📍 {lead.get('area','—')}</span>
+                <span>🏠 {property_type}</span>
+                <span>📍 {area}</span>
                 <span>💵 ${lead.get('budget','—')}</span>
                 <span>⏱️ {lead.get('timeline','—')} meses</span>
                 <span>🕐 {lead.get('timestamp','—')}</span>
             </div>
+            <a href="{wa_link}" target="_blank"
+               style="display:inline-block; background:#25d366; color:#fff;
+                      padding:8px 18px; border-radius:10px; text-decoration:none;
+                      font-weight:600; font-size:0.85rem; letter-spacing:0.3px;">
+                📱 Contactar por WhatsApp
+            </a>
         </div>
         """, unsafe_allow_html=True)
 
