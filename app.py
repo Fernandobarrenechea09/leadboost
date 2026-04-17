@@ -105,41 +105,63 @@ def get_claude():
     return anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_KEY"])
 
 # ─────────────────────────────────────────────
-#  SYSTEM PROMPT FOR CLAUDE
+#  SYSTEM PROMPT
 # ─────────────────────────────────────────────
-SYSTEM_PROMPT = """Eres LeadBoost, un asistente inmobiliario virtual para agencias de bienes raíces en Bolivia. Tu trabajo es tener una conversación natural en español con potenciales compradores o arrendatarios de propiedades y recopilar la siguiente información:
+SYSTEM_PROMPT = """Eres LeadBoost, un asistente inmobiliario virtual para agencias de bienes raíces en Bolivia. Tu trabajo es recopilar exactamente 6 datos del usuario mediante una conversación natural en español.
 
+Los 6 datos que necesitas son:
 1. Nombre completo
 2. Tipo de propiedad (Casa, Departamento, Terreno, Local comercial)
 3. Zona o barrio de preferencia
-4. Presupuesto aproximado en dólares
-5. Plazo en meses para comprar o rentar
+4. Presupuesto aproximado en dólares (solo el número, ejemplo: 150000)
+5. Plazo en meses para comprar o rentar (solo el número, ejemplo: 2)
 6. Número de teléfono
 
-Reglas importantes:
-- Conversa de forma natural y amigable en español
-- Haz las preguntas de forma conversacional, no como un formulario
-- Si el usuario da múltiple información en un solo mensaje, extráela toda
-- Cuando tengas TODA la información, responde con un JSON al final de tu mensaje en este formato exacto:
-  LEAD_COMPLETO:{"name":"...","property_type":"...","area":"...","budget":"...","timeline":"...","phone":"..."}
-- Solo incluye LEAD_COMPLETO cuando tengas los 6 datos completos
-- Mantén un tono profesional pero cálido
-- Si el usuario escribe en español informal, responde igual de informalmente"""
+EL PROCESO TIENE 3 FASES:
+
+FASE 1 — RECOPILACIÓN:
+- Conversa de forma natural y amigable
+- Si el usuario da múltiple información en un mensaje, extráela toda
+- Solo pregunta por los datos que faltan
+- No hagas preguntas sobre habitaciones u otras características
+
+FASE 2 — CONFIRMACIÓN:
+Cuando tengas los 6 datos muestra este resumen y pide confirmación:
+
+"Perfecto, antes de finalizar déjame confirmar tu información:
+
+📋 Nombre: [nombre]
+🏠 Tipo de propiedad: [tipo]
+📍 Zona: [zona]
+💵 Presupuesto: $[presupuesto]
+⏱️ Plazo: [plazo] meses
+📞 Teléfono: [teléfono]
+
+¿Es correcta toda esta información? Puedes confirmar o corregir cualquier dato."
+
+FASE 3 — CIERRE:
+- Si el usuario confirma (dice sí, correcto, está bien, perfecto, etc.) cierra con el JSON
+- Si el usuario corrige un dato, actualiza ese dato y muestra el resumen de nuevo para confirmar
+- Cuando el usuario confirme responde EXACTAMENTE así:
+
+¡Gracias [nombre]! Hemos registrado tu información correctamente. En breve uno de nuestros agentes se pondrá en contacto contigo. ¡Hasta pronto! 😊
+LEAD_COMPLETO:{"name":"...","property_type":"...","area":"...","budget":"150000","timeline":"2","phone":"..."}
+
+IMPORTANTE: En el JSON budget y timeline deben ser solo números sin texto."""
 
 # ─────────────────────────────────────────────
 #  SESSION STATE INIT
 # ─────────────────────────────────────────────
-if "chat_history"    not in st.session_state: st.session_state.chat_history    = []
-if "messages"        not in st.session_state: st.session_state.messages        = []
-if "done"            not in st.session_state: st.session_state.done            = False
-if "greeted"         not in st.session_state: st.session_state.greeted         = False
+if "chat_history" not in st.session_state: st.session_state.chat_history = []
+if "messages"     not in st.session_state: st.session_state.messages     = []
+if "done"         not in st.session_state: st.session_state.done         = False
+if "greeted"      not in st.session_state: st.session_state.greeted      = False
 
 # ─────────────────────────────────────────────
 #  LEAD SCORING
 # ─────────────────────────────────────────────
 def score_lead(lead):
     try:
-        # Clean budget — handle "120,000" / "120.000" / "120 mil" / "120000"
         budget_str = str(lead.get("budget", "0")).lower().replace("$", "").replace(" ", "")
         if "mil" in budget_str:
             budget_str = budget_str.replace("mil", "").strip()
@@ -147,7 +169,6 @@ def score_lead(lead):
         else:
             budget_str = budget_str.replace(".", "").replace(",", "")
             budget = int(budget_str)
-        # Clean timeline — handle "2 meses" / "2 mes" / "2"
         timeline_str = str(lead.get("timeline", "99")).lower()
         timeline_str = timeline_str.replace("meses", "").replace("mes", "").strip()
         timeline = int(timeline_str)
@@ -235,7 +256,6 @@ if not st.session_state.greeted:
 # ─────────────────────────────────────────────
 st.markdown('<div class="chat-wrap">', unsafe_allow_html=True)
 for sender, msg in st.session_state.chat_history:
-    # Hide the LEAD_COMPLETO JSON from user
     display_msg = msg.split("LEAD_COMPLETO:")[0].strip() if "LEAD_COMPLETO:" in msg else msg
     msg_html    = display_msg.replace("\n", "<br>")
     if sender == "bot":
@@ -252,21 +272,17 @@ if not st.session_state.done:
 
     if st.button("Enviar ➤"):
         if user_input.strip():
-            # Add user message
             st.session_state.chat_history.append(("user", user_input.strip()))
             st.session_state.messages.append({"role": "user", "content": user_input.strip()})
 
-            # Get AI response
             ai_response = get_ai_response(st.session_state.messages)
 
-            # Add AI response to history
             st.session_state.chat_history.append(("bot", ai_response))
             st.session_state.messages.append({"role": "assistant", "content": ai_response})
 
-            # Check if lead is complete
             lead = extract_lead(ai_response)
             if lead:
-                score        = score_lead(lead)
+                score         = score_lead(lead)
                 lead["score"] = score
                 save_lead(lead)
                 st.session_state.done = True
