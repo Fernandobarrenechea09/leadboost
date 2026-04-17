@@ -4,6 +4,7 @@ import io
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+from datetime import datetime
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -49,6 +50,16 @@ html, body, [class*="css"] {
 }
 .stat-card h2 { font-size: 2.2rem; margin: 0; }
 .stat-card p  { margin: 4px 0 0 0; font-size: 0.85rem; color: #74c69d; }
+
+.time-card {
+    background: #1a2e22;
+    border: 1px solid #2d6a4f;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+}
+.time-card h4 { margin: 0 0 4px 0; color: #74c69d; font-size: 0.85rem; }
+.time-card p  { margin: 0; font-size: 1.1rem; font-weight: 600; }
 
 .score-hot  { background:#e63946; color:#fff; padding:3px 12px; border-radius:20px; font-weight:700; font-size:0.8rem; }
 .score-warm { background:#f4a261; color:#fff; padding:3px 12px; border-radius:20px; font-weight:700; font-size:0.8rem; }
@@ -134,9 +145,44 @@ def load_leads():
 def update_status(lead_id, new_status):
     try:
         supabase = get_supabase()
-        supabase.table("leads").update({"status": new_status}).eq("id", lead_id).execute()
+        update_data = {"status": new_status}
+        # Record contact time when marked as Contactado
+        if new_status == "Contactado":
+            update_data["contacted_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+        supabase.table("leads").update(update_data).eq("id", lead_id).execute()
     except Exception as e:
         st.error(f"Error actualizando estado: {e}")
+
+# ─────────────────────────────────────────────
+#  RESPONSE TIME CALCULATOR
+# ─────────────────────────────────────────────
+def calculate_response_times(leads):
+    times = []
+    for lead in leads:
+        timestamp    = lead.get("timestamp")
+        contacted_at = lead.get("contacted_at")
+        name         = lead.get("name", "—")
+        if timestamp and contacted_at:
+            try:
+                t1    = datetime.strptime(timestamp,    "%Y-%m-%d %H:%M")
+                t2    = datetime.strptime(contacted_at, "%Y-%m-%d %H:%M")
+                delta = t2 - t1
+                minutes = int(delta.total_seconds() / 60)
+                if minutes >= 0:
+                    times.append({"name": name, "minutes": minutes})
+            except:
+                pass
+    return times
+
+def format_time(minutes):
+    if minutes < 60:
+        return f"{minutes} min"
+    elif minutes < 1440:
+        hours = round(minutes / 60, 1)
+        return f"{hours} hrs"
+    else:
+        days = round(minutes / 1440, 1)
+        return f"{days} días"
 
 # ─────────────────────────────────────────────
 #  GENERATE STYLED EXCEL
@@ -146,18 +192,17 @@ def generate_excel(leads):
     ws = wb.active
     ws.title = "LeadBoost Leads"
 
-    # Colors
-    header_fill  = PatternFill("solid", fgColor="1B4332")
-    hot_fill     = PatternFill("solid", fgColor="FADADD")
-    warm_fill    = PatternFill("solid", fgColor="FFF3CD")
-    cold_fill    = PatternFill("solid", fgColor="D6EAF8")
-    alt_fill     = PatternFill("solid", fgColor="F0F7F4")
+    header_fill = PatternFill("solid", fgColor="1B4332")
+    hot_fill    = PatternFill("solid", fgColor="FADADD")
+    warm_fill   = PatternFill("solid", fgColor="FFF3CD")
+    cold_fill   = PatternFill("solid", fgColor="D6EAF8")
+    alt_fill    = PatternFill("solid", fgColor="F0F7F4")
 
-    header_font  = Font(bold=True, color="FFFFFF", size=11)
-    bold_font    = Font(bold=True, size=10)
-    normal_font  = Font(size=10)
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    bold_font   = Font(bold=True, size=10)
+    normal_font = Font(size=10)
 
-    thin_border  = Border(
+    thin_border = Border(
         left   = Side(style="thin", color="CCCCCC"),
         right  = Side(style="thin", color="CCCCCC"),
         top    = Side(style="thin", color="CCCCCC"),
@@ -167,26 +212,23 @@ def generate_excel(leads):
     center = Alignment(horizontal="center", vertical="center")
     left   = Alignment(horizontal="left",   vertical="center")
 
-    # Headers
-    headers = ["#", "Fecha", "Nombre", "Teléfono", "Tipo Propiedad", "Zona", "Presupuesto (USD)", "Plazo (meses)", "Clasificación", "Estado"]
-    col_widths = [5, 18, 22, 15, 18, 18, 18, 14, 14, 14]
+    headers    = ["#", "Fecha", "Nombre", "Teléfono", "Tipo Propiedad", "Zona", "Presupuesto (USD)", "Plazo (meses)", "Clasificación", "Estado", "Tiempo de Respuesta"]
+    col_widths = [5, 18, 22, 15, 18, 18, 18, 14, 14, 14, 20]
 
     for col_num, (header, width) in enumerate(zip(headers, col_widths), 1):
-        cell             = ws.cell(row=1, column=col_num, value=header)
-        cell.fill        = header_fill
-        cell.font        = header_font
-        cell.alignment   = center
-        cell.border      = thin_border
+        cell           = ws.cell(row=1, column=col_num, value=header)
+        cell.fill      = header_fill
+        cell.font      = header_font
+        cell.alignment = center
+        cell.border    = thin_border
         ws.column_dimensions[get_column_letter(col_num)].width = width
 
     ws.row_dimensions[1].height = 28
 
-    # Data rows
     for row_num, lead in enumerate(leads, 2):
         score  = lead.get("score", "COLD")
         status = lead.get("status", "Nuevo")
 
-        # Row color based on score
         if score == "HOT":
             row_fill = hot_fill
         elif score == "WARM":
@@ -194,16 +236,22 @@ def generate_excel(leads):
         else:
             row_fill = cold_fill if row_num % 2 == 0 else alt_fill
 
-        # Score emoji
-        score_display = {"HOT": "🔥 HOT", "WARM": "⚠️ WARM", "COLD": "🧊 COLD"}.get(score, score)
+        score_display  = {"HOT": "🔥 HOT", "WARM": "⚠️ WARM", "COLD": "🧊 COLD"}.get(score, score)
+        status_display = {"Nuevo": "🆕 Nuevo", "Contactado": "📞 Contactado", "Visitado": "🏠 Visitado", "Cerrado": "✅ Cerrado"}.get(status, status)
 
-        # Status emoji
-        status_display = {
-            "Nuevo":      "🆕 Nuevo",
-            "Contactado": "📞 Contactado",
-            "Visitado":   "🏠 Visitado",
-            "Cerrado":    "✅ Cerrado"
-        }.get(status, status)
+        # Response time
+        timestamp    = lead.get("timestamp")
+        contacted_at = lead.get("contacted_at")
+        response_time = "—"
+        if timestamp and contacted_at:
+            try:
+                t1      = datetime.strptime(timestamp,    "%Y-%m-%d %H:%M")
+                t2      = datetime.strptime(contacted_at, "%Y-%m-%d %H:%M")
+                minutes = int((t2 - t1).total_seconds() / 60)
+                if minutes >= 0:
+                    response_time = format_time(minutes)
+            except:
+                pass
 
         row_data = [
             row_num - 1,
@@ -216,18 +264,18 @@ def generate_excel(leads):
             lead.get("timeline", ""),
             score_display,
             status_display,
+            response_time,
         ]
 
         for col_num, value in enumerate(row_data, 1):
             cell           = ws.cell(row=row_num, column=col_num, value=value)
             cell.fill      = row_fill
             cell.border    = thin_border
-            cell.alignment = center if col_num in [1, 7, 8, 9, 10] else left
+            cell.alignment = center if col_num in [1, 7, 8, 9, 10, 11] else left
             cell.font      = bold_font if col_num == 3 else normal_font
 
         ws.row_dimensions[row_num].height = 22
 
-    # Save to buffer
     buffer = io.BytesIO()
     wb.save(buffer)
     buffer.seek(0)
@@ -289,6 +337,42 @@ with col4:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
+#  RESPONSE TIME TRACKER
+# ─────────────────────────────────────────────
+response_times = calculate_response_times(leads)
+
+if response_times:
+    st.markdown("### ⏱️ Tiempo de Respuesta")
+    avg_minutes = sum(t["minutes"] for t in response_times) / len(response_times)
+    fastest     = min(response_times, key=lambda x: x["minutes"])
+    slowest     = max(response_times, key=lambda x: x["minutes"])
+
+    rt_col1, rt_col2, rt_col3 = st.columns(3)
+    with rt_col1:
+        st.markdown(f"""
+        <div class="time-card">
+            <h4>📊 Promedio</h4>
+            <p>{format_time(int(avg_minutes))}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with rt_col2:
+        st.markdown(f"""
+        <div class="time-card">
+            <h4>🏆 Más rápido — {fastest['name']}</h4>
+            <p style="color:#74c69d">{format_time(fastest['minutes'])}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with rt_col3:
+        st.markdown(f"""
+        <div class="time-card">
+            <h4>🐢 Más lento — {slowest['name']}</h4>
+            <p style="color:#f4a261">{format_time(slowest['minutes'])}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────
 #  FILTERS
 # ─────────────────────────────────────────────
 col_f1, col_f2 = st.columns(2)
@@ -319,6 +403,20 @@ else:
         phone         = lead.get("phone", "").replace("+", "").replace(" ", "").replace("-", "")
         property_type = lead.get("property_type", "")
         area          = lead.get("area", "")
+        timestamp     = lead.get("timestamp")
+        contacted_at  = lead.get("contacted_at")
+
+        # Response time per lead
+        response_str = ""
+        if contacted_at and timestamp:
+            try:
+                t1      = datetime.strptime(timestamp,    "%Y-%m-%d %H:%M")
+                t2      = datetime.strptime(contacted_at, "%Y-%m-%d %H:%M")
+                minutes = int((t2 - t1).total_seconds() / 60)
+                if minutes >= 0:
+                    response_str = f"⏱️ Respondido en {format_time(minutes)}"
+            except:
+                pass
 
         if score == "HOT":
             badge = '<span class="score-hot">🔥 HOT</span>'
@@ -335,12 +433,15 @@ else:
         wa_encoded = wa_text.replace(" ", "%20").replace(",", "%2C").replace("¿", "%C2%BF").replace("?", "%3F")
         wa_link    = f"https://wa.me/591{phone}?text={wa_encoded}"
 
+        response_html = f'<span style="font-size:0.8rem; color:#74c69d;">{response_str}</span>' if response_str else ''
+
         st.markdown(f"""
         <div style="background:#1a2e22; border:1px solid #2d6a4f; border-radius:14px;
                     padding:16px 20px; margin-bottom:4px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <b style="font-size:1rem;">👤 {name}</b>
                 <div style="display:flex; gap:8px; align-items:center;">
+                    {response_html}
                     {status_badge}
                     {badge}
                 </div>
