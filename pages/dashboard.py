@@ -373,6 +373,23 @@ else:
                     update_status(lead_id, s)
                     st.rerun()
 
+        # Notes section
+        current_note = lead.get("notes") or ""
+        note_input = st.text_area(
+            "📝 Notas del agente",
+            value=current_note,
+            key=f"note_{lead_id}",
+            placeholder="Ej: Llame dos veces, no contesto. Intentar manana.",
+            height=80
+        )
+        if st.button("💾 Guardar nota", key=f"save_note_{lead_id}"):
+            try:
+                get_supabase().table("leads").update({"notes": note_input}).eq("id", lead_id).execute()
+                st.success("Nota guardada.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error: {e}")
+
         st.markdown("<div style='margin-bottom:16px'></div>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
