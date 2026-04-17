@@ -1,5 +1,7 @@
 import streamlit as st
 from supabase import create_client
+import csv
+import io
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -50,10 +52,10 @@ html, body, [class*="css"] {
 .score-warm { background:#f4a261; color:#fff; padding:3px 12px; border-radius:20px; font-weight:700; font-size:0.8rem; }
 .score-cold { background:#457b9d; color:#fff; padding:3px 12px; border-radius:20px; font-weight:700; font-size:0.8rem; }
 
-.status-nuevo     { background:#2d6a4f; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
-.status-contactado{ background:#f4a261; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
-.status-visitado  { background:#457b9d; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
-.status-cerrado   { background:#74c69d; color:#1a2e22; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+.status-nuevo      { background:#2d6a4f; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+.status-contactado { background:#f4a261; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+.status-visitado   { background:#457b9d; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+.status-cerrado    { background:#74c69d; color:#1a2e22; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
 
 div.stButton > button {
     background: linear-gradient(135deg, #2d6a4f, #1b4332);
@@ -148,13 +150,32 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  REFRESH BUTTON
+#  BUTTONS ROW
 # ─────────────────────────────────────────────
-if st.button("🔄 Actualizar Leads"):
-    st.cache_resource.clear()
-    st.rerun()
-
 leads = load_leads()
+
+btn_col1, btn_col2 = st.columns([1, 1])
+
+with btn_col1:
+    if st.button("🔄 Actualizar Leads"):
+        st.cache_resource.clear()
+        st.rerun()
+
+with btn_col2:
+    if leads:
+        output     = io.StringIO()
+        fieldnames = ["id", "timestamp", "name", "phone", "property_type", "area", "budget", "timeline", "score", "status"]
+        writer     = csv.DictWriter(output, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(leads)
+        csv_data = output.getvalue()
+
+        st.download_button(
+            label     = "⬇️ Exportar CSV",
+            data      = csv_data,
+            file_name = "leadboost_leads.csv",
+            mime      = "text/csv"
+        )
 
 # ─────────────────────────────────────────────
 #  STATS ROW
@@ -177,7 +198,7 @@ with col4:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  FILTER
+#  FILTERS
 # ─────────────────────────────────────────────
 col_f1, col_f2 = st.columns(2)
 with col_f1:
@@ -222,9 +243,9 @@ else:
         status_badge = f'<span class="{status_class}">{status_emoji} {status}</span>'
 
         # WhatsApp link
-        wa_text = f"Hola {name}, soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interés en {property_type} en {area}. ¿Tienes un momento para hablar?"
+        wa_text    = f"Hola {name}, soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interés en {property_type} en {area}. ¿Tienes un momento para hablar?"
         wa_encoded = wa_text.replace(" ", "%20").replace(",", "%2C").replace("¿", "%C2%BF").replace("?", "%3F")
-        wa_link = f"https://wa.me/591{phone}?text={wa_encoded}"
+        wa_link    = f"https://wa.me/591{phone}?text={wa_encoded}"
 
         # Lead card
         st.markdown(f"""
@@ -274,4 +295,4 @@ else:
 st.markdown("---")
 if st.button("🚪 Cerrar sesión"):
     st.session_state.authenticated = False
-    st.rerun() 
+    st.rerun()   
