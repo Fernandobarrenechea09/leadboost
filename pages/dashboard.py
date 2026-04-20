@@ -15,8 +15,7 @@ import pandas as pd
 # ─────────────────────────────────────────────
 
 st.set_page_config(
-page_title=“page_title="LEADBOOST // DASHBOARD",
-
+page_title=“LEADBOOST // DASHBOARD”,
 page_icon=“■”,
 layout=“wide”
 )
