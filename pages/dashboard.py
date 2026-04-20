@@ -8,75 +8,59 @@ from datetime import datetime
 from urllib.parse import quote
 import pandas as pd
 
-# —————————————————–
-
+# -----------------------------------------------------
 # PAGE CONFIG
-
-# —————————————————–
-
+# -----------------------------------------------------
 st.set_page_config(
-page_title=“LEADBOOST DASHBOARD”,
-page_icon=”#”,
-layout=“wide”
+    page_title="LEADBOOST DASHBOARD",
+    page_icon="#",
+    layout="wide"
 )
 
-# —————————————————–
-
+# -----------------------------------------------------
 # THEME STATE
+# -----------------------------------------------------
+if "theme" not in st.session_state:
+    st.session_state.theme = "light"
 
-# —————————————————–
-
-if “theme” not in st.session_state:
-st.session_state.theme = “light”
-
-# —————————————————–
-
+# -----------------------------------------------------
 # THEME TOGGLE
-
-# —————————————————–
-
+# -----------------------------------------------------
 col_spacer, col_toggle = st.columns([11, 1])
 with col_toggle:
-icon = “Dark” if st.session_state.theme == “light” else “Light”
-if st.button(icon, key=“theme_toggle_dash”):
-st.session_state.theme = “dark” if st.session_state.theme == “light” else “light”
-st.rerun()
+    icon = "Dark" if st.session_state.theme == "light" else "Light"
+    if st.button(icon, key="theme_toggle_dash"):
+        st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
+        st.rerun()
 
-# —————————————————–
-
+# -----------------------------------------------------
 # THEME COLORS
-
-# —————————————————–
-
-if st.session_state.theme == “light”:
-BG = “#F5F1E8”
-PANEL = “#FFFFFF”
-BORDER = “#D4CFC0”
-TEXT = “#1A1A1A”
-TEXT_DIM = “#6B6B6B”
-ACCENT = “#1A1A1A”
-HOT_BG = “#F5E1DC”
-WARM_BG = “#F5EDD6”
-COLD_BG = “#E3E8ED”
+# -----------------------------------------------------
+if st.session_state.theme == "light":
+    BG = "#F5F1E8"
+    PANEL = "#FFFFFF"
+    BORDER = "#D4CFC0"
+    TEXT = "#1A1A1A"
+    TEXT_DIM = "#6B6B6B"
+    ACCENT = "#1A1A1A"
+    HOT_BG = "#F5E1DC"
+    WARM_BG = "#F5EDD6"
+    COLD_BG = "#E3E8ED"
 else:
-BG = “#0F0F0F”
-PANEL = “#1A1A1A”
-BORDER = “#2A2A2A”
-TEXT = “#F0F0F0”
-TEXT_DIM = “#8A8A8A”
-ACCENT = “#F0F0F0”
-HOT_BG = “#3A1F1F”
-WARM_BG = “#3A2E1F”
-COLD_BG = “#1F2A35”
+    BG = "#0F0F0F"
+    PANEL = "#1A1A1A"
+    BORDER = "#2A2A2A"
+    TEXT = "#F0F0F0"
+    TEXT_DIM = "#8A8A8A"
+    ACCENT = "#F0F0F0"
+    HOT_BG = "#3A1F1F"
+    WARM_BG = "#3A2E1F"
+    COLD_BG = "#1F2A35"
 
-# —————————————————–
-
+# -----------------------------------------------------
 # CSS
-
-# —————————————————–
-
-css = “””
-
+# -----------------------------------------------------
+css = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
 
@@ -288,396 +272,353 @@ header { visibility: hidden; }
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
 </style>
+"""
 
-“””
-
-css = css.replace(“BG_COLOR”, BG)
-css = css.replace(“PANEL_COLOR”, PANEL)
-css = css.replace(“BORDER_COLOR”, BORDER)
-css = css.replace(“TEXT_DIM_COLOR”, TEXT_DIM)
-css = css.replace(“TEXT_COLOR”, TEXT)
-css = css.replace(“ACCENT_COLOR”, ACCENT)
-css = css.replace(“HOT_BG_COLOR”, HOT_BG)
-css = css.replace(“WARM_BG_COLOR”, WARM_BG)
-css = css.replace(“COLD_BG_COLOR”, COLD_BG)
+css = css.replace("BG_COLOR", BG)
+css = css.replace("PANEL_COLOR", PANEL)
+css = css.replace("BORDER_COLOR", BORDER)
+css = css.replace("TEXT_DIM_COLOR", TEXT_DIM)
+css = css.replace("TEXT_COLOR", TEXT)
+css = css.replace("ACCENT_COLOR", ACCENT)
+css = css.replace("HOT_BG_COLOR", HOT_BG)
+css = css.replace("WARM_BG_COLOR", WARM_BG)
+css = css.replace("COLD_BG_COLOR", COLD_BG)
 
 st.markdown(css, unsafe_allow_html=True)
 
-# —————————————————–
-
+# -----------------------------------------------------
 # PASSWORD
+# -----------------------------------------------------
+OWNER_PASSWORD = "leadboost2024"
 
-# —————————————————–
-
-OWNER_PASSWORD = “leadboost2024”
-
-if “authenticated” not in st.session_state:
-st.session_state.authenticated = False
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
-login_html = ‘<div class="lb-header">’
-login_html += ‘<div><div class="panel-label">LEADBOOST // DASHBOARD</div>’
-login_html += ‘<div class="lb-title">Private access.</div></div>’
-login_html += ‘<div class="lb-sub">AGENTS ONLY - BOLIVIA</div></div>’
-st.markdown(login_html, unsafe_allow_html=True)
+    login_html = '<div class="lb-header">'
+    login_html += '<div><div class="panel-label">LEADBOOST // DASHBOARD</div>'
+    login_html += '<div class="lb-title">Private access.</div></div>'
+    login_html += '<div class="lb-sub">AGENTS ONLY - BOLIVIA</div></div>'
+    st.markdown(login_html, unsafe_allow_html=True)
 
-```
-st.markdown('<div class="panel-label">PASSWORD</div>', unsafe_allow_html=True)
-password_input = st.text_input("pw", type="password", label_visibility="collapsed")
-if st.button("ENTER"):
-    if password_input == OWNER_PASSWORD:
-        st.session_state.authenticated = True
-        st.rerun()
-    else:
-        st.error("Incorrect password.")
-st.stop()
-```
+    st.markdown('<div class="panel-label">PASSWORD</div>', unsafe_allow_html=True)
+    password_input = st.text_input("pw", type="password", label_visibility="collapsed")
+    if st.button("ENTER"):
+        if password_input == OWNER_PASSWORD:
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    st.stop()
 
-# —————————————————–
-
+# -----------------------------------------------------
 # SUPABASE
-
-# —————————————————–
-
+# -----------------------------------------------------
 @st.cache_resource
 def get_supabase():
-return create_client(st.secrets[“SUPABASE_URL”], st.secrets[“SUPABASE_KEY”])
+    return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 def load_leads():
-try:
-return get_supabase().table(“leads”).select(”*”).order(“id”, desc=True).execute().data
-except Exception as e:
-st.error(“Error: “ + str(e))
-return []
+    try:
+        return get_supabase().table("leads").select("*").order("id", desc=True).execute().data
+    except Exception as e:
+        st.error("Error: " + str(e))
+        return []
 
 def update_status(lead_id, new_status):
-try:
-data = {“status”: new_status}
-if new_status == “Contactado”:
-data[“contacted_at”] = datetime.now().strftime(”%Y-%m-%d %H:%M”)
-get_supabase().table(“leads”).update(data).eq(“id”, lead_id).execute()
-except Exception as e:
-st.error(“Error: “ + str(e))
+    try:
+        data = {"status": new_status}
+        if new_status == "Contactado":
+            data["contacted_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+        get_supabase().table("leads").update(data).eq("id", lead_id).execute()
+    except Exception as e:
+        st.error("Error: " + str(e))
 
-# —————————————————–
-
+# -----------------------------------------------------
 # TIME HELPERS
-
-# —————————————————–
-
+# -----------------------------------------------------
 def get_minutes(lead):
-try:
-t1 = datetime.strptime(lead.get(“timestamp”, “”), “%Y-%m-%d %H:%M”)
-t2 = datetime.strptime(lead.get(“contacted_at”, “”), “%Y-%m-%d %H:%M”)
-m = int((t2 - t1).total_seconds() / 60)
-return m if m >= 0 else None
-except:
-return None
+    try:
+        t1 = datetime.strptime(lead.get("timestamp", ""), "%Y-%m-%d %H:%M")
+        t2 = datetime.strptime(lead.get("contacted_at", ""), "%Y-%m-%d %H:%M")
+        m = int((t2 - t1).total_seconds() / 60)
+        return m if m >= 0 else None
+    except:
+        return None
 
 def fmt(minutes):
-if minutes is None: return “-”
-if minutes < 60: return str(minutes) + “ min”
-if minutes < 1440: return str(round(minutes/60, 1)) + “h”
-return str(round(minutes/1440, 1)) + “d”
+    if minutes is None: return "-"
+    if minutes < 60: return str(minutes) + " min"
+    if minutes < 1440: return str(round(minutes/60, 1)) + "h"
+    return str(round(minutes/1440, 1)) + "d"
 
-# —————————————————–
-
+# -----------------------------------------------------
 # EXCEL
-
-# —————————————————–
-
+# -----------------------------------------------------
 def generate_excel(leads):
-wb = Workbook()
-ws = wb.active
-ws.title = “LeadBoost”
-h_fill = PatternFill(“solid”, fgColor=“1A1A1A”)
-hot_f = PatternFill(“solid”, fgColor=“F5E1DC”)
-warm_f = PatternFill(“solid”, fgColor=“F5EDD6”)
-cold_f = PatternFill(“solid”, fgColor=“E3E8ED”)
-alt_f = PatternFill(“solid”, fgColor=“FAF7EE”)
-border = Border(left=Side(style=“thin”, color=“CCCCCC”), right=Side(style=“thin”, color=“CCCCCC”),
-top=Side(style=“thin”, color=“CCCCCC”), bottom=Side(style=“thin”, color=“CCCCCC”))
-c = Alignment(horizontal=“center”, vertical=“center”)
-l = Alignment(horizontal=“left”, vertical=“center”)
-headers = [”#”, “Fecha”, “Nombre”, “Telefono”, “Tipo”, “Zona”, “Presupuesto”, “Plazo”, “Score”, “Estado”, “T. Respuesta”]
-widths = [5, 18, 22, 15, 18, 18, 16, 12, 14, 14, 16]
-for i, (h, w) in enumerate(zip(headers, widths), 1):
-cell = ws.cell(row=1, column=i, value=h)
-cell.fill = h_fill
-cell.font = Font(bold=True, color=“FFFFFF”, size=11)
-cell.alignment = c
-cell.border = border
-ws.column_dimensions[get_column_letter(i)].width = w
-ws.row_dimensions[1].height = 28
-for rn, lead in enumerate(leads, 2):
-score = lead.get(“score”, “COLD”)
-if score == “HOT”:
-row_fill = hot_f
-elif score == “WARM”:
-row_fill = warm_f
-else:
-row_fill = cold_f if rn % 2 == 0 else alt_f
-minutes = get_minutes(lead)
-row = [rn - 1, lead.get(“timestamp”, “”), lead.get(“name”, “”), lead.get(“phone”, “”),
-lead.get(“property_type”, “”), lead.get(“area”, “”), lead.get(“budget”, “”),
-lead.get(“timeline”, “”), score, lead.get(“status”, “Nuevo”), fmt(minutes)]
-for cn, val in enumerate(row, 1):
-cell = ws.cell(row=rn, column=cn, value=val)
-cell.fill = row_fill
-cell.border = border
-cell.alignment = c if cn in [1, 7, 8, 9, 10, 11] else l
-cell.font = Font(bold=True, size=10) if cn == 3 else Font(size=10)
-ws.row_dimensions[rn].height = 22
-buf = io.BytesIO()
-wb.save(buf)
-buf.seek(0)
-return buf
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "LeadBoost"
+    h_fill = PatternFill("solid", fgColor="1A1A1A")
+    hot_f = PatternFill("solid", fgColor="F5E1DC")
+    warm_f = PatternFill("solid", fgColor="F5EDD6")
+    cold_f = PatternFill("solid", fgColor="E3E8ED")
+    alt_f = PatternFill("solid", fgColor="FAF7EE")
+    border = Border(left=Side(style="thin", color="CCCCCC"), right=Side(style="thin", color="CCCCCC"),
+                    top=Side(style="thin", color="CCCCCC"), bottom=Side(style="thin", color="CCCCCC"))
+    c = Alignment(horizontal="center", vertical="center")
+    l = Alignment(horizontal="left", vertical="center")
+    headers = ["#", "Fecha", "Nombre", "Telefono", "Tipo", "Zona", "Presupuesto", "Plazo", "Score", "Estado", "T. Respuesta"]
+    widths = [5, 18, 22, 15, 18, 18, 16, 12, 14, 14, 16]
+    for i, (h, w) in enumerate(zip(headers, widths), 1):
+        cell = ws.cell(row=1, column=i, value=h)
+        cell.fill = h_fill
+        cell.font = Font(bold=True, color="FFFFFF", size=11)
+        cell.alignment = c
+        cell.border = border
+        ws.column_dimensions[get_column_letter(i)].width = w
+    ws.row_dimensions[1].height = 28
+    for rn, lead in enumerate(leads, 2):
+        score = lead.get("score", "COLD")
+        if score == "HOT":
+            row_fill = hot_f
+        elif score == "WARM":
+            row_fill = warm_f
+        else:
+            row_fill = cold_f if rn % 2 == 0 else alt_f
+        minutes = get_minutes(lead)
+        row = [rn - 1, lead.get("timestamp", ""), lead.get("name", ""), lead.get("phone", ""),
+               lead.get("property_type", ""), lead.get("area", ""), lead.get("budget", ""),
+               lead.get("timeline", ""), score, lead.get("status", "Nuevo"), fmt(minutes)]
+        for cn, val in enumerate(row, 1):
+            cell = ws.cell(row=rn, column=cn, value=val)
+            cell.fill = row_fill
+            cell.border = border
+            cell.alignment = c if cn in [1, 7, 8, 9, 10, 11] else l
+            cell.font = Font(bold=True, size=10) if cn == 3 else Font(size=10)
+        ws.row_dimensions[rn].height = 22
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf
 
-# —————————————————–
-
+# -----------------------------------------------------
 # HEADER
+# -----------------------------------------------------
+now_str = datetime.now().strftime("%H:%M")
+today = datetime.now().strftime("%A, %B %d, %Y").upper()
 
-# —————————————————–
-
-now_str = datetime.now().strftime(”%H:%M”)
-today = datetime.now().strftime(”%A, %B %d, %Y”).upper()
-
-header_html = ‘<div class="lb-header">’
-header_html += ‘<div><div class="panel-label">LEADBOOST // DASHBOARD V3.0</div>’
-header_html += ‘<div class="lb-title">Operations panel.</div></div>’
-header_html += ‘<div class="lb-sub">’ + today + ’<br>BOLIVIA - ’ + now_str + ‘</div></div>’
+header_html = '<div class="lb-header">'
+header_html += '<div><div class="panel-label">LEADBOOST // DASHBOARD V3.0</div>'
+header_html += '<div class="lb-title">Operations panel.</div></div>'
+header_html += '<div class="lb-sub">' + today + '<br>BOLIVIA - ' + now_str + '</div></div>'
 st.markdown(header_html, unsafe_allow_html=True)
 
 leads = load_leads()
 
-# —————————————————–
-
+# -----------------------------------------------------
 # TOP ACTIONS
-
-# —————————————————–
-
+# -----------------------------------------------------
 b1, b2, _ = st.columns([1, 1, 6])
 with b1:
-if st.button(“REFRESH”):
-st.cache_resource.clear()
-st.rerun()
+    if st.button("REFRESH"):
+        st.cache_resource.clear()
+        st.rerun()
 with b2:
-if leads:
-st.download_button(
-label=“EXPORT XLSX”,
-data=generate_excel(leads),
-file_name=“leadboost_leads.xlsx”,
-mime=“application/vnd.openxmlformats-officedocument.spreadsheetml.sheet”
-)
+    if leads:
+        st.download_button(
+            label="EXPORT XLSX",
+            data=generate_excel(leads),
+            file_name="leadboost_leads.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
-# —————————————————–
-
+# -----------------------------------------------------
 # STATS
-
-# —————————————————–
-
+# -----------------------------------------------------
 total = len(leads)
-hot = sum(1 for l in leads if l.get(“score”) == “HOT”)
-warm = sum(1 for l in leads if l.get(“score”) == “WARM”)
-cold = sum(1 for l in leads if l.get(“score”) == “COLD”)
+hot = sum(1 for l in leads if l.get("score") == "HOT")
+warm = sum(1 for l in leads if l.get("score") == "WARM")
+cold = sum(1 for l in leads if l.get("score") == "COLD")
 
 def pct(n):
-if total == 0: return “0%”
-return str(round(n / total * 100)) + “%”
+    if total == 0: return "0%"
+    return str(round(n / total * 100)) + "%"
 
 c1, c2, c3, c4 = st.columns(4)
 with c1:
-html = ‘<div class="stat-card"><div class="stat-label">TOTAL LEADS</div>’
-html += ‘<div class="stat-value">’ + str(total) + ‘</div>’
-html += ‘<div class="stat-sub">ALL TIME</div></div>’
-st.markdown(html, unsafe_allow_html=True)
+    html = '<div class="stat-card"><div class="stat-label">TOTAL LEADS</div>'
+    html += '<div class="stat-value">' + str(total) + '</div>'
+    html += '<div class="stat-sub">ALL TIME</div></div>'
+    st.markdown(html, unsafe_allow_html=True)
 with c2:
-html = ‘<div class="stat-card"><div class="stat-label">HOT</div>’
-html += ‘<div class="stat-value">’ + str(hot) + ‘</div>’
-html += ‘<div class="stat-sub">’ + pct(hot) + ’ OF TOTAL</div></div>’
-st.markdown(html, unsafe_allow_html=True)
+    html = '<div class="stat-card"><div class="stat-label">HOT</div>'
+    html += '<div class="stat-value">' + str(hot) + '</div>'
+    html += '<div class="stat-sub">' + pct(hot) + ' OF TOTAL</div></div>'
+    st.markdown(html, unsafe_allow_html=True)
 with c3:
-html = ‘<div class="stat-card"><div class="stat-label">WARM</div>’
-html += ‘<div class="stat-value">’ + str(warm) + ‘</div>’
-html += ‘<div class="stat-sub">’ + pct(warm) + ’ OF TOTAL</div></div>’
-st.markdown(html, unsafe_allow_html=True)
+    html = '<div class="stat-card"><div class="stat-label">WARM</div>'
+    html += '<div class="stat-value">' + str(warm) + '</div>'
+    html += '<div class="stat-sub">' + pct(warm) + ' OF TOTAL</div></div>'
+    st.markdown(html, unsafe_allow_html=True)
 with c4:
-html = ‘<div class="stat-card"><div class="stat-label">COLD</div>’
-html += ‘<div class="stat-value">’ + str(cold) + ‘</div>’
-html += ‘<div class="stat-sub">’ + pct(cold) + ’ OF TOTAL</div></div>’
-st.markdown(html, unsafe_allow_html=True)
+    html = '<div class="stat-card"><div class="stat-label">COLD</div>'
+    html += '<div class="stat-value">' + str(cold) + '</div>'
+    html += '<div class="stat-sub">' + pct(cold) + ' OF TOTAL</div></div>'
+    st.markdown(html, unsafe_allow_html=True)
 
-st.markdown(”<br>”, unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# —————————————————–
-
+# -----------------------------------------------------
 # CHARTS
-
-# —————————————————–
-
+# -----------------------------------------------------
 if leads:
-ch1, ch2 = st.columns(2)
-with ch1:
-st.markdown(’<div class="panel-label">LEADS OVER TIME</div>’, unsafe_allow_html=True)
-dates = [l.get(“timestamp”, “”)[:10] for l in leads if l.get(“timestamp”)]
-if dates:
-df = pd.DataFrame({“fecha”: dates})
-df[“fecha”] = pd.to_datetime(df[“fecha”])
-chart_data = df.groupby(“fecha”).size().reset_index(name=“Leads”).sort_values(“fecha”).rename(columns={“fecha”: “Fecha”})
-st.line_chart(chart_data.set_index(“Fecha”), height=240)
+    ch1, ch2 = st.columns(2)
+    with ch1:
+        st.markdown('<div class="panel-label">LEADS OVER TIME</div>', unsafe_allow_html=True)
+        dates = [l.get("timestamp", "")[:10] for l in leads if l.get("timestamp")]
+        if dates:
+            df = pd.DataFrame({"fecha": dates})
+            df["fecha"] = pd.to_datetime(df["fecha"])
+            chart_data = df.groupby("fecha").size().reset_index(name="Leads").sort_values("fecha").rename(columns={"fecha": "Fecha"})
+            st.line_chart(chart_data.set_index("Fecha"), height=240)
 
-```
-with ch2:
-    st.markdown('<div class="panel-label">BUDGET DISTRIBUTION</div>', unsafe_allow_html=True)
-    def bucket(b):
-        try:
-            v = int(str(b).replace(",", "").replace(".", "").replace("$", "").strip())
-            if v < 50000: return "< 50k"
-            if v < 100000: return "50-100k"
-            if v < 150000: return "100-150k"
-            return "> 150k"
-        except:
-            return "Unknown"
-    order = ["< 50k", "50-100k", "100-150k", "> 150k", "Unknown"]
-    buckets = [bucket(l.get("budget", "0")) for l in leads]
-    counts = pd.DataFrame({"Rango": buckets})["Rango"].value_counts().reindex(order, fill_value=0)
-    st.bar_chart(counts, height=240)
-```
+    with ch2:
+        st.markdown('<div class="panel-label">BUDGET DISTRIBUTION</div>', unsafe_allow_html=True)
+        def bucket(b):
+            try:
+                v = int(str(b).replace(",", "").replace(".", "").replace("$", "").strip())
+                if v < 50000: return "< 50k"
+                if v < 100000: return "50-100k"
+                if v < 150000: return "100-150k"
+                return "> 150k"
+            except:
+                return "Unknown"
+        order = ["< 50k", "50-100k", "100-150k", "> 150k", "Unknown"]
+        buckets = [bucket(l.get("budget", "0")) for l in leads]
+        counts = pd.DataFrame({"Rango": buckets})["Rango"].value_counts().reindex(order, fill_value=0)
+        st.bar_chart(counts, height=240)
 
-st.markdown(”<br>”, unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# —————————————————–
-
+# -----------------------------------------------------
 # RESPONSE TIME
-
-# —————————————————–
-
-timed = [{“name”: l.get(“name”, “-”), “minutes”: get_minutes(l)} for l in leads if get_minutes(l) is not None]
+# -----------------------------------------------------
+timed = [{"name": l.get("name", "-"), "minutes": get_minutes(l)} for l in leads if get_minutes(l) is not None]
 if timed:
-avg = sum(t[“minutes”] for t in timed) / len(timed)
-fastest = min(timed, key=lambda x: x[“minutes”])
-slowest = max(timed, key=lambda x: x[“minutes”])
-t1, t2, t3 = st.columns(3)
-with t1:
-html = ‘<div class="stat-card"><div class="stat-label">AVG RESPONSE</div>’
-html += ‘<div class="stat-value">’ + fmt(int(avg)) + ‘</div>’
-html += ‘<div class="stat-sub">ACROSS ’ + str(len(timed)) + ’ LEADS</div></div>’
-st.markdown(html, unsafe_allow_html=True)
-with t2:
-html = ‘<div class="stat-card"><div class="stat-label">FASTEST</div>’
-html += ‘<div class="stat-value">’ + fmt(fastest[“minutes”]) + ‘</div>’
-html += ‘<div class="stat-sub">’ + fastest[“name”].upper() + ‘</div></div>’
-st.markdown(html, unsafe_allow_html=True)
-with t3:
-html = ‘<div class="stat-card"><div class="stat-label">SLOWEST</div>’
-html += ‘<div class="stat-value">’ + fmt(slowest[“minutes”]) + ‘</div>’
-html += ‘<div class="stat-sub">’ + slowest[“name”].upper() + ‘</div></div>’
-st.markdown(html, unsafe_allow_html=True)
-st.markdown(”<br>”, unsafe_allow_html=True)
+    avg = sum(t["minutes"] for t in timed) / len(timed)
+    fastest = min(timed, key=lambda x: x["minutes"])
+    slowest = max(timed, key=lambda x: x["minutes"])
+    t1, t2, t3 = st.columns(3)
+    with t1:
+        html = '<div class="stat-card"><div class="stat-label">AVG RESPONSE</div>'
+        html += '<div class="stat-value">' + fmt(int(avg)) + '</div>'
+        html += '<div class="stat-sub">ACROSS ' + str(len(timed)) + ' LEADS</div></div>'
+        st.markdown(html, unsafe_allow_html=True)
+    with t2:
+        html = '<div class="stat-card"><div class="stat-label">FASTEST</div>'
+        html += '<div class="stat-value">' + fmt(fastest["minutes"]) + '</div>'
+        html += '<div class="stat-sub">' + fastest["name"].upper() + '</div></div>'
+        st.markdown(html, unsafe_allow_html=True)
+    with t3:
+        html = '<div class="stat-card"><div class="stat-label">SLOWEST</div>'
+        html += '<div class="stat-value">' + fmt(slowest["minutes"]) + '</div>'
+        html += '<div class="stat-sub">' + slowest["name"].upper() + '</div></div>'
+        st.markdown(html, unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
-# —————————————————–
-
+# -----------------------------------------------------
 # SEARCH + FILTERS
-
-# —————————————————–
-
-search = st.text_input(“SEARCH BY NAME OR PHONE”, placeholder=“Carlos or 76543210”)
+# -----------------------------------------------------
+search = st.text_input("SEARCH BY NAME OR PHONE", placeholder="Carlos or 76543210")
 f1, f2 = st.columns(2)
 with f1:
-filter_score = st.selectbox(“FILTER BY SCORE”, [“Todos”, “HOT”, “WARM”, “COLD”])
+    filter_score = st.selectbox("FILTER BY SCORE", ["Todos", "HOT", "WARM", "COLD"])
 with f2:
-filter_status = st.selectbox(“FILTER BY STATUS”, [“Todos”, “Nuevo”, “Contactado”, “Visitado”, “Cerrado”])
+    filter_status = st.selectbox("FILTER BY STATUS", ["Todos", "Nuevo", "Contactado", "Visitado", "Cerrado"])
 
 filtered = leads
 if search.strip():
-q = search.strip().lower()
-filtered = [l for l in filtered if q in l.get(“name”, “”).lower() or q in l.get(“phone”, “”).lower()]
-if filter_score != “Todos”:
-filtered = [l for l in filtered if l.get(“score”) == filter_score]
-if filter_status != “Todos”:
-filtered = [l for l in filtered if l.get(“status”, “Nuevo”) == filter_status]
+    q = search.strip().lower()
+    filtered = [l for l in filtered if q in l.get("name", "").lower() or q in l.get("phone", "").lower()]
+if filter_score != "Todos":
+    filtered = [l for l in filtered if l.get("score") == filter_score]
+if filter_status != "Todos":
+    filtered = [l for l in filtered if l.get("status", "Nuevo") == filter_status]
 
-# —————————————————–
-
+# -----------------------------------------------------
 # LEADS
-
-# —————————————————–
-
-st.markdown(’<div class="panel-label" style="margin-top:24px;">LEADS - ’ + str(len(filtered)) + ’ SHOWING</div>’, unsafe_allow_html=True)
+# -----------------------------------------------------
+st.markdown('<div class="panel-label" style="margin-top:24px;">LEADS - ' + str(len(filtered)) + ' SHOWING</div>', unsafe_allow_html=True)
 
 if not filtered:
-st.markdown(’<div class="panel"><div class="panel-label">No leads to show.</div></div>’, unsafe_allow_html=True)
+    st.markdown('<div class="panel"><div class="panel-label">No leads to show.</div></div>', unsafe_allow_html=True)
 else:
-for lead in filtered:
-lead_id = lead.get(“id”)
-score = lead.get(“score”, “COLD”)
-status = lead.get(“status”, “Nuevo”)
-name = lead.get(“name”, “-”)
-phone = lead.get(“phone”, “”).replace(”+”, “”).replace(” “, “”).replace(”-”, “”)
-ptype = lead.get(“property_type”, “”)
-area = lead.get(“area”, “”)
-budget = lead.get(“budget”, “-”)
-timeline = lead.get(“timeline”, “-”)
-ts = lead.get(“timestamp”, “-”)
-minutes = get_minutes(lead)
+    for lead in filtered:
+        lead_id = lead.get("id")
+        score = lead.get("score", "COLD")
+        status = lead.get("status", "Nuevo")
+        name = lead.get("name", "-")
+        phone = lead.get("phone", "").replace("+", "").replace(" ", "").replace("-", "")
+        ptype = lead.get("property_type", "")
+        area = lead.get("area", "")
+        budget = lead.get("budget", "-")
+        timeline = lead.get("timeline", "-")
+        ts = lead.get("timestamp", "-")
+        minutes = get_minutes(lead)
 
-```
-    score_badge = '<span class="badge score-' + score.lower() + '">' + score + '</span>'
-    status_badge = '<span class="badge">' + status.upper() + '</span>'
-    resp_html = ''
-    if minutes is not None:
-        resp_html = '<span class="resp-time">' + fmt(minutes) + '</span>'
+        score_badge = '<span class="badge score-' + score.lower() + '">' + score + '</span>'
+        status_badge = '<span class="badge">' + status.upper() + '</span>'
+        resp_html = ''
+        if minutes is not None:
+            resp_html = '<span class="resp-time">' + fmt(minutes) + '</span>'
 
-    wa_msg = "Hola " + name + ", soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interes en " + ptype + " en " + area + ". Tienes un momento para hablar?"
-    wa_link = "https://wa.me/591" + phone + "?text=" + quote(wa_msg)
+        wa_msg = "Hola " + name + ", soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interes en " + ptype + " en " + area + ". Tienes un momento para hablar?"
+        wa_link = "https://wa.me/591" + phone + "?text=" + quote(wa_msg)
 
-    card = '<div class="lead-card">'
-    card += '<div class="lead-top">'
-    card += '<span class="lead-name">' + name + '</span>'
-    card += '<div class="lead-badges">' + resp_html + status_badge + score_badge + '</div>'
-    card += '</div>'
-    card += '<div class="lead-grid">'
-    card += '<div><span class="field-label">PHONE</span>' + str(lead.get('phone', '-')) + '</div>'
-    card += '<div><span class="field-label">PROPERTY</span>' + ptype + '</div>'
-    card += '<div><span class="field-label">LOCATION</span>' + area + '</div>'
-    card += '<div><span class="field-label">BUDGET</span>$' + str(budget) + '</div>'
-    card += '<div><span class="field-label">TIMELINE</span>' + str(timeline) + ' meses</div>'
-    card += '<div><span class="field-label">RECEIVED</span>' + str(ts) + '</div>'
-    card += '</div>'
-    card += '<a class="wa-btn" href="' + wa_link + '" target="_blank">WHATSAPP</a>'
-    card += '</div>'
-    st.markdown(card, unsafe_allow_html=True)
+        card = '<div class="lead-card">'
+        card += '<div class="lead-top">'
+        card += '<span class="lead-name">' + name + '</span>'
+        card += '<div class="lead-badges">' + resp_html + status_badge + score_badge + '</div>'
+        card += '</div>'
+        card += '<div class="lead-grid">'
+        card += '<div><span class="field-label">PHONE</span>' + str(lead.get('phone', '-')) + '</div>'
+        card += '<div><span class="field-label">PROPERTY</span>' + ptype + '</div>'
+        card += '<div><span class="field-label">LOCATION</span>' + area + '</div>'
+        card += '<div><span class="field-label">BUDGET</span>$' + str(budget) + '</div>'
+        card += '<div><span class="field-label">TIMELINE</span>' + str(timeline) + ' meses</div>'
+        card += '<div><span class="field-label">RECEIVED</span>' + str(ts) + '</div>'
+        card += '</div>'
+        card += '<a class="wa-btn" href="' + wa_link + '" target="_blank">WHATSAPP</a>'
+        card += '</div>'
+        st.markdown(card, unsafe_allow_html=True)
 
-    cols = st.columns(4)
-    for i, s in enumerate(["Nuevo", "Contactado", "Visitado", "Cerrado"]):
-        with cols[i]:
-            is_current = status == s
-            label = ("[X] " + s.upper()) if is_current else s.upper()
-            if st.button(label, key="s_" + str(lead_id) + "_" + s, disabled=is_current):
-                update_status(lead_id, s)
+        cols = st.columns(4)
+        for i, s in enumerate(["Nuevo", "Contactado", "Visitado", "Cerrado"]):
+            with cols[i]:
+                is_current = status == s
+                label = ("[X] " + s.upper()) if is_current else s.upper()
+                if st.button(label, key="s_" + str(lead_id) + "_" + s, disabled=is_current):
+                    update_status(lead_id, s)
+                    st.rerun()
+
+        current_note = lead.get("notes") or ""
+        note_input = st.text_area("AGENT NOTES", value=current_note, key="note_" + str(lead_id),
+                                  placeholder="Llame dos veces, no contesto...", height=80)
+        if st.button("SAVE NOTE", key="save_note_" + str(lead_id)):
+            try:
+                get_supabase().table("leads").update({"notes": note_input}).eq("id", lead_id).execute()
+                st.success("Saved.")
                 st.rerun()
+            except Exception as e:
+                st.error("Error: " + str(e))
 
-    current_note = lead.get("notes") or ""
-    note_input = st.text_area("AGENT NOTES", value=current_note, key="note_" + str(lead_id),
-                              placeholder="Llame dos veces, no contesto...", height=80)
-    if st.button("SAVE NOTE", key="save_note_" + str(lead_id)):
-        try:
-            get_supabase().table("leads").update({"notes": note_input}).eq("id", lead_id).execute()
-            st.success("Saved.")
-            st.rerun()
-        except Exception as e:
-            st.error("Error: " + str(e))
+        st.markdown("<div style='margin-bottom:24px'></div>", unsafe_allow_html=True)
 
-    st.markdown("<div style='margin-bottom:24px'></div>", unsafe_allow_html=True)
-```
-
-# —————————————————–
-
+# -----------------------------------------------------
 # LOGOUT
-
-# —————————————————–
-
-st.markdown(”—”)
-if st.button(“LOG OUT”):
-st.session_state.authenticated = False
-st.rerun()
+# -----------------------------------------------------
+st.markdown("---")
+if st.button("LOG OUT"):
+    st.session_state.authenticated = False
+    st.rerun()
