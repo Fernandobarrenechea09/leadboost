@@ -14,10 +14,10 @@ from email.mime.multipart import MIMEMultipart
 # ======================================================
 
 st.set_page_config(
-page_title="LEADBOOST",
-page_icon="#",
-layout="wide",
-initial_sidebar_state=“collapsed”
+page_title=‘LEADBOOST’,
+page_icon=’#’,
+layout=‘wide’,
+initial_sidebar_state=‘collapsed’
 )
 
 # ======================================================
@@ -26,8 +26,8 @@ initial_sidebar_state=“collapsed”
 
 # ======================================================
 
-if “theme” not in st.session_state:
-st.session_state.theme = “light”
+if ‘theme’ not in st.session_state:
+st.session_state.theme = ‘light’
 
 # ======================================================
 
@@ -35,30 +35,28 @@ st.session_state.theme = “light”
 
 # ======================================================
 
-if st.session_state.theme == “light”:
-BG = “#F2EDE2”
-PANEL = “#FAF5E9”
-PANEL_2 = “#F6F0E3”
-BORDER = “#D8D0BC”
-TEXT = “#1C1C1A”
-TEXT_DIM = “#8A8473”
-ACCENT = “#1C1C1A”
-ACCENT_WARM = “#C4633F”
-BUBBLE_BOT = “#FAF5E9”
-BUBBLE_USR = “#1C1C1A”
-BUBBLE_USR_TXT = “#F2EDE2”
+if st.session_state.theme == ‘light’:
+BG = ‘#F2EDE2’
+PANEL = ‘#FAF5E9’
+BORDER = ‘#D8D0BC’
+TEXT = ‘#1C1C1A’
+TEXT_DIM = ‘#8A8473’
+ACCENT = ‘#1C1C1A’
+ACCENT_WARM = ‘#C4633F’
+BUBBLE_BOT = ‘#FAF5E9’
+BUBBLE_USR = ‘#1C1C1A’
+BUBBLE_USR_TXT = ‘#F2EDE2’
 else:
-BG = “#18150F”
-PANEL = “#221E16”
-PANEL_2 = “#1D1A13”
-BORDER = “#3A342A”
-TEXT = “#EDE6D4”
-TEXT_DIM = “#8A8473”
-ACCENT = “#EDE6D4”
-ACCENT_WARM = “#D47A4D”
-BUBBLE_BOT = “#221E16”
-BUBBLE_USR = “#EDE6D4”
-BUBBLE_USR_TXT = “#18150F”
+BG = ‘#18150F’
+PANEL = ‘#221E16’
+BORDER = ‘#3A342A’
+TEXT = ‘#EDE6D4’
+TEXT_DIM = ‘#8A8473’
+ACCENT = ‘#EDE6D4’
+ACCENT_WARM = ‘#D47A4D’
+BUBBLE_BOT = ‘#221E16’
+BUBBLE_USR = ‘#EDE6D4’
+BUBBLE_USR_TXT = ‘#18150F’
 
 # ======================================================
 
@@ -66,46 +64,28 @@ BUBBLE_USR_TXT = “#18150F”
 
 # ======================================================
 
-css = “””
+css = ‘’’
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
 
 html, body, [class*="css"], .stApp, .main {
-    font-family: 'Inter', sans-serif;
+    font-family: Inter, sans-serif;
     background-color: BG_COLOR !important;
     color: TEXT_COLOR !important;
 }
 .stApp { background-color: BG_COLOR !important; }
-.block-container { padding-top: 1.5rem !important; padding-bottom: 2rem !important; max-width: 1100px !important; }
+.block-container { padding-top: 1.5rem !important; max-width: 1100px !important; }
 
-/* Header bar */
-.lb-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 18px;
-    border: 1px solid BORDER_COLOR;
-    background: PANEL_COLOR;
-    border-radius: 10px;
-    margin-bottom: 14px;
-}
-.lb-brand {
-    font-family: 'JetBrains Mono', monospace;
+.lb-topbar-label {
+    font-family: JetBrains Mono, monospace;
     font-size: 0.62rem;
     letter-spacing: 0.18em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
-}
-.lb-meta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    color: TEXT_DIM_COLOR;
-    text-align: right;
+    padding-top: 18px;
 }
 
-/* Hero card */
 .lb-hero {
     border: 1px solid BORDER_COLOR;
     background: PANEL_COLOR;
@@ -117,7 +97,7 @@ html, body, [class*="css"], .stApp, .main {
     align-items: flex-end;
 }
 .lb-hero-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: JetBrains Mono, monospace;
     font-size: 0.6rem;
     letter-spacing: 0.2em;
     color: TEXT_DIM_COLOR;
@@ -125,7 +105,7 @@ html, body, [class*="css"], .stApp, .main {
     margin-bottom: 6px;
 }
 .lb-hero-title {
-    font-family: 'Fraunces', serif;
+    font-family: Fraunces, serif;
     font-size: 3rem;
     color: TEXT_COLOR;
     line-height: 1;
@@ -133,17 +113,16 @@ html, body, [class*="css"], .stApp, .main {
     font-weight: 400;
     letter-spacing: -0.02em;
 }
-.lb-hero-accent { color: ACCENT_WARM_COLOR; font-style: italic; }
+.lb-hero-accent { color: ACCENT_WARM_COLOR; }
 .lb-hero-date {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: JetBrains Mono, monospace;
     font-size: 0.68rem;
     color: TEXT_DIM_COLOR;
     letter-spacing: 0.12em;
     text-align: right;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
-/* Chat bubbles */
 .chat-wrap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
 .bubble-bot {
     background: BUBBLE_BOT_COLOR;
@@ -167,7 +146,7 @@ html, body, [class*="css"], .stApp, .main {
     line-height: 1.6;
 }
 .label-row {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: JetBrains Mono, monospace;
     font-size: 0.58rem;
     color: TEXT_DIM_COLOR;
     letter-spacing: 0.18em;
@@ -176,32 +155,30 @@ html, body, [class*="css"], .stApp, .main {
 }
 .label-user { text-align: right; }
 
-/* Streamlit inputs */
 .stTextInput > div > div > input {
     background: PANEL_COLOR !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
     border-radius: 8px !important;
     padding: 13px 16px !important;
-    font-family: 'Inter', sans-serif !important;
+    font-family: Inter, sans-serif !important;
     font-size: 0.94rem !important;
 }
 .stTextInput label {
     color: TEXT_DIM_COLOR !important;
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: JetBrains Mono, monospace !important;
     font-size: 0.6rem !important;
     letter-spacing: 0.18em !important;
     text-transform: uppercase !important;
 }
 
-/* Main buttons */
 div.stButton > button {
     background: ACCENT_COLOR;
     color: BG_COLOR;
     border: none;
     border-radius: 8px;
     padding: 10px 24px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: JetBrains Mono, monospace;
     font-weight: 500;
     font-size: 0.7rem;
     letter-spacing: 0.18em;
@@ -209,53 +186,55 @@ div.stButton > button {
     cursor: pointer;
     transition: all 0.15s;
 }
-div.stButton > button:hover { opacity: 0.85; transform: translateY(-1px); }
+div.stButton > button:hover { opacity: 0.85; }
 div.stButton > button:disabled { opacity: 0.35; }
 
-/* Theme toggle — small icon button in topbar */
 .theme-btn-wrap div.stButton > button {
     background: transparent !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
     padding: 4px 12px !important;
     font-size: 0.62rem !important;
-    letter-spacing: 0.15em !important;
     border-radius: 20px !important;
 }
 
 header { visibility: hidden; height: 0; }
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
-[data-testid="stToolbar"] { visibility: hidden; }
 </style>
 
-“””
+‘’’
 
-css = css.replace(“BG_COLOR”, BG).replace(“PANEL_COLOR”, PANEL).replace(“PANEL_2_COLOR”, PANEL_2)
-css = css.replace(“BORDER_COLOR”, BORDER).replace(“TEXT_DIM_COLOR”, TEXT_DIM).replace(“TEXT_COLOR”, TEXT)
-css = css.replace(“ACCENT_WARM_COLOR”, ACCENT_WARM).replace(“ACCENT_COLOR”, ACCENT)
-css = css.replace(“BUBBLE_BOT_COLOR”, BUBBLE_BOT).replace(“BUBBLE_USR_COLOR”, BUBBLE_USR)
-css = css.replace(“BUBBLE_USR_TXT_COLOR”, BUBBLE_USR_TXT)
+css = css.replace(‘BG_COLOR’, BG)
+css = css.replace(‘PANEL_COLOR’, PANEL)
+css = css.replace(‘BORDER_COLOR’, BORDER)
+css = css.replace(‘TEXT_DIM_COLOR’, TEXT_DIM)
+css = css.replace(‘TEXT_COLOR’, TEXT)
+css = css.replace(‘ACCENT_WARM_COLOR’, ACCENT_WARM)
+css = css.replace(‘ACCENT_COLOR’, ACCENT)
+css = css.replace(‘BUBBLE_BOT_COLOR’, BUBBLE_BOT)
+css = css.replace(‘BUBBLE_USR_COLOR’, BUBBLE_USR)
+css = css.replace(‘BUBBLE_USR_TXT_COLOR’, BUBBLE_USR_TXT)
 st.markdown(css, unsafe_allow_html=True)
 
 # ======================================================
 
-# TOP BAR (brand + meta + theme toggle)
+# TOP BAR
 
 # ======================================================
 
-now_time = datetime.now().strftime(”%H:%M”)
-today_short = datetime.now().strftime(”%Y%m%d”).upper()
+now_time = datetime.now().strftime(’%H:%M’)
+today_short = datetime.now().strftime(’%Y%m%d’).upper()
 
 top_l, top_m, top_r = st.columns([3, 4, 1])
 with top_l:
-st.markdown(’<div style="padding-top:18px; font-family: JetBrains Mono, monospace; font-size: 0.62rem; letter-spacing: 0.18em; color:' + TEXT_DIM + '; text-transform: uppercase;">// LEADBOOST  ·  V3.0</div>’, unsafe_allow_html=True)
+st.markdown(’<div class="lb-topbar-label">// LEADBOOST   V3.0</div>’, unsafe_allow_html=True)
 with top_m:
-st.markdown(’<div style="padding-top:18px; text-align:center; font-family: JetBrains Mono, monospace; font-size: 0.62rem; letter-spacing: 0.15em; color:' + TEXT_DIM + ';">BOLIVIA · ’ + today_short + ’ · ’ + now_time + ‘</div>’, unsafe_allow_html=True)
+st.markdown(’<div class="lb-topbar-label" style="text-align:center;">BOLIVIA · ’ + today_short + ’ · ’ + now_time + ‘</div>’, unsafe_allow_html=True)
 with top_r:
 st.markdown(’<div class="theme-btn-wrap" style="padding-top:12px;">’, unsafe_allow_html=True)
-if st.button(“Dark” if st.session_state.theme == “light” else “Light”, key=“theme_toggle”):
-st.session_state.theme = “dark” if st.session_state.theme == “light” else “light”
+if st.button(‘Dark’ if st.session_state.theme == ‘light’ else ‘Light’, key=‘theme_toggle’):
+st.session_state.theme = ‘dark’ if st.session_state.theme == ‘light’ else ‘light’
 st.rerun()
 st.markdown(’</div>’, unsafe_allow_html=True)
 
@@ -265,8 +244,7 @@ st.markdown(’</div>’, unsafe_allow_html=True)
 
 # ======================================================
 
-today_full = datetime.now().strftime(”%A, %B %d, %Y”).upper()
-
+today_full = datetime.now().strftime(’%A, %B %d, %Y’).upper()
 hero = ‘<div class="lb-hero">’
 hero += ‘<div>’
 hero += ‘<div class="lb-hero-label">// WELCOME · REAL ESTATE ASSISTANT</div>’
@@ -284,11 +262,11 @@ st.markdown(hero, unsafe_allow_html=True)
 
 @st.cache_resource
 def get_supabase():
-return create_client(st.secrets[“SUPABASE_URL”], st.secrets[“SUPABASE_KEY”])
+return create_client(st.secrets[‘SUPABASE_URL’], st.secrets[‘SUPABASE_KEY’])
 
 @st.cache_resource
 def get_claude():
-return anthropic.Anthropic(api_key=st.secrets[“ANTHROPIC_KEY”])
+return anthropic.Anthropic(api_key=st.secrets[‘ANTHROPIC_KEY’])
 
 # ======================================================
 
@@ -296,7 +274,7 @@ return anthropic.Anthropic(api_key=st.secrets[“ANTHROPIC_KEY”])
 
 # ======================================================
 
-SYSTEM_PROMPT = “”“Eres LeadBoost, un asistente inmobiliario virtual para agencias de bienes raices en Bolivia. Tu trabajo es recopilar exactamente 6 datos del usuario mediante una conversacion natural en espanol.
+SYSTEM_PROMPT = ‘’’Eres LeadBoost, un asistente inmobiliario virtual para agencias de bienes raices en Bolivia. Tu trabajo es recopilar exactamente 6 datos del usuario mediante una conversacion natural en espanol.
 
 Los 6 datos son:
 
@@ -327,7 +305,7 @@ FASE 3 - CIERRE: Cuando confirme responde EXACTAMENTE:
 Gracias [nombre]! Hemos registrado tu informacion correctamente. En breve uno de nuestros agentes se pondra en contacto contigo.
 LEAD_COMPLETO:{“name”:”…”,“property_type”:”…”,“area”:”…”,“budget”:“150000”,“timeline”:“2”,“phone”:”…”}
 
-IMPORTANTE: budget y timeline son solo numeros.”””
+IMPORTANTE: budget y timeline son solo numeros.’’’
 
 # ======================================================
 
@@ -335,10 +313,10 @@ IMPORTANTE: budget y timeline son solo numeros.”””
 
 # ======================================================
 
-if “chat_history” not in st.session_state: st.session_state.chat_history = []
-if “messages” not in st.session_state: st.session_state.messages = []
-if “done” not in st.session_state: st.session_state.done = False
-if “greeted” not in st.session_state: st.session_state.greeted = False
+if ‘chat_history’ not in st.session_state: st.session_state.chat_history = []
+if ‘messages’ not in st.session_state: st.session_state.messages = []
+if ‘done’ not in st.session_state: st.session_state.done = False
+if ‘greeted’ not in st.session_state: st.session_state.greeted = False
 
 # ======================================================
 
@@ -348,24 +326,24 @@ if “greeted” not in st.session_state: st.session_state.greeted = False
 
 def score_lead(lead):
 try:
-budget_str = str(lead.get(“budget”, “0”)).lower().replace(”$”, “”).replace(” “, “”)
-if “mil” in budget_str:
-budget_str = budget_str.replace(“mil”, “”).strip()
-budget = int(float(budget_str.replace(”,”, “.”)) * 1000)
+budget_str = str(lead.get(‘budget’, ‘0’)).lower().replace(’$’, ‘’).replace(’ ‘, ‘’)
+if ‘mil’ in budget_str:
+budget_str = budget_str.replace(‘mil’, ‘’).strip()
+budget = int(float(budget_str.replace(’,’, ‘.’)) * 1000)
 else:
-budget_str = budget_str.replace(”.”, “”).replace(”,”, “”)
+budget_str = budget_str.replace(’.’, ‘’).replace(’,’, ‘’)
 budget = int(budget_str)
-timeline_str = str(lead.get(“timeline”, “99”)).lower()
-timeline_str = timeline_str.replace(“meses”, “”).replace(“mes”, “”).strip()
+timeline_str = str(lead.get(‘timeline’, ‘99’)).lower()
+timeline_str = timeline_str.replace(‘meses’, ‘’).replace(‘mes’, ‘’).strip()
 timeline = int(timeline_str)
 except ValueError:
-return “COLD”
+return ‘COLD’
 if budget >= 80000 and timeline <= 2:
-return “HOT”
+return ‘HOT’
 elif budget >= 40000 and timeline <= 6:
-return “WARM”
+return ‘WARM’
 else:
-return “COLD”
+return ‘COLD’
 
 # ======================================================
 
@@ -375,23 +353,25 @@ return “COLD”
 
 def send_email(lead):
 try:
-score = lead.get(“score”, “COLD”)
-sender = “fbarrenecheam09@gmail.com”
-password = st.secrets[“EMAIL_PASSWORD”]
-subject = “Nuevo Lead “ + score + “ - LeadBoost”
-body = “Nuevo lead en LeadBoost:\n\n”
-body += “Nombre: “ + str(lead.get(‘name’, ‘-’)) + “\n”
-body += “Telefono: “ + str(lead.get(‘phone’, ‘-’)) + “\n”
-body += “Tipo: “ + str(lead.get(‘property_type’, ‘-’)) + “\n”
-body += “Zona: “ + str(lead.get(‘area’, ‘-’)) + “\n”
-body += “Presupuesto: $” + str(lead.get(‘budget’, ‘-’)) + “\n”
-body += “Plazo: “ + str(lead.get(‘timeline’, ‘-’)) + “ meses\n”
-body += “Score: “ + score + “\n”
-body += “Fecha: “ + datetime.now().strftime(’%Y-%m-%d %H:%M’) + “\n”
+score = lead.get(‘score’, ‘COLD’)
+sender = ‘fbarrenecheam09@gmail.com’
+password = st.secrets[‘EMAIL_PASSWORD’]
+subject = ‘Nuevo Lead ’ + score + ’ - LeadBoost’
+body = ‘Nuevo lead en LeadBoost:\n\n’
+body += ’Nombre: ’ + str(lead.get(‘name’, ‘-’)) + ‘\n’
+body += ’Telefono: ’ + str(lead.get(‘phone’, ‘-’)) + ‘\n’
+body += ’Tipo: ’ + str(lead.get(‘property_type’, ‘-’)) + ‘\n’
+body += ’Zona: ’ + str(lead.get(‘area’, ‘-’)) + ‘\n’
+body += ‘Presupuesto: $’ + str(lead.get(‘budget’, ‘-’)) + ‘\n’
+body += ‘Plazo: ’ + str(lead.get(‘timeline’, ‘-’)) + ’ meses\n’
+body += ‘Score: ’ + score + ‘\n’
+body += ‘Fecha: ’ + datetime.now().strftime(’%Y-%m-%d %H:%M’) + ‘\n’
 msg = MIMEMultipart()
-msg[“From”] = sender; msg[“To”] = sender; msg[“Subject”] = subject
-msg.attach(MIMEText(body, “plain”))
-with smtplib.SMTP_SSL(“smtp.gmail.com”, 465) as server:
+msg[‘From’] = sender
+msg[‘To’] = sender
+msg[‘Subject’] = subject
+msg.attach(MIMEText(body, ‘plain’))
+with smtplib.SMTP_SSL(‘smtp.gmail.com’, 465) as server:
 server.login(sender, password)
 server.sendmail(sender, sender, msg.as_string())
 except Exception:
@@ -399,36 +379,36 @@ pass
 
 def save_lead(lead):
 try:
-get_supabase().table(“leads”).insert({
-“timestamp”: datetime.now().strftime(”%Y-%m-%d %H:%M”),
-“name”: lead.get(“name”, “”),
-“phone”: lead.get(“phone”, “”),
-“property_type”: lead.get(“property_type”, “”),
-“area”: lead.get(“area”, “”),
-“budget”: lead.get(“budget”, “”),
-“timeline”: lead.get(“timeline”, “”),
-“score”: lead.get(“score”, “”),
+get_supabase().table(‘leads’).insert({
+‘timestamp’: datetime.now().strftime(’%Y-%m-%d %H:%M’),
+‘name’: lead.get(‘name’, ‘’),
+‘phone’: lead.get(‘phone’, ‘’),
+‘property_type’: lead.get(‘property_type’, ‘’),
+‘area’: lead.get(‘area’, ‘’),
+‘budget’: lead.get(‘budget’, ‘’),
+‘timeline’: lead.get(‘timeline’, ‘’),
+‘score’: lead.get(‘score’, ‘’),
 }).execute()
 except Exception as e:
-st.error(“Error: “ + str(e))
+st.error(’Error: ’ + str(e))
 
 def get_ai_response(messages):
 try:
 claude = get_claude()
 r = claude.messages.create(
-model=“claude-haiku-4-5-20251001”,
+model=‘claude-haiku-4-5-20251001’,
 max_tokens=1000,
 system=SYSTEM_PROMPT,
 messages=messages
 )
 return r.content[0].text
 except Exception as e:
-return “Error: “ + str(e)
+return ’Error: ’ + str(e)
 
 def extract_lead(response_text):
-if “LEAD_COMPLETO:” in response_text:
+if ‘LEAD_COMPLETO:’ in response_text:
 try:
-return json.loads(response_text.split(“LEAD_COMPLETO:”)[1].strip())
+return json.loads(response_text.split(‘LEAD_COMPLETO:’)[1].strip())
 except:
 return None
 return None
@@ -440,9 +420,9 @@ return None
 # ======================================================
 
 if not st.session_state.greeted:
-greeting = “Hola. Soy LeadBoost, tu asistente inmobiliario. Para ayudarte a encontrar la propiedad ideal, me puedes decir tu nombre y que tipo de propiedad estas buscando?”
-st.session_state.chat_history.append((“bot”, greeting))
-st.session_state.messages.append({“role”: “assistant”, “content”: greeting})
+greeting = ‘Hola. Soy LeadBoost, tu asistente inmobiliario. Para ayudarte a encontrar la propiedad ideal, me puedes decir tu nombre y que tipo de propiedad estas buscando?’
+st.session_state.chat_history.append((‘bot’, greeting))
+st.session_state.messages.append({‘role’: ‘assistant’, ‘content’: greeting})
 st.session_state.greeted = True
 
 # ======================================================
@@ -453,12 +433,12 @@ st.session_state.greeted = True
 
 st.markdown(’<div class="chat-wrap">’, unsafe_allow_html=True)
 for sender, msg in st.session_state.chat_history:
-if “LEAD_COMPLETO:” in msg:
-display_msg = msg.split(“LEAD_COMPLETO:”)[0].strip()
+if ‘LEAD_COMPLETO:’ in msg:
+display_msg = msg.split(‘LEAD_COMPLETO:’)[0].strip()
 else:
 display_msg = msg
-msg_html = display_msg.replace(”\n”, “<br>”)
-if sender == “bot”:
+msg_html = display_msg.replace(’\n’, ‘<br>’)
+if sender == ‘bot’:
 html = ‘<div class="label-row">// LEADBOOST</div><div class="bubble-bot">’ + msg_html + ‘</div>’
 else:
 html = ‘<div class="label-row label-user">YOU //</div><div class="bubble-user">’ + msg_html + ‘</div>’
@@ -472,28 +452,25 @@ st.markdown(’</div>’, unsafe_allow_html=True)
 # ======================================================
 
 if not st.session_state.done:
-user_input = st.text_input(“MESSAGE”, key=“input_” + str(len(st.session_state.messages)), label_visibility=“collapsed”, placeholder=“Escribe tu mensaje…”)
-
-```
-if st.button("SEND  //"):
-    if user_input.strip():
-        st.session_state.chat_history.append(("user", user_input.strip()))
-        st.session_state.messages.append({"role": "user", "content": user_input.strip()})
-        ai_response = get_ai_response(st.session_state.messages)
-        st.session_state.chat_history.append(("bot", ai_response))
-        st.session_state.messages.append({"role": "assistant", "content": ai_response})
-        lead = extract_lead(ai_response)
-        if lead:
-            score = score_lead(lead)
-            lead["score"] = score
-            save_lead(lead)
-            send_email(lead)
-            st.session_state.done = True
-        st.rerun()
-```
+user_input = st.text_input(‘MESSAGE’, key=‘input_’ + str(len(st.session_state.messages)), label_visibility=‘collapsed’, placeholder=‘Escribe tu mensaje…’)
+if st.button(‘SEND  //’):
+if user_input.strip():
+st.session_state.chat_history.append((‘user’, user_input.strip()))
+st.session_state.messages.append({‘role’: ‘user’, ‘content’: user_input.strip()})
+ai_response = get_ai_response(st.session_state.messages)
+st.session_state.chat_history.append((‘bot’, ai_response))
+st.session_state.messages.append({‘role’: ‘assistant’, ‘content’: ai_response})
+lead = extract_lead(ai_response)
+if lead:
+score = score_lead(lead)
+lead[‘score’] = score
+save_lead(lead)
+send_email(lead)
+st.session_state.done = True
+st.rerun()
 
 if st.session_state.done:
-if st.button(”// NEW CONVERSATION”):
-for key in [“chat_history”, “messages”, “done”, “greeted”]:
+if st.button(’// NEW CONVERSATION’):
+for key in [‘chat_history’, ‘messages’, ‘done’, ‘greeted’]:
 del st.session_state[key]
 st.rerun()
