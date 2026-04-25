@@ -288,26 +288,32 @@ div.stButton > button {
     color: BG_COLOR;
     border: none;
     border-radius: 8px;
-    padding: 9px 20px;
+    padding: 6px 14px;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
-    font-size: 0.66rem;
-    letter-spacing: 0.2em;
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     transition: all 0.15s;
 }
-div.stButton > button:hover { opacity: 0.85; }
-div.stButton > button:disabled { opacity: 0.35; }
+div.stButton > button:hover { opacity: 0.82; }
+div.stButton > button:disabled {
+    opacity: 1 !important;
+    background: ACCENT_WARM_COLOR !important;
+    color: BG_COLOR !important;
+    border: none !important;
+    cursor: default !important;
+}
 div.stDownloadButton > button {
     background: ACCENT_COLOR;
     color: BG_COLOR;
     border: none;
     border-radius: 8px;
-    padding: 9px 20px;
+    padding: 6px 14px;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
-    font-size: 0.66rem;
-    letter-spacing: 0.2em;
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
 }
 
