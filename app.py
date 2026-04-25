@@ -415,22 +415,23 @@ st.markdown('</div>', unsafe_allow_html=True)
 # INPUT
 # ======================================================
 if not st.session_state.done:
-    user_input = st.text_input('MESSAGE', key='input_' + str(len(st.session_state.messages)), label_visibility='collapsed', placeholder='Escribe tu mensaje...')
-    if st.button('SEND  //'):
-        if user_input.strip():
-            st.session_state.chat_history.append(('user', user_input.strip()))
-            st.session_state.messages.append({'role': 'user', 'content': user_input.strip()})
-            ai_response = get_ai_response(st.session_state.messages)
-            st.session_state.chat_history.append(('bot', ai_response))
-            st.session_state.messages.append({'role': 'assistant', 'content': ai_response})
-            lead = extract_lead(ai_response)
-            if lead:
-                score = score_lead(lead)
-                lead['score'] = score
-                save_lead(lead)
-                send_email(lead)
-                st.session_state.done = True
-            st.rerun()
+    with st.form('chat_form', clear_on_submit=True):
+        user_input = st.text_input('MESSAGE', label_visibility='collapsed', placeholder='Escribe tu mensaje...')
+        submitted = st.form_submit_button('SEND  //')
+    if submitted and user_input.strip():
+        st.session_state.chat_history.append(('user', user_input.strip()))
+        st.session_state.messages.append({'role': 'user', 'content': user_input.strip()})
+        ai_response = get_ai_response(st.session_state.messages)
+        st.session_state.chat_history.append(('bot', ai_response))
+        st.session_state.messages.append({'role': 'assistant', 'content': ai_response})
+        lead = extract_lead(ai_response)
+        if lead:
+            score = score_lead(lead)
+            lead['score'] = score
+            save_lead(lead)
+            send_email(lead)
+            st.session_state.done = True
+        st.rerun()
 
 if st.session_state.done:
     if st.button('// NEW CONVERSATION'):
