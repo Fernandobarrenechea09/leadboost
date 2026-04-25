@@ -544,7 +544,10 @@ if leads:
             df['date'] = pd.to_datetime(df['date'])
             daily = df.groupby('date').size().reset_index(name='Leads').sort_values('date')
 
-            area_chart = alt.Chart(daily).mark_area(
+            # ── area layer ──
+            base = alt.Chart(daily)
+
+            area_layer = base.mark_area(
                 line={'color': CHART_LINE, 'strokeWidth': 2},
                 color=alt.Gradient(
                     gradient='linear',
@@ -554,29 +557,63 @@ if leads:
                     ],
                     x1=1, x2=1, y1=1, y2=0
                 ),
-                interpolate='monotone'
+                interpolate='monotone',
+                opacity=0.85
             ).encode(
                 x=alt.X('date:T', axis=alt.Axis(
                     labelFont='JetBrains Mono',
-                    labelFontSize=9,
-                    labelColor=TEXT_DIM,
-                    domainColor=BORDER,
-                    tickColor=BORDER,
-                    title=None,
-                    format='%b %d',
-                    labelAngle=0
-                )),
-                y=alt.Y('Leads:Q', axis=alt.Axis(
-                    labelFont='JetBrains Mono',
-                    labelFontSize=9,
+                    labelFontSize=10,
                     labelColor=TEXT_DIM,
                     domainColor=BORDER,
                     tickColor=BORDER,
                     gridColor=BORDER,
                     title=None,
+                    format='%b %d',
+                    labelAngle=0,
+                    tickCount=6
+                )),
+                y=alt.Y('Leads:Q', axis=alt.Axis(
+                    labelFont='JetBrains Mono',
+                    labelFontSize=10,
+                    labelColor=TEXT_DIM,
+                    domainColor=BORDER,
+                    tickColor=BORDER,
+                    gridColor=BORDER,
+                    gridDash=[4, 3],
+                    title=None,
                     tickCount=4
                 ))
-            ).properties(height=200, background=PANEL).configure_view(strokeWidth=0)
+            )
+
+            # ── dot layer ──
+            dot_layer = base.mark_point(
+                filled=True,
+                size=50,
+                color=CHART_LINE,
+                strokeWidth=2,
+                stroke=PANEL
+            ).encode(
+                x='date:T',
+                y='Leads:Q'
+            )
+
+            # ── value label layer ──
+            label_layer = base.mark_text(
+                font='JetBrains Mono',
+                fontSize=10,
+                fontWeight='normal',
+                color=CHART_LINE,
+                dy=-13
+            ).encode(
+                x='date:T',
+                y='Leads:Q',
+                text='Leads:Q'
+            )
+
+            area_chart = alt.layer(area_layer, dot_layer, label_layer).properties(
+                height=200,
+                background=PANEL
+            ).configure_view(strokeWidth=0)
 
             header = '<div class="chart-panel"><div class="chart-header">'
             header += '<div class="chart-title">// LEADS OVER TIME</div>'
@@ -602,15 +639,18 @@ if leads:
         counts = pd.DataFrame({'Rango': buckets})['Rango'].value_counts().reindex(order, fill_value=0).reset_index()
         counts.columns = ['Rango', 'Leads']
 
-        bar_chart = alt.Chart(counts).mark_bar(
+        bar_base = alt.Chart(counts)
+
+        # ── bar layer ──
+        bar_layer = bar_base.mark_bar(
             color=CHART_LINE,
-            opacity=0.85,
-            cornerRadiusTopLeft=4,
-            cornerRadiusTopRight=4
+            opacity=0.88,
+            cornerRadiusTopLeft=3,
+            cornerRadiusTopRight=3
         ).encode(
             x=alt.X('Rango:N', sort=order, axis=alt.Axis(
                 labelFont='JetBrains Mono',
-                labelFontSize=9,
+                labelFontSize=10,
                 labelColor=TEXT_DIM,
                 domainColor=BORDER,
                 tickColor=BORDER,
@@ -619,15 +659,36 @@ if leads:
             )),
             y=alt.Y('Leads:Q', axis=alt.Axis(
                 labelFont='JetBrains Mono',
-                labelFontSize=9,
+                labelFontSize=10,
                 labelColor=TEXT_DIM,
                 domainColor=BORDER,
                 tickColor=BORDER,
                 gridColor=BORDER,
+                gridDash=[4, 3],
                 title=None,
                 tickCount=4
             ))
-        ).properties(height=200, background=PANEL).configure_view(strokeWidth=0)
+        )
+
+        # ── value label layer ──
+        bar_label_layer = bar_base.mark_text(
+            font='JetBrains Mono',
+            fontSize=11,
+            fontWeight='normal',
+            color=CHART_LINE,
+            dy=-8
+        ).encode(
+            x=alt.X('Rango:N', sort=order),
+            y='Leads:Q',
+            text=alt.Text('Leads:Q')
+        ).transform_filter(
+            alt.datum.Leads > 0
+        )
+
+        bar_chart = alt.layer(bar_layer, bar_label_layer).properties(
+            height=200,
+            background=PANEL
+        ).configure_view(strokeWidth=0)
 
         header = '<div class="chart-panel"><div class="chart-header">'
         header += '<div class="chart-title">// BUDGET DISTRIBUTION</div>'
