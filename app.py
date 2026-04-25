@@ -222,13 +222,21 @@ with top_r:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ======================================================
-# HERO
+# HERO — dynamic greeting based on time of day
 # ======================================================
+hour = datetime.now().hour
+if hour < 12:
+    greeting_word = 'morning'
+elif hour < 18:
+    greeting_word = 'afternoon'
+else:
+    greeting_word = 'evening'
+
 today_full = datetime.now().strftime('%A, %B %d, %Y').upper()
 hero = '<div class="lb-hero">'
 hero += '<div>'
 hero += '<div class="lb-hero-label">// WELCOME &middot; REAL ESTATE ASSISTANT</div>'
-hero += '<div class="lb-hero-title">Good <span class="lb-hero-accent">day</span>.</div>'
+hero += '<div class="lb-hero-title">Good <span class="lb-hero-accent">' + greeting_word + '</span>.</div>'
 hero += '</div>'
 hero += '<div class="lb-hero-date">' + today_full + '<br>LOCAL TIME &middot; ' + now_time + '</div>'
 hero += '</div>'
@@ -378,10 +386,10 @@ def extract_lead(response_text):
     return None
 
 # ======================================================
-# FIRST MESSAGE
+# FIRST MESSAGE — warmer opening
 # ======================================================
 if not st.session_state.greeted:
-    greeting = 'Hola. Soy LeadBoost, tu asistente inmobiliario. Para ayudarte a encontrar la propiedad ideal, me puedes decir tu nombre y que tipo de propiedad estas buscando?'
+    greeting = 'Hola! Bienvenido a LeadBoost.\n\nSoy tu asistente inmobiliario personal. En menos de 2 minutos te conecto con el agente ideal para encontrar la propiedad de tus suenos en Bolivia.\n\nPor donde empezamos? Cuentame tu nombre y que tipo de propiedad estas buscando.'
     st.session_state.chat_history.append(('bot', greeting))
     st.session_state.messages.append({'role': 'assistant', 'content': greeting})
     st.session_state.greeted = True
