@@ -62,23 +62,39 @@ css = '''
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
 
-html, body, [class*="css"], .stApp, .main {
-    font-family: Inter, sans-serif;
+/* ── base reset ── */
+html, body { background-color: BG_COLOR !important; color: TEXT_COLOR !important; }
+
+/* ── app surfaces ── */
+.stApp,
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+[data-testid="stApp"] {
     background-color: BG_COLOR !important;
     color: TEXT_COLOR !important;
+    font-family: Inter, sans-serif !important;
 }
-.stApp { background-color: BG_COLOR !important; }
-.block-container { padding-top: 1.5rem !important; max-width: 1280px !important; }
 
+/* ── block container ── */
+.block-container,
+[data-testid="block-container"] {
+    padding-top: 1.2rem !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+    max-width: 1320px !important;
+}
+
+/* ── topbar ── */
 .lb-topbar-label {
     font-family: JetBrains Mono, monospace;
     font-size: 0.62rem;
     letter-spacing: 0.18em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
-    padding-top: 18px;
+    padding-top: 16px;
 }
 
+/* ── hero ── */
 .lb-hero {
     border: 1px solid BORDER_COLOR;
     background: PANEL_COLOR;
@@ -91,11 +107,11 @@ html, body, [class*="css"], .stApp, .main {
 }
 .lb-hero-label {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 .lb-hero-title {
     font-family: Fraunces, serif;
@@ -109,13 +125,14 @@ html, body, [class*="css"], .stApp, .main {
 .lb-hero-accent { color: ACCENT_WARM_COLOR; }
 .lb-hero-date {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     color: TEXT_DIM_COLOR;
     letter-spacing: 0.12em;
     text-align: right;
-    line-height: 1.7;
+    line-height: 1.8;
 }
 
+/* ── stat cards ── */
 .stat-card {
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
@@ -128,8 +145,8 @@ html, body, [class*="css"], .stApp, .main {
 }
 .stat-label {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.58rem;
-    letter-spacing: 0.2em;
+    font-size: 0.55rem;
+    letter-spacing: 0.22em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
 }
@@ -153,11 +170,12 @@ html, body, [class*="css"], .stApp, .main {
 }
 .stat-sub {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.6rem;
+    font-size: 0.52rem;
     color: TEXT_DIM_COLOR;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
 }
 
+/* ── chart panels ── */
 .chart-panel {
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
@@ -175,40 +193,66 @@ html, body, [class*="css"], .stApp, .main {
 }
 .chart-title {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
+    font-size: 0.55rem;
+    letter-spacing: 0.22em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
 }
 .chart-big-num {
     font-family: Fraunces, serif;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     color: TEXT_COLOR;
     font-style: italic;
 }
 
+/* ── badges ── */
 .badge {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.55rem;
-    letter-spacing: 0.2em;
-    padding: 4px 10px;
+    font-size: 0.5rem;
+    letter-spacing: 0.18em;
+    padding: 3px 9px;
     border-radius: 20px;
     border: 1px solid BORDER_COLOR;
     text-transform: uppercase;
     font-weight: 500;
     color: TEXT_COLOR;
     display: inline-block;
+    white-space: nowrap;
 }
 .score-hot { background: HOT_BG_COLOR; }
 .score-warm { background: WARM_BG_COLOR; }
 .score-cold { background: COLD_BG_COLOR; }
 
+/* ── HOT badge pulse ── */
+@keyframes lb-hot-pulse {
+    0%   { transform: scale(1);   opacity: 0.6; }
+    70%  { transform: scale(2.6); opacity: 0;   }
+    100% { transform: scale(2.6); opacity: 0;   }
+}
+.badge-hot-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+.badge-hot-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: ACCENT_WARM_COLOR;
+    animation: lb-hot-pulse 2s ease-out infinite;
+    pointer-events: none;
+}
+.lead-card-hot {
+    border-color: ACCENT_WARM_COLOR !important;
+}
+
+/* ── lead cards ── */
 .lead-card {
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 12px;
     padding: 18px 22px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 .lead-top {
     display: flex;
@@ -220,24 +264,24 @@ html, body, [class*="css"], .stApp, .main {
 }
 .lead-name {
     font-family: Fraunces, serif;
-    font-size: 1.4rem;
+    font-size: 1.35rem;
     font-style: italic;
     color: TEXT_COLOR;
     font-weight: 400;
 }
-.lead-badges { display: flex; gap: 8px; align-items: center; }
+.lead-badges { display: flex; gap: 7px; align-items: center; }
 .lead-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px 28px;
+    gap: 12px 32px;
     font-family: JetBrains Mono, monospace;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     color: TEXT_COLOR;
     margin-bottom: 14px;
 }
 .field-label {
     color: TEXT_DIM_COLOR;
-    font-size: 0.55rem;
+    font-size: 0.5rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     display: block;
@@ -247,88 +291,117 @@ html, body, [class*="css"], .stApp, .main {
     display: inline-block;
     background: ACCENT_COLOR;
     color: BG_COLOR;
-    padding: 9px 20px;
+    padding: 8px 18px;
     border-radius: 8px;
     text-decoration: none;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
-    font-size: 0.66rem;
+    font-size: 0.6rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
+    transition: opacity 0.15s, transform 0.15s;
 }
+.wa-btn:hover { opacity: 0.85; transform: translateY(-1px); }
 .resp-time {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.62rem;
+    font-size: 0.52rem;
     color: TEXT_DIM_COLOR;
     letter-spacing: 0.1em;
 }
 
-.stTextInput > div > div > input, .stTextArea > div > div > textarea {
+/* ── inputs ── */
+.stTextInput > div > div > input,
+[data-testid="stTextInput"] input,
+.stTextArea > div > div > textarea,
+[data-testid="stTextArea"] textarea {
     background: PANEL_COLOR !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
     border-radius: 8px !important;
     font-family: Inter, sans-serif !important;
+    box-shadow: none !important;
 }
-.stSelectbox > div > div {
+.stSelectbox > div > div,
+[data-testid="stSelectbox"] > div > div {
     background: PANEL_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
     border-radius: 8px !important;
+    color: TEXT_COLOR !important;
 }
-.stTextInput label, .stSelectbox label, .stTextArea label {
+[data-testid="stSelectbox"] > div > div > div {
+    background: PANEL_COLOR !important;
+    color: TEXT_COLOR !important;
+}
+.stTextInput label, [data-testid="stTextInput"] label,
+.stSelectbox label, [data-testid="stSelectbox"] label,
+.stTextArea label, [data-testid="stTextArea"] label {
     color: TEXT_DIM_COLOR !important;
     font-family: JetBrains Mono, monospace !important;
-    font-size: 0.58rem !important;
+    font-size: 0.55rem !important;
     letter-spacing: 0.2em !important;
     text-transform: uppercase !important;
 }
 
-div.stButton > button {
-    background: ACCENT_COLOR;
-    color: BG_COLOR;
-    border: none;
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-family: JetBrains Mono, monospace;
-    font-weight: 500;
-    font-size: 0.58rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    transition: all 0.15s;
+/* ── buttons ── */
+div.stButton > button,
+[data-testid="stButton"] > button,
+[data-testid="stFormSubmitButton"] > button {
+    background: ACCENT_COLOR !important;
+    color: BG_COLOR !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 6px 14px !important;
+    font-family: JetBrains Mono, monospace !important;
+    font-weight: 500 !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.16em !important;
+    text-transform: uppercase !important;
+    transition: opacity 0.15s !important;
+    box-shadow: none !important;
 }
-div.stButton > button:hover { opacity: 0.82; }
-div.stButton > button:disabled {
+div.stButton > button:hover,
+[data-testid="stButton"] > button:hover { opacity: 0.82 !important; }
+div.stButton > button:disabled,
+[data-testid="stButton"] > button:disabled {
     opacity: 1 !important;
     background: ACCENT_WARM_COLOR !important;
     color: BG_COLOR !important;
-    border: none !important;
     cursor: default !important;
 }
-div.stDownloadButton > button {
-    background: ACCENT_COLOR;
-    color: BG_COLOR;
-    border: none;
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-family: JetBrains Mono, monospace;
-    font-weight: 500;
-    font-size: 0.58rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+div.stDownloadButton > button,
+[data-testid="stDownloadButton"] > button {
+    background: ACCENT_COLOR !important;
+    color: BG_COLOR !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 6px 14px !important;
+    font-family: JetBrains Mono, monospace !important;
+    font-weight: 500 !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.16em !important;
+    text-transform: uppercase !important;
+    box-shadow: none !important;
 }
 
-.theme-btn-wrap div.stButton > button {
+/* ── theme toggle pill ── */
+.theme-btn-wrap div.stButton > button,
+.theme-btn-wrap [data-testid="stButton"] > button {
     background: transparent !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
-    padding: 4px 12px !important;
-    font-size: 0.58rem !important;
+    padding: 3px 12px !important;
+    font-size: 0.55rem !important;
     border-radius: 20px !important;
 }
 
-header { visibility: hidden; height: 0; }
-#MainMenu { visibility: hidden; }
-footer { visibility: hidden; }
+/* ── hide Streamlit chrome ── */
+header, [data-testid="stHeader"] { visibility: hidden !important; height: 0 !important; }
+#MainMenu, [data-testid="stMainMenu"] { visibility: hidden !important; }
+footer, [data-testid="stFooter"] { visibility: hidden !important; }
+[data-testid="stToolbar"] { display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
+[data-testid="stStatusWidget"] { display: none !important; }
+section[data-testid="stSidebar"] { display: none !important; }
 </style>
 '''
 
@@ -388,10 +461,18 @@ if not st.session_state.authenticated:
 # ======================================================
 # HERO
 # ======================================================
+hour = datetime.now().hour
+if hour < 12:
+    greeting_word = 'morning'
+elif hour < 18:
+    greeting_word = 'afternoon'
+else:
+    greeting_word = 'evening'
+
 today_full = datetime.now().strftime('%A, %B %d, %Y').upper()
 hero = '<div class="lb-hero">'
 hero += '<div><div class="lb-hero-label">// OPERATIONS PANEL &middot; LIVE</div>'
-hero += '<div class="lb-hero-title">Good <span class="lb-hero-accent">afternoon</span>.</div></div>'
+hero += '<div class="lb-hero-title">Good <span class="lb-hero-accent">' + greeting_word + '</span>.</div></div>'
 hero += '<div class="lb-hero-date">' + today_full + '<br>LOCAL TIME &middot; ' + now_time + '</div></div>'
 st.markdown(hero, unsafe_allow_html=True)
 
@@ -406,7 +487,7 @@ def load_leads():
     try:
         return get_supabase().table('leads').select('*').order('id', desc=True).execute().data
     except Exception as e:
-        st.error('Error: ' + str(e))
+        st.toast('Database unavailable: ' + str(e)[:60], icon='⚠')
         return []
 
 def update_status(lead_id, new_status):
@@ -756,7 +837,10 @@ else:
         ts = lead.get('timestamp', '-')
         minutes = get_minutes(lead)
 
-        score_badge = '<span class="badge score-' + score.lower() + '">' + score + '</span>'
+        if score == 'HOT':
+            score_badge = '<span class="badge-hot-wrap"><span class="badge-hot-ring"></span><span class="badge score-hot">HOT</span></span>'
+        else:
+            score_badge = '<span class="badge score-' + score.lower() + '">' + score + '</span>'
         status_badge = '<span class="badge">' + status.upper() + '</span>'
         resp_html = ''
         if minutes is not None:
@@ -765,7 +849,8 @@ else:
         wa_msg = 'Hola ' + name + ', soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interes en ' + ptype + ' en ' + area + '. Tienes un momento para hablar?'
         wa_link = 'https://wa.me/591' + phone + '?text=' + quote(wa_msg)
 
-        card = '<div class="lead-card">'
+        card_class = 'lead-card lead-card-hot' if score == 'HOT' else 'lead-card'
+        card = '<div class="' + card_class + '">'
         card += '<div class="lead-top">'
         card += '<span class="lead-name">' + name + '</span>'
         card += '<div class="lead-badges">' + resp_html + status_badge + score_badge + '</div>'
@@ -778,7 +863,9 @@ else:
         card += '<div><span class="field-label">// TIMELINE</span>' + str(timeline) + ' meses</div>'
         card += '<div><span class="field-label">// RECEIVED</span>' + str(ts) + '</div>'
         card += '</div>'
+        card += '<div style="border-top:1px solid ' + BORDER + '; padding-top:14px; margin-top:4px;">'
         card += '<a class="wa-btn" href="' + wa_link + '" target="_blank">// WHATSAPP</a>'
+        card += '</div>'
         card += '</div>'
         st.markdown(card, unsafe_allow_html=True)
 
