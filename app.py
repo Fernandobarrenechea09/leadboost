@@ -56,53 +56,37 @@ css = '''
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
 
-/* ── base reset ── */
-html, body { background-color: BG_COLOR !important; color: TEXT_COLOR !important; }
-
-/* ── app surfaces ── */
-.stApp,
-[data-testid="stAppViewContainer"],
-[data-testid="stMain"],
-[data-testid="stApp"] {
+html, body, [class*="css"], .stApp, .main {
+    font-family: Inter, sans-serif;
     background-color: BG_COLOR !important;
     color: TEXT_COLOR !important;
-    font-family: Inter, sans-serif !important;
 }
+.stApp { background-color: BG_COLOR !important; }
+.block-container { padding-top: 1.5rem !important; max-width: 1100px !important; }
 
-/* ── block container ── */
-.block-container,
-[data-testid="block-container"] {
-    padding-top: 1.2rem !important;
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
-    max-width: 820px !important;
-}
-
-/* ── topbar label ── */
 .lb-topbar-label {
     font-family: JetBrains Mono, monospace;
     font-size: 0.62rem;
     letter-spacing: 0.18em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
-    padding-top: 16px;
+    padding-top: 18px;
 }
 
-/* ── hero ── */
 .lb-hero {
     border: 1px solid BORDER_COLOR;
     background: PANEL_COLOR;
     border-radius: 14px;
-    padding: 26px 30px;
-    margin-bottom: 12px;
+    padding: 28px 32px;
+    margin-bottom: 14px;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
 }
 .lb-hero-label {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.58rem;
-    letter-spacing: 0.22em;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
     margin-bottom: 6px;
@@ -119,139 +103,91 @@ html, body { background-color: BG_COLOR !important; color: TEXT_COLOR !important
 .lb-hero-accent { color: ACCENT_WARM_COLOR; }
 .lb-hero-date {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.6rem;
+    font-size: 0.68rem;
     color: TEXT_DIM_COLOR;
     letter-spacing: 0.12em;
     text-align: right;
-    line-height: 1.8;
+    line-height: 1.7;
 }
 
-/* ── progress bar ── */
-.lb-progress-wrap {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 14px 0 12px;
-}
-.lb-progress-seg {
-    flex: 1;
-    height: 2px;
-    background: BORDER_COLOR;
-    border-radius: 2px;
-    transition: background 0.35s ease;
-}
-.lb-progress-done { background: ACCENT_WARM_COLOR !important; }
-.lb-progress-label {
-    font-family: JetBrains Mono, monospace;
-    font-size: 0.48rem;
-    letter-spacing: 0.18em;
-    color: TEXT_DIM_COLOR;
-    white-space: nowrap;
-    margin-left: 6px;
-}
-
-/* ── chat ── */
-.chat-wrap { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+.chat-wrap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
 .bubble-bot {
     background: BUBBLE_BOT_COLOR;
     border: 1px solid BORDER_COLOR;
-    border-radius: 2px 14px 14px 14px;
-    padding: 12px 18px;
-    max-width: 82%;
+    border-radius: 4px 16px 16px 16px;
+    padding: 14px 18px;
+    max-width: 78%;
     align-self: flex-start;
-    font-size: 0.9rem;
-    line-height: 1.65;
+    font-size: 0.94rem;
+    line-height: 1.6;
     color: TEXT_COLOR;
-    font-family: Inter, sans-serif;
-    white-space: pre-wrap;
 }
 .bubble-user {
     background: BUBBLE_USR_COLOR;
     color: BUBBLE_USR_TXT_COLOR;
-    border-radius: 14px 14px 2px 14px;
-    padding: 12px 18px;
-    max-width: 82%;
+    border-radius: 16px 16px 4px 16px;
+    padding: 14px 18px;
+    max-width: 78%;
     align-self: flex-end;
-    font-size: 0.9rem;
-    line-height: 1.65;
-    font-family: Inter, sans-serif;
+    font-size: 0.94rem;
+    line-height: 1.6;
 }
 .label-row {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.48rem;
+    font-size: 0.58rem;
     color: TEXT_DIM_COLOR;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 .label-user { text-align: right; }
 
-/* ── inputs ── */
-.stTextInput > div > div > input,
-[data-testid="stTextInput"] input,
-[data-testid="stTextInput"] > div > div > input {
+.stTextInput > div > div > input {
     background: PANEL_COLOR !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
     border-radius: 8px !important;
     padding: 13px 16px !important;
     font-family: Inter, sans-serif !important;
-    font-size: 0.92rem !important;
-    box-shadow: none !important;
+    font-size: 0.94rem !important;
 }
-.stTextInput label,
-[data-testid="stTextInput"] label {
+.stTextInput label {
     color: TEXT_DIM_COLOR !important;
     font-family: JetBrains Mono, monospace !important;
-    font-size: 0.58rem !important;
-    letter-spacing: 0.2em !important;
+    font-size: 0.6rem !important;
+    letter-spacing: 0.18em !important;
     text-transform: uppercase !important;
 }
 
-/* ── buttons ── */
-div.stButton > button,
-[data-testid="stButton"] > button,
-[data-testid="stFormSubmitButton"] > button,
-div.stFormSubmitButton > button {
-    background: ACCENT_COLOR !important;
-    color: BG_COLOR !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 10px 24px !important;
-    font-family: JetBrains Mono, monospace !important;
-    font-weight: 500 !important;
-    font-size: 0.66rem !important;
-    letter-spacing: 0.2em !important;
-    text-transform: uppercase !important;
-    cursor: pointer !important;
-    transition: opacity 0.15s !important;
-    box-shadow: none !important;
+div.stButton > button {
+    background: ACCENT_COLOR;
+    color: BG_COLOR;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-family: JetBrains Mono, monospace;
+    font-weight: 500;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
 }
-div.stButton > button:hover,
-[data-testid="stButton"] > button:hover,
-[data-testid="stFormSubmitButton"] > button:hover { opacity: 0.85 !important; }
-div.stButton > button:disabled,
-[data-testid="stButton"] > button:disabled { opacity: 0.35 !important; }
+div.stButton > button:hover { opacity: 0.85; }
+div.stButton > button:disabled { opacity: 0.35; }
 
-/* ── theme toggle pill ── */
-.theme-btn-wrap div.stButton > button,
-.theme-btn-wrap [data-testid="stButton"] > button {
+.theme-btn-wrap div.stButton > button {
     background: transparent !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
-    padding: 3px 12px !important;
-    font-size: 0.55rem !important;
+    padding: 4px 12px !important;
+    font-size: 0.62rem !important;
     border-radius: 20px !important;
 }
 
-/* ── hide Streamlit chrome ── */
-header, [data-testid="stHeader"] { visibility: hidden !important; height: 0 !important; }
-#MainMenu, [data-testid="stMainMenu"] { visibility: hidden !important; }
-footer, [data-testid="stFooter"] { visibility: hidden !important; }
-[data-testid="stToolbar"] { display: none !important; }
-[data-testid="stDecoration"] { display: none !important; }
-[data-testid="stStatusWidget"] { display: none !important; }
-section[data-testid="stSidebar"] { display: none !important; }
+header { visibility: hidden; height: 0; }
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
 </style>
 '''
 
@@ -305,19 +241,6 @@ hero += '</div>'
 hero += '<div class="lb-hero-date">' + today_full + '<br>LOCAL TIME &middot; ' + now_time + '</div>'
 hero += '</div>'
 st.markdown(hero, unsafe_allow_html=True)
-
-# ======================================================
-# PROGRESS BAR
-# ======================================================
-user_msg_count = len([m for m in st.session_state.get('messages', []) if m.get('role') == 'user'])
-step = 6 if st.session_state.get('done') else min(user_msg_count, 5)
-prog_html = '<div class="lb-progress-wrap">'
-for i in range(6):
-    seg_cls = 'lb-progress-seg lb-progress-done' if i < step else 'lb-progress-seg'
-    prog_html += '<div class="' + seg_cls + '"></div>'
-prog_html += '<span class="lb-progress-label">' + str(step) + '/6 DATOS</span>'
-prog_html += '</div>'
-st.markdown(prog_html, unsafe_allow_html=True)
 
 # ======================================================
 # CONNECTIONS
