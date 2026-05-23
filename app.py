@@ -62,7 +62,7 @@ html, body, [class*="css"], .stApp, .main {
     color: TEXT_COLOR !important;
 }
 .stApp { background-color: BG_COLOR !important; }
-.block-container { padding-top: 1.5rem !important; max-width: 820px !important; }
+.block-container { padding-top: 1.5rem !important; max-width: 1100px !important; }
 
 .lb-topbar-label {
     font-family: JetBrains Mono, monospace;
@@ -114,30 +114,24 @@ html, body, [class*="css"], .stApp, .main {
 .bubble-bot {
     background: BUBBLE_BOT_COLOR;
     border: 1px solid BORDER_COLOR;
-    border-radius: 2px 14px 14px 14px;
-    padding: 12px 18px;
-    max-width: 82%;
+    border-radius: 4px 16px 16px 16px;
+    padding: 14px 18px;
+    max-width: 78%;
     align-self: flex-start;
-    font-size: 0.9rem;
-    line-height: 1.65;
+    font-size: 0.94rem;
+    line-height: 1.6;
     color: TEXT_COLOR;
-    white-space: pre-wrap;
 }
 .bubble-user {
     background: BUBBLE_USR_COLOR;
     color: BUBBLE_USR_TXT_COLOR;
-    border-radius: 14px 14px 2px 14px;
-    padding: 12px 18px;
-    max-width: 82%;
+    border-radius: 16px 16px 4px 16px;
+    padding: 14px 18px;
+    max-width: 78%;
     align-self: flex-end;
-    font-size: 0.9rem;
-    line-height: 1.65;
+    font-size: 0.94rem;
+    line-height: 1.6;
 }
-
-.lb-progress-wrap { display: flex; align-items: center; gap: 6px; margin: 14px 0 12px; }
-.lb-progress-seg { flex: 1; height: 2px; background: BORDER_COLOR; border-radius: 2px; transition: background 0.35s ease; }
-.lb-progress-done { background: ACCENT_WARM_COLOR !important; }
-.lb-progress-label { font-family: JetBrains Mono, monospace; font-size: 0.48rem; letter-spacing: 0.18em; color: TEXT_DIM_COLOR; white-space: nowrap; margin-left: 8px; }
 .label-row {
     font-family: JetBrains Mono, monospace;
     font-size: 0.58rem;
@@ -247,19 +241,6 @@ hero += '</div>'
 hero += '<div class="lb-hero-date">' + today_full + '<br>LOCAL TIME &middot; ' + now_time + '</div>'
 hero += '</div>'
 st.markdown(hero, unsafe_allow_html=True)
-
-# ======================================================
-# PROGRESS BAR
-# ======================================================
-user_msg_count = len([m for m in st.session_state.get('messages', []) if m.get('role') == 'user'])
-step = 6 if st.session_state.get('done') else min(user_msg_count, 6)
-prog_html = '<div class="lb-progress-wrap">'
-for i in range(6):
-    seg_cls = 'lb-progress-seg lb-progress-done' if i < step else 'lb-progress-seg'
-    prog_html += '<div class="' + seg_cls + '"></div>'
-prog_html += '<span class="lb-progress-label">' + str(step) + '/6 DATOS</span>'
-prog_html += '</div>'
-st.markdown(prog_html, unsafe_allow_html=True)
 
 # ======================================================
 # CONNECTIONS
@@ -453,11 +434,7 @@ if not st.session_state.done:
         st.rerun()
 
 if st.session_state.done:
-    done_cols = st.columns([2, 3])
-    with done_cols[0]:
-        if st.button('// NEW CONVERSATION'):
-            for key in ['chat_history', 'messages', 'done', 'greeted']:
-                del st.session_state[key]
-            st.rerun()
-    with done_cols[1]:
-        st.markdown('<span style="font-family: JetBrains Mono, monospace; font-size: 0.52rem; color: ' + ACCENT_WARM + '; letter-spacing: 0.16em; line-height: 2.8;">&#10003; LEAD REGISTRADO</span>', unsafe_allow_html=True)
+    if st.button('// NEW CONVERSATION'):
+        for key in ['chat_history', 'messages', 'done', 'greeted']:
+            del st.session_state[key]
+        st.rerun()

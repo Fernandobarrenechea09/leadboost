@@ -326,42 +326,6 @@ div.stDownloadButton > button {
     border-radius: 20px !important;
 }
 
-@keyframes lb-hot-pulse {
-    0%   { transform: scale(1);   opacity: 0.65; }
-    70%  { transform: scale(2.4); opacity: 0; }
-    100% { transform: scale(2.4); opacity: 0; }
-}
-.badge-hot-wrap { position: relative; display: inline-flex; align-items: center; }
-.badge-hot-ring { position: absolute; inset: 0; border-radius: 20px; background: ACCENT_WARM_COLOR; animation: lb-hot-pulse 2s ease-out infinite; pointer-events: none; }
-.lead-card-hot { border-color: ACCENT_WARM_COLOR !important; }
-
-.status-wrap div.stButton > button {
-    background: transparent !important;
-    color: TEXT_DIM_COLOR !important;
-    border: 1px solid BORDER_COLOR !important;
-    padding: 6px 12px !important;
-    font-size: 0.52rem !important;
-    letter-spacing: 0.14em !important;
-}
-.status-wrap div.stButton > button:disabled {
-    background: ACCENT_COLOR !important;
-    color: BG_COLOR !important;
-    border: 1px solid ACCENT_COLOR !important;
-    opacity: 1 !important;
-    cursor: default !important;
-}
-.ghost-wrap div.stButton > button,
-.ghost-wrap div.stDownloadButton > button {
-    background: transparent !important;
-    color: TEXT_DIM_COLOR !important;
-    border: 1px solid BORDER_COLOR !important;
-}
-.ghost-wrap div.stButton > button:hover,
-.ghost-wrap div.stDownloadButton > button:hover {
-    color: TEXT_COLOR !important;
-    border-color: TEXT_COLOR !important;
-}
-
 header { visibility: hidden; height: 0; }
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
@@ -379,9 +343,6 @@ css = css.replace('HOT_BG_COLOR', HOT_BG)
 css = css.replace('WARM_BG_COLOR', WARM_BG)
 css = css.replace('COLD_BG_COLOR', COLD_BG)
 st.markdown(css, unsafe_allow_html=True)
-
-# ── local shorthand for inline HTML colors ──
-_AW = ACCENT_WARM
 
 # ======================================================
 # TOP BAR
@@ -428,11 +389,9 @@ if not st.session_state.authenticated:
 # HERO
 # ======================================================
 today_full = datetime.now().strftime('%A, %B %d, %Y').upper()
-_hour = datetime.now().hour
-_greet = 'morning' if _hour < 12 else ('evening' if _hour >= 18 else 'afternoon')
 hero = '<div class="lb-hero">'
 hero += '<div><div class="lb-hero-label">// OPERATIONS PANEL &middot; LIVE</div>'
-hero += '<div class="lb-hero-title">Good <span class="lb-hero-accent">' + _greet + '</span>.</div></div>'
+hero += '<div class="lb-hero-title">Good <span class="lb-hero-accent">afternoon</span>.</div></div>'
 hero += '<div class="lb-hero-date">' + today_full + '<br>LOCAL TIME &middot; ' + now_time + '</div></div>'
 st.markdown(hero, unsafe_allow_html=True)
 
@@ -447,7 +406,7 @@ def load_leads():
     try:
         return get_supabase().table('leads').select('*').order('id', desc=True).execute().data
     except Exception as e:
-        st.toast('Database unavailable: ' + str(e)[:60], icon='⚠')
+        st.error('Error: ' + str(e))
         return []
 
 def update_status(lead_id, new_status):
@@ -535,21 +494,17 @@ leads = load_leads()
 # ======================================================
 b1, b2, _ = st.columns([1, 1, 6])
 with b1:
-    st.markdown('<div class="ghost-wrap">', unsafe_allow_html=True)
     if st.button('// REFRESH'):
         st.cache_resource.clear()
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
 with b2:
     if leads:
-        st.markdown('<div class="ghost-wrap">', unsafe_allow_html=True)
         st.download_button(
             label='EXPORT XLSX  //',
             data=generate_excel(leads),
             file_name='leadboost_leads.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-        st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<div style="margin-top:14px"></div>', unsafe_allow_html=True)
 
@@ -783,10 +738,7 @@ if filter_status != 'Todos':
 # ======================================================
 # LEADS
 # ======================================================
-hot_badge = '<span class="badge score-hot" style="margin-left:8px;">HOT ' + str(hot) + '</span>'
-warm_badge = '<span class="badge score-warm" style="margin-left:4px;">WARM ' + str(warm) + '</span>'
-cold_badge = '<span class="badge score-cold" style="margin-left:4px;">COLD ' + str(cold) + '</span>'
-st.markdown('<div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid ' + BORDER + '; margin-top:20px; padding-top:10px; margin-bottom:8px;"><div style="font-family: JetBrains Mono, monospace; font-size:0.55rem; letter-spacing:0.22em; color:' + TEXT_DIM + '; text-transform:uppercase;">// LEADS &nbsp;&middot;&nbsp; ' + str(len(filtered)) + ' SHOWING</div><div>' + hot_badge + warm_badge + cold_badge + '</div></div>', unsafe_allow_html=True)
+st.markdown('<div style="font-family: JetBrains Mono, monospace; font-size:0.6rem; letter-spacing:0.2em; color:' + TEXT_DIM + '; text-transform:uppercase; margin-top:20px; margin-bottom:8px;">// LEADS &nbsp;&middot;&nbsp; ' + str(len(filtered)) + ' SHOWING</div>', unsafe_allow_html=True)
 
 if not filtered:
     st.markdown('<div class="chart-panel"><div class="chart-title">No leads to show.</div></div>', unsafe_allow_html=True)
@@ -804,10 +756,7 @@ else:
         ts = lead.get('timestamp', '-')
         minutes = get_minutes(lead)
 
-        if score == 'HOT':
-            score_badge = '<span class="badge-hot-wrap"><span class="badge-hot-ring"></span><span class="badge score-hot">HOT</span></span>'
-        else:
-            score_badge = '<span class="badge score-' + score.lower() + '">' + score + '</span>'
+        score_badge = '<span class="badge score-' + score.lower() + '">' + score + '</span>'
         status_badge = '<span class="badge">' + status.upper() + '</span>'
         resp_html = ''
         if minutes is not None:
@@ -816,8 +765,7 @@ else:
         wa_msg = 'Hola ' + name + ', soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interes en ' + ptype + ' en ' + area + '. Tienes un momento para hablar?'
         wa_link = 'https://wa.me/591' + phone + '?text=' + quote(wa_msg)
 
-        card_class = 'lead-card lead-card-hot' if score == 'HOT' else 'lead-card'
-        card = '<div class="' + card_class + '">'
+        card = '<div class="lead-card">'
         card += '<div class="lead-top">'
         card += '<span class="lead-name">' + name + '</span>'
         card += '<div class="lead-badges">' + resp_html + status_badge + score_badge + '</div>'
@@ -834,39 +782,32 @@ else:
         card += '</div>'
         st.markdown(card, unsafe_allow_html=True)
 
-        st.markdown('<div class="status-wrap">', unsafe_allow_html=True)
         cols = st.columns(4)
         for i, s in enumerate(['Nuevo', 'Contactado', 'Visitado', 'Cerrado']):
             with cols[i]:
                 is_current = status == s
-                label = s.upper()
+                label = ('[X] ' + s.upper()) if is_current else s.upper()
                 if st.button(label, key='s_' + str(lead_id) + '_' + s, disabled=is_current):
                     update_status(lead_id, s)
                     st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
         current_note = lead.get('notes') or ''
         note_input = st.text_area('// AGENT NOTES', value=current_note, key='note_' + str(lead_id),
                                   placeholder='Llame dos veces, no contesto...', height=70)
-        st.markdown('<div class="ghost-wrap">', unsafe_allow_html=True)
         if st.button('SAVE NOTE  //', key='save_note_' + str(lead_id)):
             try:
                 get_supabase().table('leads').update({'notes': note_input}).eq('id', lead_id).execute()
-                st.toast('Saved.', icon='✓')
+                st.success('Saved.')
                 st.rerun()
             except Exception as e:
                 st.error('Error: ' + str(e))
-        st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown('<div style="margin-bottom:20px"></div>', unsafe_allow_html=True)
 
 # ======================================================
 # LOGOUT
 # ======================================================
-st.markdown('<div style="border-top:1px solid ' + BORDER + '; margin-top:30px; padding-top:20px; display:flex; justify-content:space-between; align-items:center;">', unsafe_allow_html=True)
-st.markdown('<div class="ghost-wrap">', unsafe_allow_html=True)
+st.markdown('<div style="border-top:1px solid ' + BORDER + '; margin-top:30px; padding-top:20px;"></div>', unsafe_allow_html=True)
 if st.button('// LOG OUT'):
     st.session_state.authenticated = False
     st.rerun()
-st.markdown('</div>', unsafe_allow_html=True)
-st.markdown('<div style="font-family: JetBrains Mono, monospace; font-size: 0.48rem; color: ' + TEXT_DIM + '; letter-spacing: 0.14em;">LEADBOOST OS &middot; V3.0</div></div>', unsafe_allow_html=True)
