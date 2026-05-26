@@ -103,6 +103,14 @@ footer { visibility: hidden; }
     from { opacity:0; transform:translateY(8px); }
     to   { opacity:1; transform:translateY(0); }
 }
+@keyframes lb-fade-in {
+    from { opacity:0; }
+    to   { opacity:1; }
+}
+@keyframes lb-grow-x {
+    from { transform: scaleX(0); opacity: 0.4; }
+    to   { transform: scaleX(1); opacity: 1; }
+}
 
 /* Selection color */
 ::selection { background: ACCENT_WARM_COLOR; color: BG_COLOR; }
@@ -148,6 +156,34 @@ footer { visibility: hidden; }
     letter-spacing: -0.035em;
 }
 .lb-hero-accent { color: ACCENT_WARM_COLOR; }
+
+/* ---- BRIEFING PROSE ---- */
+.lb-briefing {
+    font-family: Fraunces, serif;
+    font-size: 1.15rem;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    margin-top: 18px;
+    line-height: 1.55;
+    max-width: 680px;
+    letter-spacing: -0.005em;
+    animation: lb-fade-in 0.5s ease both 0.15s;
+}
+.b-num {
+    font-style: italic;
+    color: TEXT_COLOR;
+    font-weight: 400;
+}
+.b-num-accent {
+    font-style: italic;
+    color: ACCENT_WARM_COLOR;
+    font-weight: 400;
+}
+.b-place {
+    font-style: italic;
+    color: ACCENT_WARM_COLOR;
+    font-weight: 400;
+}
 .lb-hero-right {
     display: flex;
     flex-direction: column;
@@ -284,6 +320,220 @@ footer { visibility: hidden; }
     letter-spacing: 0.14em;
     text-transform: uppercase;
 }
+
+/* ---- ASYMMETRIC KPI HERO ---- */
+.big-stat-card {
+    position: relative;
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-radius: 14px;
+    padding: 28px 32px 22px 32px;
+    height: 100%;
+    min-height: 280px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    animation: lb-fade-up 0.4s ease both;
+}
+.big-stat-card:hover { border-color: TEXT_DIM_COLOR; }
+.big-stat-bg {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60%;
+    opacity: 0.5;
+    pointer-events: none;
+}
+.big-stat-content { position: relative; z-index: 2; }
+.big-stat-label {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.22em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.big-stat-num {
+    font-family: Fraunces, serif;
+    font-size: 6.5rem;
+    color: TEXT_COLOR;
+    line-height: 0.92;
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+}
+.big-stat-delta {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
+    color: ACCENT_WARM_COLOR;
+    text-transform: uppercase;
+}
+.big-stat-delta-dim {
+    color: TEXT_DIM_COLOR;
+}
+
+.mini-stat-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+}
+.mini-stat {
+    flex: 1;
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    transition: border-color 0.2s, transform 0.2s;
+    animation: lb-fade-up 0.4s ease both;
+}
+.mini-stat:hover { border-color: TEXT_DIM_COLOR; transform: translateY(-1px); }
+.mini-stat-left { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mini-stat-label {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.52rem;
+    letter-spacing: 0.22em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+.mini-stat-value {
+    font-family: Fraunces, serif;
+    font-size: 2.2rem;
+    color: TEXT_COLOR;
+    line-height: 0.95;
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+}
+.mini-stat-value-accent { color: ACCENT_WARM_COLOR; }
+.mini-stat-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    min-width: 90px;
+    flex-shrink: 0;
+}
+.mini-stat-pct {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.14em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+.mini-stat-spark {
+    width: 100%;
+    max-width: 110px;
+}
+
+/* ---- CALENDAR HEATMAP ---- */
+.heatmap-wrap {
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-radius: 12px;
+    padding: 22px 26px;
+    animation: lb-fade-up 0.4s ease both;
+}
+.heatmap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid BORDER_COLOR;
+}
+.heatmap-title {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.22em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+.heatmap-meta {
+    font-family: Fraunces, serif;
+    font-size: 1.05rem;
+    color: TEXT_COLOR;
+    font-style: italic;
+    font-weight: 300;
+}
+.heatmap-svg-wrap { width: 100%; max-width: 100%; overflow: hidden; }
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.46rem;
+    letter-spacing: 0.16em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+.heatmap-legend-cells { display: inline-flex; gap: 3px; }
+.heatmap-legend-cell {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: ACCENT_WARM_COLOR;
+}
+
+/* ---- PULL-QUOTE CALLOUTS ---- */
+.pull-quote {
+    display: flex;
+    align-items: stretch;
+    gap: 24px;
+    padding: 32px 8px 32px 4px;
+    margin: 14px 0 6px 0;
+    animation: lb-fade-up 0.5s ease both;
+}
+.pull-quote-rule {
+    width: 3px;
+    background: ACCENT_WARM_COLOR;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+.pull-quote-content { flex: 1; }
+.pull-quote-text {
+    font-family: Fraunces, serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 2.2rem;
+    color: TEXT_COLOR;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    margin-bottom: 10px;
+    max-width: 880px;
+}
+.pull-quote-text-accent { color: ACCENT_WARM_COLOR; font-weight: 400; }
+.pull-quote-attr {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.22em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+
+/* ---- STAGGERED ANIMATION ---- */
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(1) .stat-card,
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(1) .mini-stat,
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(1) .resp-card { animation-delay: 0ms; }
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) .stat-card,
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) .mini-stat,
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) .resp-card { animation-delay: 70ms; }
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(3) .stat-card,
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(3) .mini-stat,
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(3) .resp-card { animation-delay: 140ms; }
+[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(4) .stat-card { animation-delay: 210ms; }
 
 /* ---- FUNNEL STRIP ---- */
 .funnel-strip {
@@ -530,7 +780,11 @@ footer { visibility: hidden; }
     border-radius: 8px !important;
     font-family: Inter, sans-serif !important;
     font-size: 0.86rem !important;
-    transition: border-color 0.15s, box-shadow 0.15s !important;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
+}
+.stTextInput > div > div > input:hover,
+.stTextArea > div > div > textarea:hover {
+    border-color: TEXT_DIM_COLOR !important;
 }
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
@@ -899,6 +1153,76 @@ def time_ago(ts_str):
     except:
         return ''
 
+def heatmap_svg(leads_list, color, weeks=12):
+    today = datetime.now().date()
+    days = weeks * 7
+    start = today - timedelta(days=days-1)
+    counts = {}
+    for l in leads_list:
+        ts = (l.get('timestamp') or '')[:10]
+        try:
+            d = datetime.strptime(ts, '%Y-%m-%d').date()
+            counts[d] = counts.get(d, 0) + 1
+        except:
+            continue
+    max_count = max(counts.values()) if counts else 0
+    cell = 13
+    gap = 4
+    w = weeks * (cell + gap)
+    h = 7 * (cell + gap)
+    svg = '<svg width="100%" height="' + str(h) + '" viewBox="0 0 ' + str(w) + ' ' + str(h) + '" preserveAspectRatio="xMidYMid meet" style="display:block;">'
+    for wi in range(weeks):
+        for di in range(7):
+            i = wi * 7 + di
+            day = start + timedelta(days=i)
+            count = counts.get(day, 0)
+            if max_count > 0 and count > 0:
+                opacity = 0.20 + (count / max_count) * 0.80
+            else:
+                opacity = 0.08
+            x = wi * (cell + gap)
+            y = di * (cell + gap)
+            svg += '<rect x="' + str(x) + '" y="' + str(y) + '" width="' + str(cell) + '" height="' + str(cell) + '" rx="2" fill="' + color + '" opacity="' + str(round(opacity, 2)) + '"><title>' + day.strftime('%b %d') + ': ' + str(count) + ' leads</title></rect>'
+    svg += '</svg>'
+    return svg
+
+def pull_quote(text_html, attribution=''):
+    html = '<div class="pull-quote">'
+    html += '<div class="pull-quote-rule"></div>'
+    html += '<div class="pull-quote-content">'
+    html += '<div class="pull-quote-text">' + text_html + '</div>'
+    if attribution:
+        html += '<div class="pull-quote-attr">' + attribution + '</div>'
+    html += '</div></div>'
+    return html
+
+def mini_stat(label, value, pct_text, sparkline_html='', accent=False):
+    val_class = 'mini-stat-value mini-stat-value-accent' if accent else 'mini-stat-value'
+    html = '<div class="mini-stat">'
+    html += '<div class="mini-stat-left">'
+    html += '<div class="mini-stat-label">' + label + '</div>'
+    html += '<div class="' + val_class + '">' + str(value) + '</div>'
+    html += '</div>'
+    html += '<div class="mini-stat-right">'
+    if sparkline_html:
+        html += '<div class="mini-stat-spark">' + sparkline_html + '</div>'
+    html += '<div class="mini-stat-pct">' + pct_text + '</div>'
+    html += '</div>'
+    html += '</div>'
+    return html
+
+def big_stat_card(label, value, delta_text, sparkline_full=''):
+    html = '<div class="big-stat-card">'
+    if sparkline_full:
+        html += '<div class="big-stat-bg">' + sparkline_full + '</div>'
+    html += '<div class="big-stat-content">'
+    html += '<div class="big-stat-label">' + label + '</div>'
+    html += '<div class="big-stat-num">' + str(value) + '</div>'
+    html += '<div class="big-stat-delta">' + delta_text + '</div>'
+    html += '</div>'
+    html += '</div>'
+    return html
+
 def stat_card(label, value, sub, accent=False, top_class='stat-card-default', sparkline=''):
     val_class = 'stat-value-accent' if accent else 'stat-value'
     html = '<div class="stat-card ' + top_class + '">'
@@ -1012,12 +1336,51 @@ else:
     greeting_word = 'evening'
 
 today_full = datetime.now().strftime('%A, %B %d, %Y').upper()
+weekday_name = datetime.now().strftime('%A')
 ring = score_ring_svg(hot, warm, cold, total)
 
+# Briefing data
+pending_count = sum(1 for l in leads if l.get('status', 'Nuevo') in ('Nuevo', 'Contactado'))
+resp_minutes_list = [get_minutes(l) for l in leads]
+resp_minutes_list = [m for m in resp_minutes_list if m is not None]
+avg_resp = int(sum(resp_minutes_list) / len(resp_minutes_list)) if resp_minutes_list else None
+
+from collections import Counter as _C
+_zone_counts = _C(l.get('area', '').strip() for l in leads if l.get('area', '').strip())
+_top_zone_pair = _zone_counts.most_common(1)
+top_zone_name = _top_zone_pair[0][0] if _top_zone_pair else None
+
+# Build briefing prose
+briefing_parts = []
+if hot > 0:
+    briefing_parts.append('You have <span class="b-num-accent">' + str(hot) + '</span> hot lead' + ('s' if hot != 1 else ''))
+elif total > 0:
+    briefing_parts.append('You have <span class="b-num">' + str(total) + '</span> lead' + ('s' if total != 1 else '') + ' on file')
+if pending_count > 0:
+    briefing_parts.append('<span class="b-num">' + str(pending_count) + '</span> follow-up' + ('s' if pending_count != 1 else '') + ' pending')
+if avg_resp is not None:
+    briefing_parts.append('an average response of <span class="b-num">' + fmt(avg_resp) + '</span>')
+
+briefing_main = ''
+if briefing_parts:
+    if len(briefing_parts) == 1:
+        briefing_main = briefing_parts[0] + '.'
+    elif len(briefing_parts) == 2:
+        briefing_main = briefing_parts[0] + ' and ' + briefing_parts[1] + '.'
+    else:
+        briefing_main = ', '.join(briefing_parts[:-1]) + ', and ' + briefing_parts[-1] + '.'
+else:
+    briefing_main = 'No leads yet today — your dashboard is ready.'
+
+briefing_zone = ''
+if top_zone_name:
+    briefing_zone = ' Top zone: <span class="b-place">' + top_zone_name + '</span>.'
+
 hero = '<div class="lb-hero">'
-hero += '<div>'
+hero += '<div style="flex:1;min-width:0;">'
 hero += '<div class="lb-hero-label">// OPERATIONS PANEL &middot; LIVE</div>'
 hero += '<div class="lb-hero-title">Good <span class="lb-hero-accent">' + greeting_word + '</span>.</div>'
+hero += '<div class="lb-briefing">' + briefing_main + briefing_zone + '</div>'
 hero += '</div>'
 hero += '<div class="lb-hero-right">'
 hero += '<div class="lb-hero-ring-wrap">'
@@ -1056,16 +1419,28 @@ with btn_export:
 # ======================================================
 st.markdown(sec_label('OVERVIEW', '<span class="section-count">' + str(total) + ' leads total</span>'), unsafe_allow_html=True)
 
-total_spark = sparkline_svg(daily_counts(leads), CHART_LINE)
-hot_spark = sparkline_svg(daily_counts(leads, 'HOT'), ACCENT_WARM)
-warm_spark = sparkline_svg(daily_counts(leads, 'WARM'), WARM_ACCENT)
-cold_spark = sparkline_svg(daily_counts(leads, 'COLD'), TEXT_DIM)
+# Sparklines for each score category
+big_spark = sparkline_svg(daily_counts(leads), CHART_LINE, width=600, height=72)
+hot_spark = sparkline_svg(daily_counts(leads, 'HOT'), ACCENT_WARM, width=110, height=22)
+warm_spark = sparkline_svg(daily_counts(leads, 'WARM'), WARM_ACCENT, width=110, height=22)
+cold_spark = sparkline_svg(daily_counts(leads, 'COLD'), TEXT_DIM, width=110, height=22)
 
-c1, c2, c3, c4 = st.columns(4)
-with c1: st.markdown(stat_card('// TOTAL LEADS', total, 'ALL TIME', sparkline=total_spark), unsafe_allow_html=True)
-with c2: st.markdown(stat_card('// HOT', hot, pct(hot) + ' OF TOTAL', accent=True, sparkline=hot_spark), unsafe_allow_html=True)
-with c3: st.markdown(stat_card('// WARM', warm, pct(warm) + ' OF TOTAL', sparkline=warm_spark), unsafe_allow_html=True)
-with c4: st.markdown(stat_card('// COLD', cold, pct(cold) + ' OF TOTAL', sparkline=cold_spark), unsafe_allow_html=True)
+# Compute "this week" delta for big stat
+_today_d = datetime.now().date()
+_week_start = _today_d - timedelta(days=6)
+_this_week = sum(1 for l in leads if l.get('timestamp', '')[:10] >= _week_start.strftime('%Y-%m-%d'))
+delta_text = '<span class="big-stat-delta-dim">LAST 7 DAYS &middot;</span> +' + str(_this_week) + ' NEW'
+
+big_col, mini_col = st.columns([1, 1])
+with big_col:
+    st.markdown(big_stat_card('// TOTAL LEADS &middot; ALL TIME', total, delta_text, sparkline_full=big_spark), unsafe_allow_html=True)
+with mini_col:
+    stack = '<div class="mini-stat-stack">'
+    stack += mini_stat('// HOT', hot, pct(hot) + ' OF TOTAL', sparkline_html=hot_spark, accent=True)
+    stack += mini_stat('// WARM', warm, pct(warm) + ' OF TOTAL', sparkline_html=warm_spark)
+    stack += mini_stat('// COLD', cold, pct(cold) + ' OF TOTAL', sparkline_html=cold_spark)
+    stack += '</div>'
+    st.markdown(stack, unsafe_allow_html=True)
 
 # ======================================================
 # CONVERSION FUNNEL
@@ -1214,6 +1589,27 @@ if leads:
             st.markdown('</div>', unsafe_allow_html=True)
 
 # ======================================================
+# CADENCE — calendar heatmap of daily lead volume
+# ======================================================
+if leads:
+    st.markdown(sec_label('CADENCE', '<span class="section-count">last 12 weeks</span>'), unsafe_allow_html=True)
+    hm_svg = heatmap_svg(leads, ACCENT_WARM, weeks=12)
+    hm_html = '<div class="heatmap-wrap">'
+    hm_html += '<div class="heatmap-header">'
+    hm_html += '<div class="heatmap-title">// DAILY LEAD VOLUME</div>'
+    hm_html += '<div class="heatmap-meta">' + str(total) + ' over 84 days</div>'
+    hm_html += '</div>'
+    hm_html += '<div class="heatmap-svg-wrap">' + hm_svg + '</div>'
+    # Mini legend
+    hm_html += '<div class="heatmap-legend"><span>LESS</span>'
+    hm_html += '<span class="heatmap-legend-cells">'
+    for op in [0.08, 0.25, 0.45, 0.65, 0.95]:
+        hm_html += '<span class="heatmap-legend-cell" style="opacity:' + str(op) + ';"></span>'
+    hm_html += '</span><span>MORE</span></div>'
+    hm_html += '</div>'
+    st.markdown(hm_html, unsafe_allow_html=True)
+
+# ======================================================
 # DAILY STATS
 # ======================================================
 if leads:
@@ -1226,6 +1622,29 @@ if leads:
     with d1: st.markdown(stat_card('// TODAY\'S LEADS', today_leads, 'RECEIVED TODAY'), unsafe_allow_html=True)
     with d2: st.markdown(stat_card('// PENDING CONTACT', pending_contact, 'NEED FOLLOW-UP', accent=True), unsafe_allow_html=True)
     with d3: st.markdown(stat_card('// CONVERSION RATE', conv_rate, 'HOT + WARM / TOTAL'), unsafe_allow_html=True)
+
+    # Pull-quote insight: surface the most striking metric
+    quote_text = None
+    quote_attr = None
+    if total > 0:
+        conv_n = round((hot + warm) / total * 100)
+        if conv_n >= 50:
+            quote_text = '<span class="pull-quote-text-accent">' + str(conv_n) + '%</span> of your leads are warm or hot — your best signal yet.'
+            quote_attr = '// CONVERSION INSIGHT'
+        elif hot >= 3:
+            quote_text = '<span class="pull-quote-text-accent">' + str(hot) + ' hot leads</span> in the pipeline. Move fast — response time matters.'
+            quote_attr = '// PRIORITY SIGNAL'
+        elif top_zone_name and _top_zone_pair and _top_zone_pair[0][1] >= 2:
+            quote_text = '<span class="pull-quote-text-accent">' + top_zone_name + '</span> leads the zones with ' + str(_top_zone_pair[0][1]) + ' leads. Worth doubling down.'
+            quote_attr = '// MARKET FOCUS'
+        elif resp_minutes_list and avg_resp is not None and avg_resp <= 30:
+            quote_text = 'Average response time: <span class="pull-quote-text-accent">' + fmt(avg_resp) + '</span>. Fast enough to win.'
+            quote_attr = '// PERFORMANCE'
+        else:
+            quote_text = 'Steady pipeline. <span class="pull-quote-text-accent">' + str(total) + '</span> leads on file, ' + str(pending_count) + ' still waiting on you.'
+            quote_attr = '// OPERATIONS'
+    if quote_text:
+        st.markdown(pull_quote(quote_text, quote_attr), unsafe_allow_html=True)
 
 # ======================================================
 # TOP ZONES + FOLLOW-UPS
