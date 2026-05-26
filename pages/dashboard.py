@@ -4,7 +4,7 @@ import io
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import quote
 import pandas as pd
 import altair as alt
@@ -122,12 +122,13 @@ footer { visibility: hidden; }
 .lb-hero {
     border: 1px solid BORDER_COLOR;
     background: PANEL_COLOR;
-    border-radius: 14px;
-    padding: 20px 26px;
-    margin-bottom: 8px;
+    border-radius: 16px;
+    padding: 34px 38px;
+    margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
+    gap: 28px;
 }
 .lb-hero-label {
     font-family: JetBrains Mono, monospace;
@@ -135,16 +136,16 @@ footer { visibility: hidden; }
     letter-spacing: 0.24em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
-    margin-bottom: 5px;
+    margin-bottom: 12px;
 }
 .lb-hero-title {
     font-family: Fraunces, serif;
-    font-size: 2.6rem;
+    font-size: 4rem;
     color: TEXT_COLOR;
-    line-height: 1;
+    line-height: 0.95;
     font-style: italic;
     font-weight: 300;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.035em;
 }
 .lb-hero-accent { color: ACCENT_WARM_COLOR; }
 .lb-hero-right {
@@ -184,24 +185,43 @@ footer { visibility: hidden; }
 /* ---- SECTION LABEL ---- */
 .section-label {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.56rem;
-    letter-spacing: 0.24em;
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
-    border-top: 1px solid BORDER_COLOR;
-    padding-top: 12px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    padding-top: 28px;
+    margin-bottom: 14px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
+}
+.section-label-left {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+.section-num {
+    font-family: Fraunces, serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 1.15rem;
+    color: TEXT_COLOR;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+.section-sep {
+    color: BORDER_COLOR;
+    font-weight: 300;
+    font-size: 0.9rem;
+    font-family: Fraunces, serif;
+    font-style: italic;
 }
 .section-count {
     font-family: Fraunces, serif;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-style: italic;
     font-weight: 300;
-    color: TEXT_COLOR;
+    color: TEXT_DIM_COLOR;
 }
 
 /* ---- STAT CARDS ---- */
@@ -209,50 +229,59 @@ footer { visibility: hidden; }
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 12px;
-    padding: 15px 18px;
-    height: 124px;
+    padding: 20px 22px;
+    height: 168px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    border-top-width: 3px;
-    border-top-style: solid;
+    transition: border-color 0.2s, transform 0.2s;
 }
-.stat-card-default { border-top-color: BORDER_COLOR; }
-.stat-card-hot { border-top-color: ACCENT_WARM_COLOR; }
-.stat-card-warm { border-top-color: WARM_ACCENT_COLOR; }
-.stat-card-cold { border-top-color: BORDER_COLOR; }
+.stat-card:hover {
+    border-color: TEXT_DIM_COLOR;
+    transform: translateY(-1px);
+}
+/* legacy classes kept for backwards-compat — no special border now */
+.stat-card-default, .stat-card-hot, .stat-card-warm, .stat-card-cold { }
 .stat-label {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.52rem;
+    font-size: 0.54rem;
     letter-spacing: 0.22em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
 }
 .stat-value {
     font-family: Fraunces, serif;
-    font-size: 2.7rem;
+    font-size: 3rem;
     color: TEXT_COLOR;
     line-height: 1;
     font-style: italic;
     font-weight: 300;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.035em;
     font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
 }
 .stat-value-accent {
     font-family: Fraunces, serif;
-    font-size: 2.7rem;
+    font-size: 3rem;
     color: ACCENT_WARM_COLOR;
     line-height: 1;
     font-style: italic;
     font-weight: 300;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.035em;
     font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+}
+.stat-spark {
+    margin: 4px 0 -2px 0;
+    height: 24px;
+    display: flex;
+    align-items: flex-end;
 }
 .stat-sub {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.52rem;
+    font-size: 0.5rem;
     color: TEXT_DIM_COLOR;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
 }
 
@@ -408,27 +437,34 @@ footer { visibility: hidden; }
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 12px;
-    padding: 18px 22px;
-    margin-bottom: 6px;
+    padding: 22px 26px;
+    margin-bottom: 8px;
     animation: lb-fade-up 0.3s ease both;
+    transition: border-color 0.2s, transform 0.2s;
+}
+.lead-card:hover {
+    border-color: TEXT_DIM_COLOR;
+    transform: translateY(-1px);
 }
 .lead-card-hot { border-color: ACCENT_WARM_COLOR55; }
+.lead-card-hot:hover { border-color: ACCENT_WARM_COLOR; }
 .lead-card-warm { border-color: BORDER_COLOR; }
 .lead-card-cold { border-color: BORDER_COLOR; }
 .lead-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    padding-bottom: 9px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
     border-bottom: 1px solid BORDER_COLOR;
 }
 .lead-name {
     font-family: Fraunces, serif;
-    font-size: 1.25rem;
+    font-size: 1.55rem;
     font-style: italic;
     color: TEXT_COLOR;
     font-weight: 300;
+    letter-spacing: -0.02em;
 }
 .lead-badges { display: flex; gap: 5px; align-items: center; }
 .lead-grid {
@@ -546,10 +582,10 @@ div.stButton > button[kind="primary"] {
 div.stButton > button[kind="primary"]:hover {
     opacity: 0.85 !important;
 }
-/* Active status button — terracotta (disabled=True on the current status) */
+/* Active status button (disabled=True) — dark accent, restrained */
 div.stButton > button:disabled {
     opacity: 1 !important;
-    background: ACCENT_WARM_COLOR !important;
+    background: ACCENT_COLOR !important;
     color: BG_COLOR !important;
     border: none !important;
     cursor: default !important;
@@ -607,6 +643,57 @@ div.stDownloadButton > button:hover {
 
 /* Reduce Streamlit column gap */
 [data-testid="stHorizontalBlock"] { gap: 0.5rem !important; }
+
+/* ---- FOLLOW-UP SCROLLABLE LIST ---- */
+.follow-up-list {
+    max-height: 312px;
+    overflow-y: auto;
+    padding-right: 6px;
+    margin: 0 -2px;
+}
+.follow-up-list::-webkit-scrollbar { width: 3px; }
+.follow-up-list::-webkit-scrollbar-track { background: transparent; }
+.follow-up-list::-webkit-scrollbar-thumb { background: BORDER_COLOR; border-radius: 2px; }
+.follow-up-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 4px;
+    border-bottom: 1px solid BORDER_COLOR;
+    transition: background 0.15s, padding-left 0.15s;
+    cursor: default;
+}
+.follow-up-row:last-child { border-bottom: none; }
+.follow-up-row:hover { padding-left: 10px; }
+.follow-up-name {
+    font-family: Fraunces, serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: TEXT_COLOR;
+    font-weight: 300;
+    margin-bottom: 3px;
+    letter-spacing: -0.01em;
+}
+.follow-up-meta {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.14em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+.follow-up-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+.follow-up-ago {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.46rem;
+    color: TEXT_DIM_COLOR;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
 </style>
 '''
 
@@ -760,11 +847,65 @@ def generate_excel(leads):
 # ======================================================
 # COMPONENT HELPERS
 # ======================================================
-def stat_card(label, value, sub, accent=False, top_class='stat-card-default'):
+_sec_n = [0]
+def sec_label(name, right_html=''):
+    _sec_n[0] += 1
+    num = str(_sec_n[0]).zfill(2)
+    return ('<div class="section-label">'
+            '<span class="section-label-left">'
+            '<span class="section-num">' + num + '</span>'
+            '<span class="section-sep">/</span>'
+            '<span>' + name + '</span>'
+            '</span>'
+            + right_html + '</div>')
+
+def daily_counts(leads_list, score_filter=None, days=30):
+    today = datetime.now().date()
+    dates = [(today - timedelta(days=days-1-i)).strftime('%Y-%m-%d') for i in range(days)]
+    counts = {d: 0 for d in dates}
+    for l in leads_list:
+        if score_filter and l.get('score') != score_filter:
+            continue
+        ts = (l.get('timestamp') or '')[:10]
+        if ts in counts:
+            counts[ts] += 1
+    return [counts[d] for d in dates]
+
+def sparkline_svg(values, color, width=160, height=22):
+    if not values:
+        return ''
+    max_v = max(values) if max(values) > 0 else 1
+    n = len(values)
+    pts = []
+    for i, v in enumerate(values):
+        x = (i / (n - 1) * width) if n > 1 else width / 2
+        y = height - (v / max_v * (height - 4)) - 2
+        pts.append((round(x, 1), round(y, 1)))
+    line = 'M' + ' L'.join(str(p[0]) + ',' + str(p[1]) for p in pts)
+    area = line + ' L' + str(pts[-1][0]) + ',' + str(height) + ' L' + str(pts[0][0]) + ',' + str(height) + ' Z'
+    return ('<svg width="100%" height="' + str(height) + '" viewBox="0 0 ' + str(width) + ' ' + str(height) + '" preserveAspectRatio="none" style="display:block;">'
+            '<path d="' + area + '" fill="' + color + '" opacity="0.12"/>'
+            '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>'
+            '</svg>')
+
+def time_ago(ts_str):
+    try:
+        t = datetime.strptime(ts_str, '%Y-%m-%d %H:%M')
+        delta = datetime.now() - t
+        mins = int(delta.total_seconds() / 60)
+        if mins < 60: return str(mins) + 'M AGO'
+        if mins < 1440: return str(mins // 60) + 'H AGO'
+        return str(mins // 1440) + 'D AGO'
+    except:
+        return ''
+
+def stat_card(label, value, sub, accent=False, top_class='stat-card-default', sparkline=''):
     val_class = 'stat-value-accent' if accent else 'stat-value'
     html = '<div class="stat-card ' + top_class + '">'
     html += '<div class="stat-label">' + label + '</div>'
     html += '<div class="' + val_class + '">' + str(value) + '</div>'
+    if sparkline:
+        html += '<div class="stat-spark">' + sparkline + '</div>'
     html += '<div class="stat-sub">' + sub + '</div>'
     html += '</div>'
     return html
@@ -895,7 +1036,7 @@ st.markdown(hero, unsafe_allow_html=True)
 # ======================================================
 # TOP ACTIONS
 # ======================================================
-btn_refresh, btn_export, _ = st.columns([1, 1, 8])
+btn_refresh, btn_export, _ = st.columns([2, 2, 6])
 with btn_refresh:
     if st.button('// REFRESH', key='refresh_btn'):
         st.cache_resource.clear()
@@ -913,26 +1054,31 @@ with btn_export:
 # ======================================================
 # STATS
 # ======================================================
-st.markdown('<div class="section-label"><span>// OVERVIEW</span><span class="section-count">' + str(total) + ' leads total</span></div>', unsafe_allow_html=True)
+st.markdown(sec_label('OVERVIEW', '<span class="section-count">' + str(total) + ' leads total</span>'), unsafe_allow_html=True)
+
+total_spark = sparkline_svg(daily_counts(leads), CHART_LINE)
+hot_spark = sparkline_svg(daily_counts(leads, 'HOT'), ACCENT_WARM)
+warm_spark = sparkline_svg(daily_counts(leads, 'WARM'), WARM_ACCENT)
+cold_spark = sparkline_svg(daily_counts(leads, 'COLD'), TEXT_DIM)
 
 c1, c2, c3, c4 = st.columns(4)
-with c1: st.markdown(stat_card('// TOTAL LEADS', total, 'ALL TIME', top_class='stat-card-default'), unsafe_allow_html=True)
-with c2: st.markdown(stat_card('// HOT', hot, pct(hot) + ' OF TOTAL', accent=True, top_class='stat-card-hot'), unsafe_allow_html=True)
-with c3: st.markdown(stat_card('// WARM', warm, pct(warm) + ' OF TOTAL', top_class='stat-card-warm'), unsafe_allow_html=True)
-with c4: st.markdown(stat_card('// COLD', cold, pct(cold) + ' OF TOTAL', top_class='stat-card-cold'), unsafe_allow_html=True)
+with c1: st.markdown(stat_card('// TOTAL LEADS', total, 'ALL TIME', sparkline=total_spark), unsafe_allow_html=True)
+with c2: st.markdown(stat_card('// HOT', hot, pct(hot) + ' OF TOTAL', accent=True, sparkline=hot_spark), unsafe_allow_html=True)
+with c3: st.markdown(stat_card('// WARM', warm, pct(warm) + ' OF TOTAL', sparkline=warm_spark), unsafe_allow_html=True)
+with c4: st.markdown(stat_card('// COLD', cold, pct(cold) + ' OF TOTAL', sparkline=cold_spark), unsafe_allow_html=True)
 
 # ======================================================
 # CONVERSION FUNNEL
 # ======================================================
 if leads:
-    st.markdown('<div class="section-label"><span>// PIPELINE</span></div>', unsafe_allow_html=True)
+    st.markdown(sec_label('PIPELINE'), unsafe_allow_html=True)
     st.markdown(funnel_strip(leads), unsafe_allow_html=True)
 
 # ======================================================
 # CHARTS
 # ======================================================
 if leads:
-    st.markdown('<div class="section-label"><span>// ANALYTICS</span></div>', unsafe_allow_html=True)
+    st.markdown(sec_label('ANALYTICS'), unsafe_allow_html=True)
     ch1, ch2 = st.columns(2)
 
     with ch1:
@@ -945,7 +1091,7 @@ if leads:
             base = alt.Chart(daily)
 
             area_layer = base.mark_area(
-                line={'color': CHART_LINE, 'strokeWidth': 2},
+                line={'color': CHART_LINE, 'strokeWidth': 2.2},
                 color=alt.Gradient(
                     gradient='linear',
                     stops=[
@@ -955,7 +1101,7 @@ if leads:
                     x1=1, x2=1, y1=1, y2=0
                 ),
                 interpolate='monotone',
-                opacity=0.85
+                opacity=0.95
             ).encode(
                 x=alt.X('date:T', axis=alt.Axis(
                     labelFont='JetBrains Mono',
@@ -963,7 +1109,7 @@ if leads:
                     labelColor=TEXT_DIM,
                     domainColor=BORDER,
                     tickColor=BORDER,
-                    gridColor=BORDER,
+                    grid=False,
                     title=None,
                     format='%b %d',
                     labelAngle=0,
@@ -976,7 +1122,7 @@ if leads:
                     domainColor=BORDER,
                     tickColor=BORDER,
                     gridColor=BORDER,
-                    gridDash=[4, 3],
+                    gridOpacity=0.4,
                     title=None,
                     tickCount=4
                 ))
@@ -1022,7 +1168,7 @@ if leads:
             bar_base = alt.Chart(counts_data)
             bar_layer = bar_base.mark_bar(
                 color=CHART_LINE,
-                opacity=0.88,
+                opacity=0.92,
                 cornerRadiusTopLeft=3,
                 cornerRadiusTopRight=3
             ).encode(
@@ -1042,7 +1188,7 @@ if leads:
                     domainColor=BORDER,
                     tickColor=BORDER,
                     gridColor=BORDER,
-                    gridDash=[4, 3],
+                    gridOpacity=0.4,
                     title=None,
                     tickCount=4
                 ))
@@ -1075,41 +1221,50 @@ if leads:
     today_leads = sum(1 for l in leads if l.get('timestamp', '').startswith(today_date))
     pending_contact = sum(1 for l in leads if l.get('status', 'Nuevo') == 'Nuevo')
     conv_rate = str(round((hot + warm) / total * 100)) + '%' if total > 0 else '0%'
-    st.markdown('<div class="section-label"><span>// TODAY</span></div>', unsafe_allow_html=True)
+    st.markdown(sec_label('TODAY'), unsafe_allow_html=True)
     d1, d2, d3 = st.columns(3)
-    with d1: st.markdown(stat_card('// TODAY\'S LEADS', today_leads, 'RECEIVED TODAY', top_class='stat-card-default'), unsafe_allow_html=True)
-    with d2: st.markdown(stat_card('// PENDING CONTACT', pending_contact, 'NEED FOLLOW-UP', accent=True, top_class='stat-card-hot'), unsafe_allow_html=True)
-    with d3: st.markdown(stat_card('// CONVERSION RATE', conv_rate, 'HOT + WARM / TOTAL', top_class='stat-card-default'), unsafe_allow_html=True)
+    with d1: st.markdown(stat_card('// TODAY\'S LEADS', today_leads, 'RECEIVED TODAY'), unsafe_allow_html=True)
+    with d2: st.markdown(stat_card('// PENDING CONTACT', pending_contact, 'NEED FOLLOW-UP', accent=True), unsafe_allow_html=True)
+    with d3: st.markdown(stat_card('// CONVERSION RATE', conv_rate, 'HOT + WARM / TOTAL'), unsafe_allow_html=True)
 
 # ======================================================
 # TOP ZONES + FOLLOW-UPS
 # ======================================================
 def follow_up_panel(leads_list):
     pending = [l for l in leads_list if l.get('status', 'Nuevo') in ('Nuevo', 'Contactado')]
+    pending = sorted(pending, key=lambda l: l.get('timestamp', ''), reverse=True)
     html = '<div class="chart-panel"><div class="chart-header">'
     html += '<div class="chart-title">// FOLLOW-UPS</div>'
-    html += '<div class="chart-big-num" style="color:' + ACCENT_WARM + '">' + str(len(pending)) + ' pending</div>'
+    html += '<div class="chart-big-num" style="color:' + ACCENT_WARM + ';font-size:1.15rem;">' + str(len(pending)) + ' pending</div>'
     html += '</div>'
     if not pending:
-        html += '<div style="font-family:JetBrains Mono,monospace;font-size:0.5rem;color:' + TEXT_DIM + ';letter-spacing:0.16em;padding:16px 0;">ALL LEADS CONTACTED.</div>'
+        html += '<div style="font-family:JetBrains Mono,monospace;font-size:0.5rem;color:' + TEXT_DIM + ';letter-spacing:0.16em;padding:20px 0;text-align:center;">ALL LEADS CONTACTED.</div>'
     else:
-        for l in pending[:7]:
+        html += '<div class="follow-up-list">'
+        for l in pending:
             st_val = l.get('status', 'Nuevo')
             sc = l.get('score', 'COLD')
             nm = l.get('name', '-')
             prop = l.get('property_type', '')
             bgt = l.get('budget', '-')
-            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid ' + BORDER + ';">'
+            ago = time_ago(l.get('timestamp', ''))
+            html += '<div class="follow-up-row">'
             html += '<div>'
-            html += '<div style="font-family:Fraunces,serif;font-size:0.95rem;font-style:italic;color:' + TEXT + ';margin-bottom:2px;">' + nm + '</div>'
-            html += '<div style="font-family:JetBrains Mono,monospace;font-size:0.47rem;letter-spacing:0.14em;color:' + TEXT_DIM + ';">' + st_val.upper() + ' &middot; ' + prop.upper() + ' &middot; $' + str(bgt) + '</div>'
+            html += '<div class="follow-up-name">' + nm + '</div>'
+            html += '<div class="follow-up-meta">' + st_val.upper() + ' &middot; ' + prop.upper() + ' &middot; $' + str(bgt) + '</div>'
             html += '</div>'
+            html += '<div class="follow-up-right">'
             html += '<span class="badge score-' + sc.lower() + '">' + sc + '</span>'
+            if ago:
+                html += '<span class="follow-up-ago">' + ago + '</span>'
             html += '</div>'
+            html += '</div>'
+        html += '</div>'
     html += '</div>'
     return html
 
 if leads:
+    st.markdown(sec_label('ZONES &amp; FOLLOW-UPS'), unsafe_allow_html=True)
     zones_html = zones_leaderboard(leads)
     zl, zr = st.columns(2)
     with zl:
@@ -1130,7 +1285,7 @@ if timed:
     avg = sum(t['minutes'] for t in timed) / len(timed)
     fastest = min(timed, key=lambda x: x['minutes'])
     slowest = max(timed, key=lambda x: x['minutes'])
-    st.markdown('<div class="section-label"><span>// RESPONSE TIME</span><span class="section-count">' + str(len(timed)) + ' contacted</span></div>', unsafe_allow_html=True)
+    st.markdown(sec_label('RESPONSE TIME', '<span class="section-count">' + str(len(timed)) + ' contacted</span>'), unsafe_allow_html=True)
     t1, t2, t3 = st.columns(3)
     with t1: st.markdown(resp_card('// AVG RESPONSE', fmt(int(avg)), 'ACROSS ' + str(len(timed)) + ' LEADS'), unsafe_allow_html=True)
     with t2: st.markdown(resp_card('// FASTEST', fmt(fastest['minutes']), fastest['name'].upper(), accent=True), unsafe_allow_html=True)
@@ -1139,7 +1294,7 @@ if timed:
 # ======================================================
 # SEARCH + FILTERS
 # ======================================================
-st.markdown('<div class="section-label"><span>// LEADS</span></div>', unsafe_allow_html=True)
+st.markdown(sec_label('LEADS'), unsafe_allow_html=True)
 
 search_col, f1, f2 = st.columns([3, 1, 1])
 with search_col:
