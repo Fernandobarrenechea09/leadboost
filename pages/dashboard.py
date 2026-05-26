@@ -41,6 +41,7 @@ if st.session_state.theme == 'light':
     HOT_BG = '#EDD5CC'
     WARM_BG = '#E8DCC0'
     COLD_BG = '#D6D9CD'
+    WARM_ACCENT = '#B8924A'
 else:
     BG = '#18150F'
     PANEL = '#221E16'
@@ -54,13 +55,16 @@ else:
     HOT_BG = '#3A2820'
     WARM_BG = '#332B1E'
     COLD_BG = '#252420'
+    WARM_ACCENT = '#C4A35A'
 
 # ======================================================
 # CSS
 # ======================================================
 css = '''
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body, [class*="css"], .stApp, .main {
     font-family: Inter, sans-serif;
@@ -68,130 +72,315 @@ html, body, [class*="css"], .stApp, .main {
     color: TEXT_COLOR !important;
 }
 .stApp { background-color: BG_COLOR !important; }
-.block-container { padding-top: 1.5rem !important; max-width: 1280px !important; }
-
-.lb-topbar-label {
-    font-family: JetBrains Mono, monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.18em;
-    color: TEXT_DIM_COLOR;
-    text-transform: uppercase;
-    padding-top: 18px;
+.block-container {
+    padding-top: 0.55rem !important;
+    padding-bottom: 2.5rem !important;
+    max-width: 1280px !important;
 }
 
+/* Hide Streamlit chrome */
+header { visibility: hidden; height: 0 !important; }
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+[data-testid="collapsedControl"] { display: none !important; }
+.vega-embed details { display: none !important; }
+.vega-embed summary { display: none !important; }
+.vega-embed .vega-actions { display: none !important; }
+
+/* Slim scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: BG_COLOR; }
+::-webkit-scrollbar-thumb { background: BORDER_COLOR; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: TEXT_DIM_COLOR; }
+
+/* Selection color */
+::selection { background: ACCENT_WARM_COLOR; color: BG_COLOR; }
+
+/* ---- TOPBAR ---- */
+.lb-topbar-label {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    padding-top: 14px;
+    padding-bottom: 2px;
+}
+
+/* ---- HERO ---- */
 .lb-hero {
     border: 1px solid BORDER_COLOR;
     background: PANEL_COLOR;
     border-radius: 14px;
-    padding: 26px 30px;
-    margin-bottom: 12px;
+    padding: 20px 26px;
+    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
 }
 .lb-hero-label {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
+    font-size: 0.56rem;
+    letter-spacing: 0.24em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 }
 .lb-hero-title {
     font-family: Fraunces, serif;
-    font-size: 2.8rem;
+    font-size: 2.6rem;
     color: TEXT_COLOR;
     line-height: 1;
     font-style: italic;
-    font-weight: 400;
-    letter-spacing: -0.02em;
+    font-weight: 300;
+    letter-spacing: -0.03em;
 }
 .lb-hero-accent { color: ACCENT_WARM_COLOR; }
+.lb-hero-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+.lb-hero-ring-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.lb-hero-ring-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: right;
+}
+.lb-hero-ring-stat {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.54rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: TEXT_DIM_COLOR;
+}
+.lb-hero-ring-stat.hot { color: ACCENT_WARM_COLOR; }
 .lb-hero-date {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.65rem;
+    font-size: 0.58rem;
     color: TEXT_DIM_COLOR;
     letter-spacing: 0.12em;
     text-align: right;
     line-height: 1.7;
 }
 
+/* ---- SECTION LABEL ---- */
+.section-label {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.24em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    border-top: 1px solid BORDER_COLOR;
+    padding-top: 12px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.section-count {
+    font-family: Fraunces, serif;
+    font-size: 0.9rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+}
+
+/* ---- STAT CARDS ---- */
 .stat-card {
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 12px;
-    padding: 18px 22px;
-    height: 130px;
+    padding: 15px 18px;
+    height: 124px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    border-top-width: 3px;
+    border-top-style: solid;
 }
+.stat-card-default { border-top-color: BORDER_COLOR; }
+.stat-card-hot { border-top-color: ACCENT_WARM_COLOR; }
+.stat-card-warm { border-top-color: WARM_ACCENT_COLOR; }
+.stat-card-cold { border-top-color: BORDER_COLOR; }
 .stat-label {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.58rem;
-    letter-spacing: 0.2em;
+    font-size: 0.52rem;
+    letter-spacing: 0.22em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
 }
 .stat-value {
     font-family: Fraunces, serif;
-    font-size: 2.8rem;
+    font-size: 2.7rem;
     color: TEXT_COLOR;
     line-height: 1;
     font-style: italic;
-    font-weight: 400;
-    letter-spacing: -0.02em;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    font-feature-settings: "tnum";
 }
 .stat-value-accent {
     font-family: Fraunces, serif;
-    font-size: 2.8rem;
+    font-size: 2.7rem;
     color: ACCENT_WARM_COLOR;
     line-height: 1;
     font-style: italic;
-    font-weight: 400;
-    letter-spacing: -0.02em;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    font-feature-settings: "tnum";
 }
 .stat-sub {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.6rem;
+    font-size: 0.52rem;
     color: TEXT_DIM_COLOR;
     letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
+/* ---- FUNNEL STRIP ---- */
+.funnel-strip {
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.funnel-step { flex: 1; text-align: center; }
+.funnel-label {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+.funnel-num {
+    font-family: Fraunces, serif;
+    font-size: 1.7rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    line-height: 1;
+    font-feature-settings: "tnum";
+}
+.funnel-pct {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.48rem;
+    color: TEXT_DIM_COLOR;
+    letter-spacing: 0.1em;
+    margin-top: 3px;
+}
+.funnel-arrow {
+    font-size: 0.9rem;
+    color: BORDER_COLOR;
+    padding: 0 8px;
+    flex-shrink: 0;
+    padding-bottom: 14px;
+}
+
+/* ---- CHART PANELS ---- */
 .chart-panel {
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 12px;
-    padding: 18px 22px 10px 22px;
-    margin-bottom: 10px;
+    padding: 14px 18px 6px 18px;
+    margin-bottom: 8px;
 }
 .chart-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
+    align-items: baseline;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
     border-bottom: 1px solid BORDER_COLOR;
 }
 .chart-title {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
+    font-size: 0.56rem;
+    letter-spacing: 0.22em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
 }
 .chart-big-num {
     font-family: Fraunces, serif;
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: TEXT_COLOR;
     font-style: italic;
+    font-weight: 300;
 }
 
+/* ---- ZONE LEADERBOARD ---- */
+.zone-board {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 4px 0 6px 0;
+}
+.zone-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.zone-name {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.08em;
+    color: TEXT_COLOR;
+    min-width: 110px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.zone-bar-wrap {
+    flex: 1;
+    height: 4px;
+    background: BORDER_COLOR;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.zone-bar {
+    height: 100%;
+    background: CHART_LINE_COLOR;
+    border-radius: 10px;
+}
+.zone-count {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.56rem;
+    color: TEXT_DIM_COLOR;
+    min-width: 18px;
+    text-align: right;
+}
+
+/* ---- RESPONSE TIME CARD ---- */
+.resp-card {
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-radius: 12px;
+    padding: 15px 18px;
+    height: 124px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-top: 3px solid BORDER_COLOR;
+}
+
+/* ---- BADGES ---- */
 .badge {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.55rem;
-    letter-spacing: 0.2em;
-    padding: 4px 10px;
+    font-size: 0.5rem;
+    letter-spacing: 0.18em;
+    padding: 3px 8px;
     border-radius: 20px;
     border: 1px solid BORDER_COLOR;
     text-transform: uppercase;
@@ -199,90 +388,124 @@ html, body, [class*="css"], .stApp, .main {
     color: TEXT_COLOR;
     display: inline-block;
 }
-.score-hot { background: HOT_BG_COLOR; }
+.score-hot { background: HOT_BG_COLOR; border-color: ACCENT_WARM_COLOR; }
 .score-warm { background: WARM_BG_COLOR; }
 .score-cold { background: COLD_BG_COLOR; }
 
+/* ---- LEAD CARDS ---- */
 .lead-card {
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 12px;
-    padding: 18px 22px;
-    margin-bottom: 4px;
+    padding: 14px 18px;
+    margin-bottom: 3px;
+    border-left: 3px solid BORDER_COLOR;
 }
+.lead-card-hot { border-left-color: ACCENT_WARM_COLOR; }
+.lead-card-warm { border-left-color: WARM_ACCENT_COLOR; }
+.lead-card-cold { border-left-color: BORDER_COLOR; }
 .lead-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
-    padding-bottom: 12px;
+    margin-bottom: 10px;
+    padding-bottom: 9px;
     border-bottom: 1px solid BORDER_COLOR;
 }
 .lead-name {
     font-family: Fraunces, serif;
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     font-style: italic;
     color: TEXT_COLOR;
-    font-weight: 400;
+    font-weight: 300;
 }
-.lead-badges { display: flex; gap: 8px; align-items: center; }
+.lead-badges { display: flex; gap: 5px; align-items: center; }
 .lead-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px 28px;
+    gap: 8px 22px;
     font-family: JetBrains Mono, monospace;
-    font-size: 0.76rem;
+    font-size: 0.7rem;
     color: TEXT_COLOR;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
 }
 .field-label {
     color: TEXT_DIM_COLOR;
-    font-size: 0.55rem;
+    font-size: 0.5rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     display: block;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
+}
+.lead-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 9px;
+    border-top: 1px solid BORDER_COLOR;
+}
+.lead-ts {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.5rem;
+    color: TEXT_DIM_COLOR;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 .wa-btn {
     display: inline-block;
     background: ACCENT_COLOR;
     color: BG_COLOR;
-    padding: 9px 20px;
+    padding: 6px 14px;
     border-radius: 8px;
     text-decoration: none;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
-    font-size: 0.66rem;
-    letter-spacing: 0.2em;
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
+    transition: opacity 0.15s;
 }
+.wa-btn:hover { opacity: 0.8; }
 .resp-time {
     font-family: JetBrains Mono, monospace;
-    font-size: 0.62rem;
+    font-size: 0.54rem;
     color: TEXT_DIM_COLOR;
     letter-spacing: 0.1em;
 }
 
-.stTextInput > div > div > input, .stTextArea > div > div > textarea {
+/* ---- INPUTS ---- */
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea {
     background: PANEL_COLOR !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
     border-radius: 8px !important;
     font-family: Inter, sans-serif !important;
+    font-size: 0.86rem !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+}
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+    border-color: ACCENT_WARM_COLOR !important;
+    box-shadow: 0 0 0 2px ACCENT_WARM_COLOR33 !important;
+    outline: none !important;
 }
 .stSelectbox > div > div {
     background: PANEL_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
     border-radius: 8px !important;
+    color: TEXT_COLOR !important;
 }
 .stTextInput label, .stSelectbox label, .stTextArea label {
     color: TEXT_DIM_COLOR !important;
     font-family: JetBrains Mono, monospace !important;
-    font-size: 0.58rem !important;
-    letter-spacing: 0.2em !important;
+    font-size: 0.52rem !important;
+    letter-spacing: 0.22em !important;
     text-transform: uppercase !important;
 }
 
+/* ---- BUTTONS ---- */
 div.stButton > button {
     background: ACCENT_COLOR;
     color: BG_COLOR;
@@ -291,10 +514,11 @@ div.stButton > button {
     padding: 6px 14px;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
-    font-size: 0.58rem;
-    letter-spacing: 0.16em;
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    transition: all 0.15s;
+    transition: opacity 0.15s;
+    white-space: nowrap;
 }
 div.stButton > button:hover { opacity: 0.82; }
 div.stButton > button:disabled {
@@ -312,36 +536,111 @@ div.stDownloadButton > button {
     padding: 6px 14px;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
-    font-size: 0.58rem;
-    letter-spacing: 0.16em;
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
+    white-space: nowrap;
+    transition: opacity 0.15s;
 }
+div.stDownloadButton > button:hover { opacity: 0.82; }
 
+/* Theme toggle pill */
 .theme-btn-wrap div.stButton > button {
     background: transparent !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
-    padding: 4px 12px !important;
-    font-size: 0.58rem !important;
+    padding: 3px 10px !important;
+    font-size: 0.52rem !important;
     border-radius: 20px !important;
+    height: 24px !important;
+    line-height: 1 !important;
 }
 
-header { visibility: hidden; height: 0; }
-#MainMenu { visibility: hidden; }
-footer { visibility: hidden; }
+/* ---- SEGMENTED STATUS CONTROL ---- */
+.seg-wrap [data-testid="stRadio"] { margin: 6px 0 !important; }
+.seg-wrap [data-testid="stRadio"] > label { display: none !important; }
+.seg-wrap [data-testid="stRadio"] > div {
+    display: flex !important;
+    gap: 0 !important;
+    border: 1px solid BORDER_COLOR !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background: BG_COLOR !important;
+    padding: 0 !important;
+}
+.seg-wrap [data-testid="stRadio"] label {
+    display: flex !important;
+    flex: 1 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 6px 4px !important;
+    font-family: JetBrains Mono, monospace !important;
+    font-size: 0.5rem !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    border-right: 1px solid BORDER_COLOR !important;
+    margin: 0 !important;
+    color: TEXT_DIM_COLOR !important;
+    transition: background 0.15s, color 0.15s !important;
+}
+.seg-wrap [data-testid="stRadio"] label:last-of-type {
+    border-right: none !important;
+}
+.seg-wrap [data-testid="stRadio"] input[type="radio"] {
+    position: absolute !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+.seg-wrap [data-testid="stRadio"] [data-baseweb="radio"] > div:first-child {
+    display: none !important;
+}
+.seg-wrap [data-testid="stRadio"] label:has(input:checked) {
+    background: ACCENT_COLOR !important;
+    color: BG_COLOR !important;
+}
+.seg-wrap [data-testid="stRadio"] p { margin: 0 !important; }
+
+/* ---- EMPTY STATE ---- */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    font-family: Fraunces, serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: TEXT_DIM_COLOR;
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-radius: 12px;
+}
+
+/* ---- NOTES AREA ---- */
+.stTextArea { margin-top: 4px !important; }
+.stTextArea > div > div > textarea { font-size: 0.8rem !important; }
+
+/* Reduce Streamlit column gap */
+[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; }
 </style>
 '''
 
-css = css.replace('BG_COLOR', BG)
-css = css.replace('PANEL_COLOR', PANEL)
-css = css.replace('BORDER_COLOR', BORDER)
-css = css.replace('TEXT_DIM_COLOR', TEXT_DIM)
-css = css.replace('TEXT_COLOR', TEXT)
-css = css.replace('ACCENT_WARM_COLOR', ACCENT_WARM)
-css = css.replace('ACCENT_COLOR', ACCENT)
+# Replace longer/specific placeholders first to avoid substring collisions.
+# BG_COLOR is inside HOT_BG_COLOR / WARM_BG_COLOR / COLD_BG_COLOR.
+# ACCENT_COLOR is inside ACCENT_WARM_COLOR and WARM_ACCENT_COLOR.
+# TEXT_COLOR is inside TEXT_DIM_COLOR.
 css = css.replace('HOT_BG_COLOR', HOT_BG)
 css = css.replace('WARM_BG_COLOR', WARM_BG)
 css = css.replace('COLD_BG_COLOR', COLD_BG)
+css = css.replace('WARM_ACCENT_COLOR', WARM_ACCENT)
+css = css.replace('ACCENT_WARM_COLOR', ACCENT_WARM)
+css = css.replace('TEXT_DIM_COLOR', TEXT_DIM)
+css = css.replace('CHART_LINE_COLOR', CHART_LINE)
+css = css.replace('BG_COLOR', BG)
+css = css.replace('PANEL_COLOR', PANEL)
+css = css.replace('BORDER_COLOR', BORDER)
+css = css.replace('TEXT_COLOR', TEXT)
+css = css.replace('ACCENT_COLOR', ACCENT)
 st.markdown(css, unsafe_allow_html=True)
 
 # ======================================================
@@ -356,7 +655,7 @@ with top_l:
 with top_m:
     st.markdown('<div class="lb-topbar-label" style="text-align:center;">BOLIVIA &middot; ' + today_short + ' &middot; ' + now_time + '</div>', unsafe_allow_html=True)
 with top_r:
-    st.markdown('<div class="theme-btn-wrap" style="padding-top:12px;">', unsafe_allow_html=True)
+    st.markdown('<div class="theme-btn-wrap" style="padding-top:10px;">', unsafe_allow_html=True)
     if st.button('Dark' if st.session_state.theme == 'light' else 'Light', key='theme_toggle_dash'):
         st.session_state.theme = 'dark' if st.session_state.theme == 'light' else 'light'
         st.rerun()
@@ -374,7 +673,8 @@ if not st.session_state.authenticated:
     hero = '<div class="lb-hero">'
     hero += '<div><div class="lb-hero-label">// DASHBOARD &middot; AGENTS ONLY</div>'
     hero += '<div class="lb-hero-title">Private <span class="lb-hero-accent">access</span>.</div></div>'
-    hero += '<div class="lb-hero-date">BOLIVIA<br>' + now_time + '</div></div>'
+    hero += '<div class="lb-hero-right"><div class="lb-hero-date">BOLIVIA<br>' + now_time + '</div></div>'
+    hero += '</div>'
     st.markdown(hero, unsafe_allow_html=True)
     pw = st.text_input('PASSWORD', type='password')
     if st.button('ENTER  //'):
@@ -384,16 +684,6 @@ if not st.session_state.authenticated:
         else:
             st.error('Incorrect password.')
     st.stop()
-
-# ======================================================
-# HERO
-# ======================================================
-today_full = datetime.now().strftime('%A, %B %d, %Y').upper()
-hero = '<div class="lb-hero">'
-hero += '<div><div class="lb-hero-label">// OPERATIONS PANEL &middot; LIVE</div>'
-hero += '<div class="lb-hero-title">Good <span class="lb-hero-accent">afternoon</span>.</div></div>'
-hero += '<div class="lb-hero-date">' + today_full + '<br>LOCAL TIME &middot; ' + now_time + '</div></div>'
-st.markdown(hero, unsafe_allow_html=True)
 
 # ======================================================
 # DB FUNCTIONS
@@ -430,8 +720,8 @@ def get_minutes(lead):
 def fmt(minutes):
     if minutes is None: return '-'
     if minutes < 60: return str(minutes) + ' min'
-    if minutes < 1440: return str(round(minutes/60, 1)) + 'h'
-    return str(round(minutes/1440, 1)) + 'd'
+    if minutes < 1440: return str(round(minutes / 60, 1)) + 'h'
+    return str(round(minutes / 1440, 1)) + 'd'
 
 def generate_excel(leads):
     wb = Workbook()
@@ -485,32 +775,97 @@ def generate_excel(leads):
     return buf
 
 # ======================================================
-# LOAD LEADS
+# COMPONENT HELPERS
+# ======================================================
+def stat_card(label, value, sub, accent=False, top_class='stat-card-default'):
+    val_class = 'stat-value-accent' if accent else 'stat-value'
+    html = '<div class="stat-card ' + top_class + '">'
+    html += '<div class="stat-label">' + label + '</div>'
+    html += '<div class="' + val_class + '">' + str(value) + '</div>'
+    html += '<div class="stat-sub">' + sub + '</div>'
+    html += '</div>'
+    return html
+
+def resp_card(label, value, sub, accent=False):
+    val_class = 'stat-value-accent' if accent else 'stat-value'
+    html = '<div class="resp-card">'
+    html += '<div class="stat-label">' + label + '</div>'
+    html += '<div class="' + val_class + '">' + str(value) + '</div>'
+    html += '<div class="stat-sub">' + sub + '</div>'
+    html += '</div>'
+    return html
+
+def score_ring_svg(hot, warm, cold, total):
+    r = 22
+    pi = 3.14159265
+    c = round(2 * pi * r, 2)
+
+    def seg(length, color, start):
+        gap = round(c - length, 2)
+        offset = round(-start, 2)
+        return ('<circle cx="28" cy="28" r="' + str(r) + '" fill="none" stroke="' + color + '" stroke-width="5"'
+                ' stroke-dasharray="' + str(length) + ' ' + str(gap) + '"'
+                ' stroke-dashoffset="' + str(offset) + '"/>')
+
+    svg = '<svg width="56" height="56" style="transform:rotate(-90deg);flex-shrink:0;">'
+    svg += '<circle cx="28" cy="28" r="' + str(r) + '" fill="none" stroke="' + BORDER + '" stroke-width="5"/>'
+
+    if total > 0:
+        hot_len = round((hot / total) * c, 2)
+        warm_len = round((warm / total) * c, 2)
+        cold_len = round(c - hot_len - warm_len, 2)
+        if cold_len > 0:
+            svg += seg(cold_len, TEXT_DIM, hot_len + warm_len)
+        if warm_len > 0:
+            svg += seg(warm_len, WARM_ACCENT, hot_len)
+        if hot_len > 0:
+            svg += seg(hot_len, ACCENT_WARM, 0)
+
+    svg += '</svg>'
+    return svg
+
+def funnel_strip(leads):
+    statuses = ['Nuevo', 'Contactado', 'Visitado', 'Cerrado']
+    counts = {s: sum(1 for l in leads if l.get('status', 'Nuevo') == s) for s in statuses}
+    total = len(leads)
+    html = '<div class="funnel-strip">'
+    for i, s in enumerate(statuses):
+        n = counts[s]
+        pct = str(round(n / total * 100)) + '%' if total > 0 else '0%'
+        html += '<div class="funnel-step">'
+        html += '<div class="funnel-label">' + s + '</div>'
+        html += '<div class="funnel-num">' + str(n) + '</div>'
+        html += '<div class="funnel-pct">' + pct + ' of total</div>'
+        html += '</div>'
+        if i < len(statuses) - 1:
+            html += '<div class="funnel-arrow">&#x2192;</div>'
+    html += '</div>'
+    return html
+
+def zones_leaderboard(leads, top_n=6):
+    from collections import Counter
+    zone_counts = Counter(
+        l.get('area', '').strip() for l in leads if l.get('area', '').strip()
+    )
+    top = zone_counts.most_common(top_n)
+    if not top:
+        return ''
+    max_count = top[0][1]
+    html = '<div class="zone-board">'
+    for zone, count in top:
+        bar_pct = round(count / max_count * 100)
+        html += '<div class="zone-row">'
+        html += '<div class="zone-name">' + zone + '</div>'
+        html += '<div class="zone-bar-wrap"><div class="zone-bar" style="width:' + str(bar_pct) + '%"></div></div>'
+        html += '<div class="zone-count">' + str(count) + '</div>'
+        html += '</div>'
+    html += '</div>'
+    return html
+
+# ======================================================
+# LOAD DATA
 # ======================================================
 leads = load_leads()
-
-# ======================================================
-# TOP ACTIONS
-# ======================================================
-b1, b2, _ = st.columns([1, 1, 6])
-with b1:
-    if st.button('// REFRESH'):
-        st.cache_resource.clear()
-        st.rerun()
-with b2:
-    if leads:
-        st.download_button(
-            label='EXPORT XLSX  //',
-            data=generate_excel(leads),
-            file_name='leadboost_leads.xlsx',
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-
-st.markdown('<div style="margin-top:14px"></div>', unsafe_allow_html=True)
-
-# ======================================================
-# STATS
-# ======================================================
 total = len(leads)
 hot = sum(1 for l in leads if l.get('score') == 'HOT')
 warm = sum(1 for l in leads if l.get('score') == 'WARM')
@@ -520,27 +875,82 @@ def pct(n):
     if total == 0: return '0%'
     return str(round(n / total * 100)) + '%'
 
-def stat_card(label, value, sub, accent=False):
-    val_class = 'stat-value-accent' if accent else 'stat-value'
-    html = '<div class="stat-card">'
-    html += '<div class="stat-label">' + label + '</div>'
-    html += '<div class="' + val_class + '">' + str(value) + '</div>'
-    html += '<div class="stat-sub">' + sub + '</div>'
-    html += '</div>'
-    return html
+# ======================================================
+# HERO
+# ======================================================
+hour = datetime.now().hour
+if hour < 12:
+    greeting_word = 'morning'
+elif hour < 18:
+    greeting_word = 'afternoon'
+else:
+    greeting_word = 'evening'
+
+today_full = datetime.now().strftime('%A, %B %d, %Y').upper()
+ring = score_ring_svg(hot, warm, cold, total)
+
+hero = '<div class="lb-hero">'
+hero += '<div>'
+hero += '<div class="lb-hero-label">// OPERATIONS PANEL &middot; LIVE</div>'
+hero += '<div class="lb-hero-title">Good <span class="lb-hero-accent">' + greeting_word + '</span>.</div>'
+hero += '</div>'
+hero += '<div class="lb-hero-right">'
+hero += '<div class="lb-hero-ring-wrap">'
+hero += ring
+hero += '<div class="lb-hero-ring-stats">'
+hero += '<div class="lb-hero-ring-stat hot">&#x25CF; ' + str(hot) + ' hot</div>'
+hero += '<div class="lb-hero-ring-stat">' + str(warm) + ' warm</div>'
+hero += '<div class="lb-hero-ring-stat">' + str(cold) + ' cold</div>'
+hero += '</div>'
+hero += '</div>'
+hero += '<div class="lb-hero-date">' + today_full + '<br>LOCAL TIME &middot; ' + now_time + '</div>'
+hero += '</div>'
+hero += '</div>'
+st.markdown(hero, unsafe_allow_html=True)
+
+# ======================================================
+# TOP ACTIONS
+# ======================================================
+act_l, act_r = st.columns([1, 9])
+with act_l:
+    btn_l, btn_r = st.columns(2)
+    with btn_l:
+        if st.button('REFRESH', key='refresh_btn'):
+            st.cache_resource.clear()
+            st.rerun()
+    with btn_r:
+        if leads:
+            st.download_button(
+                label='EXPORT',
+                data=generate_excel(leads),
+                file_name='leadboost_leads.xlsx',
+                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                key='export_btn'
+            )
+
+# ======================================================
+# STATS
+# ======================================================
+st.markdown('<div class="section-label"><span>// OVERVIEW</span><span class="section-count">' + str(total) + ' leads total</span></div>', unsafe_allow_html=True)
 
 c1, c2, c3, c4 = st.columns(4)
-with c1: st.markdown(stat_card('// TOTAL LEADS', total, 'ALL TIME'), unsafe_allow_html=True)
-with c2: st.markdown(stat_card('// HOT', hot, pct(hot) + ' OF TOTAL', accent=True), unsafe_allow_html=True)
-with c3: st.markdown(stat_card('// WARM', warm, pct(warm) + ' OF TOTAL'), unsafe_allow_html=True)
-with c4: st.markdown(stat_card('// COLD', cold, pct(cold) + ' OF TOTAL'), unsafe_allow_html=True)
+with c1: st.markdown(stat_card('// TOTAL LEADS', total, 'ALL TIME', top_class='stat-card-default'), unsafe_allow_html=True)
+with c2: st.markdown(stat_card('// HOT', hot, pct(hot) + ' OF TOTAL', accent=True, top_class='stat-card-hot'), unsafe_allow_html=True)
+with c3: st.markdown(stat_card('// WARM', warm, pct(warm) + ' OF TOTAL', top_class='stat-card-warm'), unsafe_allow_html=True)
+with c4: st.markdown(stat_card('// COLD', cold, pct(cold) + ' OF TOTAL', top_class='stat-card-cold'), unsafe_allow_html=True)
 
-st.markdown('<div style="margin-top:14px"></div>', unsafe_allow_html=True)
+# ======================================================
+# CONVERSION FUNNEL
+# ======================================================
+if leads:
+    st.markdown('<div class="section-label"><span>// PIPELINE</span></div>', unsafe_allow_html=True)
+    st.markdown(funnel_strip(leads), unsafe_allow_html=True)
 
 # ======================================================
 # CHARTS
 # ======================================================
 if leads:
+    st.markdown('<div class="section-label"><span>// ANALYTICS</span></div>', unsafe_allow_html=True)
     ch1, ch2 = st.columns(2)
 
     with ch1:
@@ -550,7 +960,6 @@ if leads:
             df['date'] = pd.to_datetime(df['date'])
             daily = df.groupby('date').size().reset_index(name='Leads').sort_values('date')
 
-            # ── area layer ──
             base = alt.Chart(daily)
 
             area_layer = base.mark_area(
@@ -590,35 +999,15 @@ if leads:
                     tickCount=4
                 ))
             )
-
-            # ── dot layer ──
             dot_layer = base.mark_point(
-                filled=True,
-                size=50,
-                color=CHART_LINE,
-                strokeWidth=2,
-                stroke=PANEL
-            ).encode(
-                x='date:T',
-                y='Leads:Q'
-            )
-
-            # ── value label layer ──
+                filled=True, size=50, color=CHART_LINE, strokeWidth=2, stroke=PANEL
+            ).encode(x='date:T', y='Leads:Q')
             label_layer = base.mark_text(
-                font='JetBrains Mono',
-                fontSize=10,
-                fontWeight='normal',
-                color=CHART_LINE,
-                dy=-13
-            ).encode(
-                x='date:T',
-                y='Leads:Q',
-                text='Leads:Q'
-            )
+                font='JetBrains Mono', fontSize=10, color=CHART_LINE, dy=-13
+            ).encode(x='date:T', y='Leads:Q', text='Leads:Q')
 
             area_chart = alt.layer(area_layer, dot_layer, label_layer).properties(
-                height=200,
-                background=PANEL
+                height=180, background='transparent'
             ).configure_view(strokeWidth=0)
 
             header = '<div class="chart-panel"><div class="chart-header">'
@@ -640,69 +1029,75 @@ if leads:
             except:
                 return 'Unknown'
 
-        order = ['< 50k', '50-100k', '100-150k', '> 150k', 'Unknown']
+        order = ['< 50k', '50-100k', '100-150k', '> 150k']
         buckets = [bucket(l.get('budget', '0')) for l in leads]
-        counts = pd.DataFrame({'Rango': buckets})['Rango'].value_counts().reindex(order, fill_value=0).reset_index()
-        counts.columns = ['Rango', 'Leads']
+        counts_df = pd.DataFrame({'Rango': buckets})
+        counts_df = counts_df[counts_df['Rango'] != 'Unknown']
+        if not counts_df.empty:
+            counts_data = counts_df['Rango'].value_counts().reindex(order, fill_value=0).reset_index()
+            counts_data.columns = ['Rango', 'Leads']
 
-        bar_base = alt.Chart(counts)
+            bar_base = alt.Chart(counts_data)
+            bar_layer = bar_base.mark_bar(
+                color=CHART_LINE,
+                opacity=0.88,
+                cornerRadiusTopLeft=3,
+                cornerRadiusTopRight=3
+            ).encode(
+                x=alt.X('Rango:N', sort=order, axis=alt.Axis(
+                    labelFont='JetBrains Mono',
+                    labelFontSize=10,
+                    labelColor=TEXT_DIM,
+                    domainColor=BORDER,
+                    tickColor=BORDER,
+                    title=None,
+                    labelAngle=0
+                )),
+                y=alt.Y('Leads:Q', axis=alt.Axis(
+                    labelFont='JetBrains Mono',
+                    labelFontSize=10,
+                    labelColor=TEXT_DIM,
+                    domainColor=BORDER,
+                    tickColor=BORDER,
+                    gridColor=BORDER,
+                    gridDash=[4, 3],
+                    title=None,
+                    tickCount=4
+                ))
+            )
+            bar_label_layer = bar_base.mark_text(
+                font='JetBrains Mono', fontSize=11, color=CHART_LINE, dy=-8
+            ).encode(
+                x=alt.X('Rango:N', sort=order),
+                y='Leads:Q',
+                text=alt.Text('Leads:Q')
+            ).transform_filter(alt.datum.Leads > 0)
 
-        # ── bar layer ──
-        bar_layer = bar_base.mark_bar(
-            color=CHART_LINE,
-            opacity=0.88,
-            cornerRadiusTopLeft=3,
-            cornerRadiusTopRight=3
-        ).encode(
-            x=alt.X('Rango:N', sort=order, axis=alt.Axis(
-                labelFont='JetBrains Mono',
-                labelFontSize=10,
-                labelColor=TEXT_DIM,
-                domainColor=BORDER,
-                tickColor=BORDER,
-                title=None,
-                labelAngle=0
-            )),
-            y=alt.Y('Leads:Q', axis=alt.Axis(
-                labelFont='JetBrains Mono',
-                labelFontSize=10,
-                labelColor=TEXT_DIM,
-                domainColor=BORDER,
-                tickColor=BORDER,
-                gridColor=BORDER,
-                gridDash=[4, 3],
-                title=None,
-                tickCount=4
-            ))
-        )
+            bar_chart = alt.layer(bar_layer, bar_label_layer).properties(
+                height=180, background='transparent'
+            ).configure_view(strokeWidth=0)
 
-        # ── value label layer ──
-        bar_label_layer = bar_base.mark_text(
-            font='JetBrains Mono',
-            fontSize=11,
-            fontWeight='normal',
-            color=CHART_LINE,
-            dy=-8
-        ).encode(
-            x=alt.X('Rango:N', sort=order),
-            y='Leads:Q',
-            text=alt.Text('Leads:Q')
-        ).transform_filter(
-            alt.datum.Leads > 0
-        )
+            header = '<div class="chart-panel"><div class="chart-header">'
+            header += '<div class="chart-title">// BUDGET DISTRIBUTION</div>'
+            header += '<div class="chart-big-num">USD ranges</div>'
+            header += '</div>'
+            st.markdown(header, unsafe_allow_html=True)
+            st.altair_chart(bar_chart, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        bar_chart = alt.layer(bar_layer, bar_label_layer).properties(
-            height=200,
-            background=PANEL
-        ).configure_view(strokeWidth=0)
-
-        header = '<div class="chart-panel"><div class="chart-header">'
-        header += '<div class="chart-title">// BUDGET DISTRIBUTION</div>'
-        header += '<div class="chart-big-num">USD ranges</div>'
-        header += '</div>'
-        st.markdown(header, unsafe_allow_html=True)
-        st.altair_chart(bar_chart, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+# ======================================================
+# TOP ZONES LEADERBOARD
+# ======================================================
+if leads:
+    zones_html = zones_leaderboard(leads)
+    if zones_html:
+        zl, zr = st.columns(2)
+        with zl:
+            header = '<div class="chart-panel"><div class="chart-header">'
+            header += '<div class="chart-title">// TOP ZONES</div>'
+            header += '<div class="chart-big-num">by lead count</div>'
+            header += '</div>'
+            st.markdown(header + zones_html + '</div>', unsafe_allow_html=True)
 
 # ======================================================
 # RESPONSE TIME
@@ -712,37 +1107,47 @@ if timed:
     avg = sum(t['minutes'] for t in timed) / len(timed)
     fastest = min(timed, key=lambda x: x['minutes'])
     slowest = max(timed, key=lambda x: x['minutes'])
+    st.markdown('<div class="section-label"><span>// RESPONSE TIME</span><span class="section-count">' + str(len(timed)) + ' contacted</span></div>', unsafe_allow_html=True)
     t1, t2, t3 = st.columns(3)
-    with t1: st.markdown(stat_card('// AVG RESPONSE', fmt(int(avg)), 'ACROSS ' + str(len(timed)) + ' LEADS'), unsafe_allow_html=True)
-    with t2: st.markdown(stat_card('// FASTEST', fmt(fastest['minutes']), fastest['name'].upper(), accent=True), unsafe_allow_html=True)
-    with t3: st.markdown(stat_card('// SLOWEST', fmt(slowest['minutes']), slowest['name'].upper()), unsafe_allow_html=True)
-    st.markdown('<div style="margin-top:14px"></div>', unsafe_allow_html=True)
+    with t1: st.markdown(resp_card('// AVG RESPONSE', fmt(int(avg)), 'ACROSS ' + str(len(timed)) + ' LEADS'), unsafe_allow_html=True)
+    with t2: st.markdown(resp_card('// FASTEST', fmt(fastest['minutes']), fastest['name'].upper(), accent=True), unsafe_allow_html=True)
+    with t3: st.markdown(resp_card('// SLOWEST', fmt(slowest['minutes']), slowest['name'].upper()), unsafe_allow_html=True)
 
 # ======================================================
 # SEARCH + FILTERS
 # ======================================================
-search = st.text_input('// SEARCH BY NAME OR PHONE', placeholder='Carlos or 76543210')
-f1, f2 = st.columns(2)
-with f1: filter_score = st.selectbox('// FILTER BY SCORE', ['Todos', 'HOT', 'WARM', 'COLD'])
-with f2: filter_status = st.selectbox('// FILTER BY STATUS', ['Todos', 'Nuevo', 'Contactado', 'Visitado', 'Cerrado'])
+st.markdown('<div class="section-label"><span>// LEADS</span></div>', unsafe_allow_html=True)
+
+search_col, f1, f2 = st.columns([3, 1, 1])
+with search_col:
+    search = st.text_input('// SEARCH', placeholder='Name or phone number', label_visibility='collapsed')
+with f1:
+    filter_score = st.selectbox('// SCORE', ['All', 'HOT', 'WARM', 'COLD'])
+with f2:
+    filter_status = st.selectbox('// STATUS', ['All', 'Nuevo', 'Contactado', 'Visitado', 'Cerrado'])
 
 filtered = leads
 if search.strip():
     q = search.strip().lower()
     filtered = [l for l in filtered if q in l.get('name', '').lower() or q in l.get('phone', '').lower()]
-if filter_score != 'Todos':
+if filter_score != 'All':
     filtered = [l for l in filtered if l.get('score') == filter_score]
-if filter_status != 'Todos':
+if filter_status != 'All':
     filtered = [l for l in filtered if l.get('status', 'Nuevo') == filter_status]
 
-# ======================================================
-# LEADS
-# ======================================================
-st.markdown('<div style="font-family: JetBrains Mono, monospace; font-size:0.6rem; letter-spacing:0.2em; color:' + TEXT_DIM + '; text-transform:uppercase; margin-top:20px; margin-bottom:8px;">// LEADS &nbsp;&middot;&nbsp; ' + str(len(filtered)) + ' SHOWING</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div style="font-family:JetBrains Mono,monospace;font-size:0.52rem;letter-spacing:0.2em;color:' + TEXT_DIM + ';text-transform:uppercase;margin-bottom:8px;">'
+    + str(len(filtered)) + ' SHOWING</div>',
+    unsafe_allow_html=True
+)
 
+# ======================================================
+# LEAD CARDS
+# ======================================================
 if not filtered:
-    st.markdown('<div class="chart-panel"><div class="chart-title">No leads to show.</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="empty-state">No leads match your filters.</div>', unsafe_allow_html=True)
 else:
+    statuses_list = ['Nuevo', 'Contactado', 'Visitado', 'Cerrado']
     for lead in filtered:
         lead_id = lead.get('id')
         score = lead.get('score', 'COLD')
@@ -760,15 +1165,15 @@ else:
         status_badge = '<span class="badge">' + status.upper() + '</span>'
         resp_html = ''
         if minutes is not None:
-            resp_html = '<span class="resp-time">' + fmt(minutes) + '</span>'
+            resp_html = '<span class="resp-time">' + fmt(minutes) + ' &nbsp;</span>'
 
         wa_msg = 'Hola ' + name + ', soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interes en ' + ptype + ' en ' + area + '. Tienes un momento para hablar?'
         wa_link = 'https://wa.me/591' + phone + '?text=' + quote(wa_msg)
 
-        card = '<div class="lead-card">'
+        card = '<div class="lead-card lead-card-' + score.lower() + '">'
         card += '<div class="lead-top">'
         card += '<span class="lead-name">' + name + '</span>'
-        card += '<div class="lead-badges">' + resp_html + status_badge + score_badge + '</div>'
+        card += '<div class="lead-badges">' + resp_html + status_badge + '&nbsp;' + score_badge + '</div>'
         card += '</div>'
         card += '<div class="lead-grid">'
         card += '<div><span class="field-label">// PHONE</span>' + str(lead.get('phone', '-')) + '</div>'
@@ -776,25 +1181,41 @@ else:
         card += '<div><span class="field-label">// LOCATION</span>' + area + '</div>'
         card += '<div><span class="field-label">// BUDGET</span>$' + str(budget) + '</div>'
         card += '<div><span class="field-label">// TIMELINE</span>' + str(timeline) + ' meses</div>'
-        card += '<div><span class="field-label">// RECEIVED</span>' + str(ts) + '</div>'
+        card += '<div><span class="field-label">// SCORE</span>' + score + '</div>'
         card += '</div>'
+        card += '<div class="lead-footer">'
+        card += '<span class="lead-ts">// RECEIVED &middot; ' + str(ts) + '</span>'
         card += '<a class="wa-btn" href="' + wa_link + '" target="_blank">// WHATSAPP</a>'
+        card += '</div>'
         card += '</div>'
         st.markdown(card, unsafe_allow_html=True)
 
-        cols = st.columns(4)
-        for i, s in enumerate(['Nuevo', 'Contactado', 'Visitado', 'Cerrado']):
-            with cols[i]:
-                is_current = status == s
-                label = ('[X] ' + s.upper()) if is_current else s.upper()
-                if st.button(label, key='s_' + str(lead_id) + '_' + s, disabled=is_current):
-                    update_status(lead_id, s)
-                    st.rerun()
+        st.markdown('<div class="seg-wrap">', unsafe_allow_html=True)
+        current_idx = statuses_list.index(status) if status in statuses_list else 0
+        new_status = st.radio(
+            '',
+            statuses_list,
+            index=current_idx,
+            horizontal=True,
+            key='seg_' + str(lead_id),
+            label_visibility='collapsed'
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        if new_status != status:
+            update_status(lead_id, new_status)
+            st.rerun()
 
         current_note = lead.get('notes') or ''
-        note_input = st.text_area('// AGENT NOTES', value=current_note, key='note_' + str(lead_id),
-                                  placeholder='Llame dos veces, no contesto...', height=70)
-        if st.button('SAVE NOTE  //', key='save_note_' + str(lead_id)):
+        note_input = st.text_area(
+            '// NOTES',
+            value=current_note,
+            key='note_' + str(lead_id),
+            placeholder='Add agent notes here...',
+            height=64,
+            label_visibility='visible'
+        )
+        if st.button('SAVE NOTE', key='save_note_' + str(lead_id)):
             try:
                 get_supabase().table('leads').update({'notes': note_input}).eq('id', lead_id).execute()
                 st.success('Saved.')
@@ -802,12 +1223,12 @@ else:
             except Exception as e:
                 st.error('Error: ' + str(e))
 
-        st.markdown('<div style="margin-bottom:20px"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="margin-bottom:16px"></div>', unsafe_allow_html=True)
 
 # ======================================================
 # LOGOUT
 # ======================================================
-st.markdown('<div style="border-top:1px solid ' + BORDER + '; margin-top:30px; padding-top:20px;"></div>', unsafe_allow_html=True)
+st.markdown('<div style="border-top:1px solid ' + BORDER + ';margin-top:28px;padding-top:18px;"></div>', unsafe_allow_html=True)
 if st.button('// LOG OUT'):
     st.session_state.authenticated = False
     st.rerun()
