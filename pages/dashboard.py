@@ -93,6 +93,17 @@ footer { visibility: hidden; }
 ::-webkit-scrollbar-thumb { background: BORDER_COLOR; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: TEXT_DIM_COLOR; }
 
+/* ---- ANIMATIONS ---- */
+@keyframes lb-hot-pulse {
+    0%   { transform:scale(1);   opacity:.65; }
+    70%  { transform:scale(2.4); opacity:0; }
+    100% { transform:scale(2.4); opacity:0; }
+}
+@keyframes lb-fade-up {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
 /* Selection color */
 ::selection { background: ACCENT_WARM_COLOR; color: BG_COLOR; }
 
@@ -397,13 +408,13 @@ footer { visibility: hidden; }
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 12px;
-    padding: 14px 18px;
-    margin-bottom: 3px;
-    border-left: 3px solid BORDER_COLOR;
+    padding: 18px 22px;
+    margin-bottom: 6px;
+    animation: lb-fade-up 0.3s ease both;
 }
-.lead-card-hot { border-left-color: ACCENT_WARM_COLOR; }
-.lead-card-warm { border-left-color: WARM_ACCENT_COLOR; }
-.lead-card-cold { border-left-color: BORDER_COLOR; }
+.lead-card-hot { border-color: ACCENT_WARM_COLOR55; }
+.lead-card-warm { border-color: BORDER_COLOR; }
+.lead-card-cold { border-color: BORDER_COLOR; }
 .lead-top {
     display: flex;
     justify-content: space-between;
@@ -506,21 +517,36 @@ footer { visibility: hidden; }
 }
 
 /* ---- BUTTONS ---- */
+/* Ghost / secondary buttons (default for all st.button calls) */
 div.stButton > button {
-    background: ACCENT_COLOR;
-    color: BG_COLOR;
-    border: none;
+    background: transparent;
+    color: TEXT_DIM_COLOR;
+    border: 1px solid BORDER_COLOR;
     border-radius: 8px;
-    padding: 6px 14px;
+    padding: 7px 16px;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
-    font-size: 0.56rem;
+    font-size: 0.58rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    transition: opacity 0.15s;
+    transition: all 0.15s;
     white-space: nowrap;
 }
-div.stButton > button:hover { opacity: 0.82; }
+div.stButton > button:hover:not(:disabled) {
+    border-color: TEXT_COLOR;
+    color: TEXT_COLOR;
+}
+/* Primary solid button (use type='primary' in Python) */
+div.stButton > button[kind="primary"] {
+    background: ACCENT_COLOR !important;
+    color: BG_COLOR !important;
+    border: none !important;
+    opacity: 1;
+}
+div.stButton > button[kind="primary"]:hover {
+    opacity: 0.85 !important;
+}
+/* Active status button — terracotta (disabled=True on the current status) */
 div.stButton > button:disabled {
     opacity: 1 !important;
     background: ACCENT_WARM_COLOR !important;
@@ -528,33 +554,30 @@ div.stButton > button:disabled {
     border: none !important;
     cursor: default !important;
 }
+/* Download (export) button — ghost */
 div.stDownloadButton > button {
-    background: ACCENT_COLOR;
-    color: BG_COLOR;
-    border: none;
+    background: transparent;
+    color: TEXT_DIM_COLOR;
+    border: 1px solid BORDER_COLOR;
     border-radius: 8px;
-    padding: 6px 14px;
+    padding: 7px 16px;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
-    font-size: 0.56rem;
+    font-size: 0.58rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     white-space: nowrap;
-    transition: opacity 0.15s;
+    transition: all 0.15s;
 }
-div.stDownloadButton > button:hover { opacity: 0.82; }
-
-/* Theme toggle pill — broad selectors to survive Streamlit DOM changes */
-.theme-btn-wrap button,
-.theme-btn-wrap div.stButton > button,
-.theme-btn-wrap [data-testid="baseButton-secondary"],
-.theme-btn-wrap [data-testid="stButton"] button {
-    background: transparent !important;
-    color: TEXT_COLOR !important;
-    border: 1px solid BORDER_COLOR !important;
-    padding: 3px 10px !important;
-    font-size: 0.52rem !important;
+div.stDownloadButton > button:hover {
+    border-color: TEXT_COLOR;
+    color: TEXT_COLOR;
+}
+/* Theme toggle pill — first stHorizontalBlock, last column */
+[data-testid="stHorizontalBlock"]:first-child [data-testid="stColumn"]:last-child div.stButton > button {
     border-radius: 20px !important;
+    font-size: 0.5rem !important;
+    padding: 3px 10px !important;
     height: auto !important;
     min-height: unset !important;
     line-height: 1.4 !important;
@@ -563,9 +586,6 @@ div.stDownloadButton > button:hover { opacity: 0.82; }
     letter-spacing: 0.14em !important;
     box-shadow: none !important;
 }
-
-/* ---- STATUS BUTTONS — active shows terracotta ---- */
-/* (status buttons use disabled=True for the current state) */
 
 /* ---- EMPTY STATE ---- */
 .empty-state {
@@ -620,11 +640,9 @@ with top_l:
 with top_m:
     st.markdown('<div class="lb-topbar-label" style="text-align:center;">BOLIVIA &middot; ' + today_short + ' &middot; ' + now_time + '</div>', unsafe_allow_html=True)
 with top_r:
-    st.markdown('<div class="theme-btn-wrap" style="padding-top:10px;">', unsafe_allow_html=True)
-    if st.button('Dark' if st.session_state.theme == 'light' else 'Light', key='theme_toggle_dash'):
+    if st.button('DARK' if st.session_state.theme == 'light' else 'LIGHT', key='theme_toggle_dash'):
         st.session_state.theme = 'dark' if st.session_state.theme == 'light' else 'light'
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ======================================================
 # PASSWORD
@@ -642,7 +660,7 @@ if not st.session_state.authenticated:
     hero += '</div>'
     st.markdown(hero, unsafe_allow_html=True)
     pw = st.text_input('PASSWORD', type='password')
-    if st.button('ENTER  //'):
+    if st.button('ENTER  //', type='primary'):
         if pw == OWNER_PASSWORD:
             st.session_state.authenticated = True
             st.rerun()
@@ -879,13 +897,13 @@ st.markdown(hero, unsafe_allow_html=True)
 # ======================================================
 btn_refresh, btn_export, _ = st.columns([1, 1, 8])
 with btn_refresh:
-    if st.button('REFRESH', key='refresh_btn'):
+    if st.button('// REFRESH', key='refresh_btn'):
         st.cache_resource.clear()
         st.rerun()
 with btn_export:
     if leads:
         st.download_button(
-            label='EXPORT',
+            label='EXPORT XLSX //',
             data=generate_excel(leads),
             file_name='leadboost_leads.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -1050,18 +1068,59 @@ if leads:
             st.markdown('</div>', unsafe_allow_html=True)
 
 # ======================================================
-# TOP ZONES LEADERBOARD
+# DAILY STATS
 # ======================================================
 if leads:
+    today_date = datetime.now().strftime('%Y-%m-%d')
+    today_leads = sum(1 for l in leads if l.get('timestamp', '').startswith(today_date))
+    pending_contact = sum(1 for l in leads if l.get('status', 'Nuevo') == 'Nuevo')
+    conv_rate = str(round((hot + warm) / total * 100)) + '%' if total > 0 else '0%'
+    st.markdown('<div class="section-label"><span>// TODAY</span></div>', unsafe_allow_html=True)
+    d1, d2, d3 = st.columns(3)
+    with d1: st.markdown(stat_card('// TODAY\'S LEADS', today_leads, 'RECEIVED TODAY', top_class='stat-card-default'), unsafe_allow_html=True)
+    with d2: st.markdown(stat_card('// PENDING CONTACT', pending_contact, 'NEED FOLLOW-UP', accent=True, top_class='stat-card-hot'), unsafe_allow_html=True)
+    with d3: st.markdown(stat_card('// CONVERSION RATE', conv_rate, 'HOT + WARM / TOTAL', top_class='stat-card-default'), unsafe_allow_html=True)
+
+# ======================================================
+# TOP ZONES + FOLLOW-UPS
+# ======================================================
+def follow_up_panel(leads_list):
+    pending = [l for l in leads_list if l.get('status', 'Nuevo') in ('Nuevo', 'Contactado')]
+    html = '<div class="chart-panel"><div class="chart-header">'
+    html += '<div class="chart-title">// FOLLOW-UPS</div>'
+    html += '<div class="chart-big-num" style="color:' + ACCENT_WARM + '">' + str(len(pending)) + ' pending</div>'
+    html += '</div>'
+    if not pending:
+        html += '<div style="font-family:JetBrains Mono,monospace;font-size:0.5rem;color:' + TEXT_DIM + ';letter-spacing:0.16em;padding:16px 0;">ALL LEADS CONTACTED.</div>'
+    else:
+        for l in pending[:7]:
+            st_val = l.get('status', 'Nuevo')
+            sc = l.get('score', 'COLD')
+            nm = l.get('name', '-')
+            prop = l.get('property_type', '')
+            bgt = l.get('budget', '-')
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid ' + BORDER + ';">'
+            html += '<div>'
+            html += '<div style="font-family:Fraunces,serif;font-size:0.95rem;font-style:italic;color:' + TEXT + ';margin-bottom:2px;">' + nm + '</div>'
+            html += '<div style="font-family:JetBrains Mono,monospace;font-size:0.47rem;letter-spacing:0.14em;color:' + TEXT_DIM + ';">' + st_val.upper() + ' &middot; ' + prop.upper() + ' &middot; $' + str(bgt) + '</div>'
+            html += '</div>'
+            html += '<span class="badge score-' + sc.lower() + '">' + sc + '</span>'
+            html += '</div>'
+    html += '</div>'
+    return html
+
+if leads:
     zones_html = zones_leaderboard(leads)
-    if zones_html:
-        zl, zr = st.columns(2)
-        with zl:
+    zl, zr = st.columns(2)
+    with zl:
+        if zones_html:
             header = '<div class="chart-panel"><div class="chart-header">'
             header += '<div class="chart-title">// TOP ZONES</div>'
             header += '<div class="chart-big-num">by lead count</div>'
             header += '</div>'
             st.markdown(header + zones_html + '</div>', unsafe_allow_html=True)
+    with zr:
+        st.markdown(follow_up_panel(leads), unsafe_allow_html=True)
 
 # ======================================================
 # RESPONSE TIME
@@ -1099,9 +1158,16 @@ if filter_score != 'All':
 if filter_status != 'All':
     filtered = [l for l in filtered if l.get('status', 'Nuevo') == filter_status]
 
+leads_hdr_badges = ('<span class="badge score-hot" style="margin-left:6px;">HOT ' + str(hot) + '</span>'
+                    '<span class="badge score-warm" style="margin-left:5px;">WARM ' + str(warm) + '</span>'
+                    '<span class="badge score-cold" style="margin-left:5px;">COLD ' + str(cold) + '</span>')
 st.markdown(
-    '<div style="font-family:JetBrains Mono,monospace;font-size:0.52rem;letter-spacing:0.2em;color:' + TEXT_DIM + ';text-transform:uppercase;margin-bottom:8px;">'
-    + str(len(filtered)) + ' SHOWING</div>',
+    '<div style="display:flex;justify-content:space-between;align-items:center;'
+    'margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid ' + BORDER + ';">'
+    '<div style="font-family:JetBrains Mono,monospace;font-size:0.55rem;letter-spacing:0.22em;color:' + TEXT_DIM + ';">'
+    '// LEADS &nbsp;&middot;&nbsp; ' + str(len(filtered)) + ' SHOWING</div>'
+    '<div>' + leads_hdr_badges + '</div>'
+    '</div>',
     unsafe_allow_html=True
 )
 
@@ -1125,7 +1191,13 @@ else:
         ts = lead.get('timestamp', '-')
         minutes = get_minutes(lead)
 
-        score_badge = '<span class="badge score-' + score.lower() + '">' + score + '</span>'
+        if score == 'HOT':
+            score_badge = ('<span style="position:relative;display:inline-flex;align-items:center;">'
+                           '<span style="position:absolute;inset:0;border-radius:20px;background:' + ACCENT_WARM + ';animation:lb-hot-pulse 2s ease-out infinite;pointer-events:none;"></span>'
+                           '<span class="badge score-hot">HOT</span>'
+                           '</span>')
+        else:
+            score_badge = '<span class="badge score-' + score.lower() + '">' + score + '</span>'
         status_badge = '<span class="badge">' + status.upper() + '</span>'
         resp_html = ''
         if minutes is not None:
@@ -1182,9 +1254,19 @@ else:
         st.markdown('<div style="margin-bottom:16px"></div>', unsafe_allow_html=True)
 
 # ======================================================
-# LOGOUT
+# LOGOUT + FOOTER
 # ======================================================
 st.markdown('<div style="border-top:1px solid ' + BORDER + ';margin-top:28px;padding-top:18px;"></div>', unsafe_allow_html=True)
-if st.button('// LOG OUT'):
-    st.session_state.authenticated = False
-    st.rerun()
+foot_l, foot_r = st.columns([2, 5])
+with foot_l:
+    if st.button('// LOG OUT'):
+        st.session_state.authenticated = False
+        st.rerun()
+with foot_r:
+    today_ver = datetime.now().strftime('%Y-%m-%d')
+    st.markdown(
+        '<div style="padding-top:10px;font-family:JetBrains Mono,monospace;font-size:0.48rem;'
+        'color:' + TEXT_DIM + ';letter-spacing:0.14em;text-align:right;">'
+        'LEADBOOST OS &middot; V3.0 &middot; ' + today_ver + '</div>',
+        unsafe_allow_html=True
+    )
