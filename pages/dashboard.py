@@ -544,63 +544,28 @@ div.stDownloadButton > button {
 }
 div.stDownloadButton > button:hover { opacity: 0.82; }
 
-/* Theme toggle pill */
-.theme-btn-wrap div.stButton > button {
+/* Theme toggle pill — broad selectors to survive Streamlit DOM changes */
+.theme-btn-wrap button,
+.theme-btn-wrap div.stButton > button,
+.theme-btn-wrap [data-testid="baseButton-secondary"],
+.theme-btn-wrap [data-testid="stButton"] button {
     background: transparent !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
     padding: 3px 10px !important;
     font-size: 0.52rem !important;
     border-radius: 20px !important;
-    height: 24px !important;
-    line-height: 1 !important;
+    height: auto !important;
+    min-height: unset !important;
+    line-height: 1.4 !important;
+    width: auto !important;
+    min-width: unset !important;
+    letter-spacing: 0.14em !important;
+    box-shadow: none !important;
 }
 
-/* ---- SEGMENTED STATUS CONTROL ---- */
-.seg-wrap [data-testid="stRadio"] { margin: 6px 0 !important; }
-.seg-wrap [data-testid="stRadio"] > label { display: none !important; }
-.seg-wrap [data-testid="stRadio"] > div {
-    display: flex !important;
-    gap: 0 !important;
-    border: 1px solid BORDER_COLOR !important;
-    border-radius: 8px !important;
-    overflow: hidden !important;
-    background: BG_COLOR !important;
-    padding: 0 !important;
-}
-.seg-wrap [data-testid="stRadio"] label {
-    display: flex !important;
-    flex: 1 !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 6px 4px !important;
-    font-family: JetBrains Mono, monospace !important;
-    font-size: 0.5rem !important;
-    letter-spacing: 0.1em !important;
-    text-transform: uppercase !important;
-    cursor: pointer !important;
-    border-right: 1px solid BORDER_COLOR !important;
-    margin: 0 !important;
-    color: TEXT_DIM_COLOR !important;
-    transition: background 0.15s, color 0.15s !important;
-}
-.seg-wrap [data-testid="stRadio"] label:last-of-type {
-    border-right: none !important;
-}
-.seg-wrap [data-testid="stRadio"] input[type="radio"] {
-    position: absolute !important;
-    opacity: 0 !important;
-    width: 0 !important;
-    height: 0 !important;
-}
-.seg-wrap [data-testid="stRadio"] [data-baseweb="radio"] > div:first-child {
-    display: none !important;
-}
-.seg-wrap [data-testid="stRadio"] label:has(input:checked) {
-    background: ACCENT_COLOR !important;
-    color: BG_COLOR !important;
-}
-.seg-wrap [data-testid="stRadio"] p { margin: 0 !important; }
+/* ---- STATUS BUTTONS — active shows terracotta ---- */
+/* (status buttons use disabled=True for the current state) */
 
 /* ---- EMPTY STATE ---- */
 .empty-state {
@@ -802,7 +767,8 @@ def score_ring_svg(hot, warm, cold, total):
 
     def seg(length, color, start):
         gap = round(c - length, 2)
-        offset = round(-start, 2)
+        # Correct dashoffset: c - start places the segment at the right position
+        offset = round(c - start, 2)
         return ('<circle cx="28" cy="28" r="' + str(r) + '" fill="none" stroke="' + color + '" stroke-width="5"'
                 ' stroke-dasharray="' + str(length) + ' ' + str(gap) + '"'
                 ' stroke-dashoffset="' + str(offset) + '"/>')
@@ -911,22 +877,20 @@ st.markdown(hero, unsafe_allow_html=True)
 # ======================================================
 # TOP ACTIONS
 # ======================================================
-act_l, act_r = st.columns([1, 9])
-with act_l:
-    btn_l, btn_r = st.columns(2)
-    with btn_l:
-        if st.button('REFRESH', key='refresh_btn'):
-            st.cache_resource.clear()
-            st.rerun()
-    with btn_r:
-        if leads:
-            st.download_button(
-                label='EXPORT',
-                data=generate_excel(leads),
-                file_name='leadboost_leads.xlsx',
-                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                key='export_btn'
-            )
+btn_refresh, btn_export, _ = st.columns([1, 1, 8])
+with btn_refresh:
+    if st.button('REFRESH', key='refresh_btn'):
+        st.cache_resource.clear()
+        st.rerun()
+with btn_export:
+    if leads:
+        st.download_button(
+            label='EXPORT',
+            data=generate_excel(leads),
+            file_name='leadboost_leads.xlsx',
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            key='export_btn'
+        )
 
 # ======================================================
 # STATS
@@ -1190,21 +1154,13 @@ else:
         card += '</div>'
         st.markdown(card, unsafe_allow_html=True)
 
-        st.markdown('<div class="seg-wrap">', unsafe_allow_html=True)
-        current_idx = statuses_list.index(status) if status in statuses_list else 0
-        new_status = st.radio(
-            '',
-            statuses_list,
-            index=current_idx,
-            horizontal=True,
-            key='seg_' + str(lead_id),
-            label_visibility='collapsed'
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        if new_status != status:
-            update_status(lead_id, new_status)
-            st.rerun()
+        status_cols = st.columns(4)
+        for si, s in enumerate(statuses_list):
+            with status_cols[si]:
+                is_current = status == s
+                if st.button(s.upper(), key='s_' + str(lead_id) + '_' + s, disabled=is_current):
+                    update_status(lead_id, s)
+                    st.rerun()
 
         current_note = lead.get('notes') or ''
         note_input = st.text_area(
