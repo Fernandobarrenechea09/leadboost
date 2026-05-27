@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from urllib.parse import quote
 import pandas as pd
 import altair as alt
+import calendar as _cal
 
 # ======================================================
 # PAGE CONFIG
@@ -517,6 +518,146 @@ footer { visibility: hidden; }
     height: 11px;
     border-radius: 2px;
     background: ACCENT_WARM_COLOR;
+}
+
+/* ---- CALENDAR (month view) ---- */
+.cal-wrap {
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-top: 8px;
+    animation: lb-fade-up 0.4s ease both;
+}
+.cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid BORDER_COLOR;
+}
+.cal-month-title {
+    font-family: Fraunces, serif;
+    font-size: 1.6rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+.cal-month-meta {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.18em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+.cal-dow {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.22em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    padding: 6px 0 10px 0;
+    text-align: center;
+}
+.cal-cell {
+    background: BG_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-radius: 6px;
+    padding: 8px 10px;
+    min-height: 78px;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.15s, transform 0.15s, background 0.15s;
+    position: relative;
+}
+.cal-cell:hover {
+    border-color: TEXT_DIM_COLOR;
+    transform: translateY(-1px);
+}
+.cal-cell.other-month { opacity: 0.32; }
+.cal-cell.today {
+    border-color: ACCENT_WARM_COLOR;
+    border-width: 2px;
+    padding: 7px 9px;
+}
+.cal-cell.today::after {
+    content: 'TODAY';
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.42rem;
+    letter-spacing: 0.2em;
+    color: ACCENT_WARM_COLOR;
+}
+.cal-cell.has-hot {
+    background: linear-gradient(180deg, PANEL_COLOR 0%, BG_COLOR 60%);
+}
+.cal-day-num {
+    font-family: Fraunces, serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    line-height: 1;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+    font-feature-settings: "tnum";
+}
+.cal-cell.today .cal-day-num { color: ACCENT_WARM_COLOR; }
+.cal-dots {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+}
+.cal-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+.cal-dot.dot-hot { background: ACCENT_WARM_COLOR; }
+.cal-dot.dot-warm { background: WARM_ACCENT_COLOR; }
+.cal-dot.dot-cold {
+    background: TEXT_DIM_COLOR;
+    opacity: 0.55;
+}
+.cal-count {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.14em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    margin-top: auto;
+}
+.cal-empty {
+    margin-top: auto;
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.42rem;
+    letter-spacing: 0.14em;
+    color: TEXT_DIM_COLOR;
+    opacity: 0.4;
+    text-transform: uppercase;
+}
+
+/* Calendar nav buttons — slimmer than default */
+.cal-nav-row { margin-bottom: 4px; }
+.cal-nav-row div.stButton > button {
+    padding: 4px 10px !important;
+    font-size: 0.5rem !important;
+    letter-spacing: 0.18em !important;
+    border-radius: 6px !important;
+    min-height: 28px !important;
+    height: 28px !important;
+    width: 100% !important;
 }
 
 /* ---- PULL-QUOTE CALLOUTS ---- */
@@ -1868,6 +2009,129 @@ if leads:
     hm_html += '</span><span>MORE</span></div>'
     hm_html += '</div>'
     st.markdown(hm_html, unsafe_allow_html=True)
+
+# ======================================================
+# CALENDAR — month view with lead activity per day
+# ======================================================
+if leads:
+    _today_d = datetime.now().date()
+
+    if 'cal_year' not in st.session_state:
+        st.session_state.cal_year = _today_d.year
+    if 'cal_month' not in st.session_state:
+        st.session_state.cal_month = _today_d.month
+
+    _cyr = st.session_state.cal_year
+    _cmo = st.session_state.cal_month
+    _cur_month_label = datetime(_cyr, _cmo, 1).strftime('%B %Y')
+
+    # Build lead activity map (date -> list of leads)
+    _cell_leads = {}
+    for _l in leads:
+        _ts = (_l.get('timestamp') or '')[:10]
+        try:
+            _d = datetime.strptime(_ts, '%Y-%m-%d').date()
+            _cell_leads.setdefault(_d, []).append(_l)
+        except:
+            continue
+
+    # Month summary stats
+    _month_total = sum(1 for _l in leads if (_l.get('timestamp') or '')[:7] == datetime(_cyr, _cmo, 1).strftime('%Y-%m'))
+    _month_hot = sum(1 for _l in leads if (_l.get('timestamp') or '')[:7] == datetime(_cyr, _cmo, 1).strftime('%Y-%m') and _l.get('score') == 'HOT')
+
+    # Section label
+    st.markdown(sec_label('CALENDAR', '<span class="section-count">' + str(_month_total) + ' leads this month</span>'), unsafe_allow_html=True)
+
+    # Month title + nav
+    title_html = '<div class="cal-header">'
+    title_html += '<div class="cal-month-title">' + _cur_month_label + '</div>'
+    title_html += '<div class="cal-month-meta">// ' + str(_month_total) + ' LEADS &middot; ' + str(_month_hot) + ' HOT</div>'
+    title_html += '</div>'
+
+    # Start the calendar wrapper
+    st.markdown('<div class="cal-wrap">' + title_html, unsafe_allow_html=True)
+
+    # Navigation row
+    st.markdown('<div class="cal-nav-row">', unsafe_allow_html=True)
+    nav_prev, nav_today, nav_next, _nav_sp = st.columns([1, 1, 1, 6])
+    with nav_prev:
+        if st.button('< PREV', key='cal_prev_btn'):
+            if _cmo == 1:
+                st.session_state.cal_month = 12
+                st.session_state.cal_year = _cyr - 1
+            else:
+                st.session_state.cal_month = _cmo - 1
+            st.rerun()
+    with nav_today:
+        if st.button('TODAY', key='cal_today_btn'):
+            st.session_state.cal_year = _today_d.year
+            st.session_state.cal_month = _today_d.month
+            st.rerun()
+    with nav_next:
+        if st.button('NEXT >', key='cal_next_btn'):
+            if _cmo == 12:
+                st.session_state.cal_month = 1
+                st.session_state.cal_year = _cyr + 1
+            else:
+                st.session_state.cal_month = _cmo + 1
+            st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Build the grid (Mon-first)
+    _c_obj = _cal.Calendar(firstweekday=0)
+    _grid_dates = list(_c_obj.itermonthdates(_cyr, _cmo))
+
+    grid_html = '<div class="cal-grid">'
+    # Day-of-week headers
+    for _dn in ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']:
+        grid_html += '<div class="cal-dow">' + _dn + '</div>'
+    # Day cells
+    for _d in _grid_dates:
+        classes = ['cal-cell']
+        if _d.month != _cmo:
+            classes.append('other-month')
+        if _d == _today_d:
+            classes.append('today')
+        day_leads = _cell_leads.get(_d, [])
+        n = len(day_leads)
+        hot_n = sum(1 for x in day_leads if x.get('score') == 'HOT')
+        warm_n = sum(1 for x in day_leads if x.get('score') == 'WARM')
+        cold_n = sum(1 for x in day_leads if x.get('score') == 'COLD')
+        if hot_n > 0:
+            classes.append('has-hot')
+
+        # Tooltip
+        tip = _d.strftime('%A, %b %d') + ' — '
+        if n == 0:
+            tip += 'no leads'
+        else:
+            tip_parts = [str(n) + ' lead' + ('s' if n != 1 else '')]
+            if hot_n: tip_parts.append(str(hot_n) + ' HOT')
+            if warm_n: tip_parts.append(str(warm_n) + ' WARM')
+            if cold_n: tip_parts.append(str(cold_n) + ' COLD')
+            tip += ' &middot; '.join(tip_parts)
+
+        grid_html += '<div class="' + ' '.join(classes) + '" title="' + tip + '">'
+        grid_html += '<div class="cal-day-num">' + str(_d.day) + '</div>'
+        if n > 0:
+            dots = ''
+            # Up to 6 dots total — priority HOT > WARM > COLD
+            slots = 6
+            n_hot = min(hot_n, slots); slots -= n_hot
+            n_warm = min(warm_n, slots); slots -= n_warm
+            n_cold = min(cold_n, slots)
+            for _ in range(n_hot): dots += '<span class="cal-dot dot-hot"></span>'
+            for _ in range(n_warm): dots += '<span class="cal-dot dot-warm"></span>'
+            for _ in range(n_cold): dots += '<span class="cal-dot dot-cold"></span>'
+            grid_html += '<div class="cal-dots">' + dots + '</div>'
+            grid_html += '<div class="cal-count">' + str(n) + ' lead' + ('s' if n != 1 else '') + '</div>'
+        else:
+            grid_html += '<div class="cal-empty">—</div>'
+        grid_html += '</div>'
+    grid_html += '</div>'
+    # Close cal-wrap
+    grid_html += '</div>'
+    st.markdown(grid_html, unsafe_allow_html=True)
 
 # ======================================================
 # DAILY STATS
