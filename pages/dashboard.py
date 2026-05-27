@@ -2723,6 +2723,24 @@ if leads:
         _lead_options.append(_l.get('name', 'Unknown') + ' · ' + str(_l.get('phone', '')))
         _lead_id_list.append(_l.get('id'))
 
+    # Dynamic key suffix so each form session uses fresh widgets (avoids stale React state)
+    if 'form_session_id' not in st.session_state:
+        st.session_state.form_session_id = 0
+
+    # We'll store the form values under non-widget keys (ev_*_val) to survive widget-key rotation
+    if 'ev_date_val' not in st.session_state:
+        st.session_state.ev_date_val = _today_dd
+    if 'ev_time_val' not in st.session_state:
+        st.session_state.ev_time_val = _dtime(10, 0)
+    if 'ev_title_val' not in st.session_state:
+        st.session_state.ev_title_val = ''
+    if 'ev_location_val' not in st.session_state:
+        st.session_state.ev_location_val = ''
+    if 'ev_lead_val' not in st.session_state:
+        st.session_state.ev_lead_val = '(no linked lead)'
+    if 'ev_notes_val' not in st.session_state:
+        st.session_state.ev_notes_val = ''
+
     # Add/Edit Event toggle + form
     add_col, _addsp = st.columns([2, 8])
     with add_col:
@@ -2734,56 +2752,58 @@ if leads:
             btn_label = '+ ADD EVENT'
         if st.button(btn_label, key='add_event_toggle'):
             if st.session_state.show_event_form:
-                # Closing — wipe widget state and edit mode
+                # Closing — reset values and edit mode, bump session id
                 if 'editing_event_id' in st.session_state:
                     del st.session_state['editing_event_id']
-                for _wk in ('ev_date', 'ev_time', 'ev_title', 'ev_location', 'ev_lead', 'ev_notes'):
-                    if _wk in st.session_state:
-                        del st.session_state[_wk]
+                st.session_state.ev_date_val = _today_dd
+                st.session_state.ev_time_val = _dtime(10, 0)
+                st.session_state.ev_title_val = ''
+                st.session_state.ev_location_val = ''
+                st.session_state.ev_lead_val = '(no linked lead)'
+                st.session_state.ev_notes_val = ''
+                st.session_state.form_session_id += 1
                 st.session_state.show_event_form = False
             else:
-                # Opening for NEW — set blank defaults via session state
-                st.session_state.ev_date = _today_dd
-                st.session_state.ev_time = _dtime(10, 0)
-                st.session_state.ev_title = ''
-                st.session_state.ev_location = ''
-                st.session_state.ev_lead = '(no linked lead)'
-                st.session_state.ev_notes = ''
+                # Opening for NEW — set blank defaults, fresh widget keys
+                st.session_state.ev_date_val = _today_dd
+                st.session_state.ev_time_val = _dtime(10, 0)
+                st.session_state.ev_title_val = ''
+                st.session_state.ev_location_val = ''
+                st.session_state.ev_lead_val = '(no linked lead)'
+                st.session_state.ev_notes_val = ''
+                st.session_state.form_session_id += 1
                 st.session_state.show_event_form = True
             st.rerun()
 
     if st.session_state.show_event_form:
-        # Safety: make sure the selectbox session state is a valid option
-        if 'ev_lead' not in st.session_state or st.session_state.ev_lead not in _lead_options:
-            st.session_state.ev_lead = '(no linked lead)'
-        # Safety: required state keys exist (defensive)
-        if 'ev_date' not in st.session_state:
-            st.session_state.ev_date = _today_dd
-        if 'ev_time' not in st.session_state:
-            st.session_state.ev_time = _dtime(10, 0)
-        for _wk, _def in (('ev_title', ''), ('ev_location', ''), ('ev_notes', '')):
-            if _wk not in st.session_state:
-                st.session_state[_wk] = _def
+        # Safety: ensure lead value is one of current options
+        if st.session_state.ev_lead_val not in _lead_options:
+            st.session_state.ev_lead_val = '(no linked lead)'
 
+        sid = str(st.session_state.form_session_id)
         form_title = '// EDIT EVENT' if editing_event else '// NEW EVENT'
         st.markdown('<div class="add-event-panel">', unsafe_allow_html=True)
         st.markdown('<div class="add-event-title">' + form_title + '</div>', unsafe_allow_html=True)
         ef1, ef2, ef3 = st.columns([1, 1, 2])
         with ef1:
-            ev_date = st.date_input('// DATE', key='ev_date')
+            ev_date = st.date_input('// DATE', value=st.session_state.ev_date_val, key='ev_date_' + sid)
         with ef2:
-            ev_time_obj = st.time_input('// TIME', key='ev_time', step=300)
+            ev_time_obj = st.time_input('// TIME', value=st.session_state.ev_time_val, key='ev_time_' + sid)
         with ef3:
-            ev_title = st.text_input('// TITLE', placeholder='Visita de Sergio', key='ev_title')
+            ev_title = st.text_input('// TITLE', value=st.session_state.ev_title_val, placeholder='Visita de Sergio', key='ev_title_' + sid)
 
         ef4, ef5 = st.columns([1, 1])
         with ef4:
-            ev_location = st.text_input('// LOCATION', placeholder='Casa Urubo', key='ev_location')
+            ev_location = st.text_input('// LOCATION', value=st.session_state.ev_location_val, placeholder='Casa Urubo', key='ev_location_' + sid)
         with ef5:
-            ev_lead_choice = st.selectbox('// LINKED LEAD (optional)', _lead_options, key='ev_lead')
+            try:
+                _lead_idx = _lead_options.index(st.session_state.ev_lead_val)
+            except ValueError:
+                _lead_idx = 0
+            ev_lead_choice = st.selectbox('// LINKED LEAD (optional)', _lead_options, index=_lead_idx, key='ev_lead_' + sid)
             ev_lead_id = _lead_id_list[_lead_options.index(ev_lead_choice)]
 
-        ev_notes = st.text_area('// NOTES', placeholder='Visita en la zona Urubo, llevar contrato y fotos del terreno...', key='ev_notes', height=68)
+        ev_notes = st.text_area('// NOTES', value=st.session_state.ev_notes_val, placeholder='Visita en la zona Urubo, llevar contrato y fotos del terreno...', key='ev_notes_' + sid, height=68)
 
         save_col, _savesp = st.columns([1, 5])
         with save_col:
@@ -2817,10 +2837,14 @@ if leads:
                         st.session_state.show_event_form = False
                         if 'editing_event_id' in st.session_state:
                             del st.session_state['editing_event_id']
-                        # Drop widget state so the next open starts fresh
-                        for _wk in ('ev_date', 'ev_time', 'ev_title', 'ev_location', 'ev_lead', 'ev_notes'):
-                            if _wk in st.session_state:
-                                del st.session_state[_wk]
+                        # Reset stored values + bump session id so next open is fresh
+                        st.session_state.ev_date_val = _today_dd
+                        st.session_state.ev_time_val = _dtime(10, 0)
+                        st.session_state.ev_title_val = ''
+                        st.session_state.ev_location_val = ''
+                        st.session_state.ev_lead_val = '(no linked lead)'
+                        st.session_state.ev_notes_val = ''
+                        st.session_state.form_session_id += 1
                         st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -2898,7 +2922,7 @@ if leads:
                     st.markdown('<div style="padding:6px 0;font-family:JetBrains Mono,monospace;font-size:0.6rem;color:' + TEXT + ';letter-spacing:0.08em;">' + row_label + '</div>', unsafe_allow_html=True)
                 with ec2:
                     if st.button('EDIT', key='edit_ev_' + str(_eid)):
-                        # Pre-fill widget state from this event BEFORE rerun
+                        # Compute defaults from event
                         try:
                             _ed_d = datetime.strptime(str(_e.get('event_date', '')), '%Y-%m-%d').date()
                         except:
@@ -2915,16 +2939,17 @@ if leads:
                             _ed_lead = next((_lc for _lc in leads if _lc.get('id') == _e['lead_id']), None)
                             if _ed_lead:
                                 _ed_lead_disp = _ed_lead.get('name', 'Unknown') + ' · ' + str(_ed_lead.get('phone', ''))
-                        # Make sure that display is one of the current options
                         if _ed_lead_disp not in _lead_options:
                             _ed_lead_disp = '(no linked lead)'
 
-                        st.session_state.ev_date = _ed_d
-                        st.session_state.ev_time = _ed_time
-                        st.session_state.ev_title = _e.get('title') or ''
-                        st.session_state.ev_location = _e.get('location') or ''
-                        st.session_state.ev_lead = _ed_lead_disp
-                        st.session_state.ev_notes = _e.get('notes') or ''
+                        # Store under stable *_val keys, bump session id for fresh widgets
+                        st.session_state.ev_date_val = _ed_d
+                        st.session_state.ev_time_val = _ed_time
+                        st.session_state.ev_title_val = _e.get('title') or ''
+                        st.session_state.ev_location_val = _e.get('location') or ''
+                        st.session_state.ev_lead_val = _ed_lead_disp
+                        st.session_state.ev_notes_val = _e.get('notes') or ''
+                        st.session_state.form_session_id += 1
                         st.session_state.editing_event_id = _eid
                         st.session_state.show_event_form = True
                         st.rerun()
