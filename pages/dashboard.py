@@ -807,6 +807,40 @@ footer { visibility: hidden; }
     margin-top: 12px;
     margin-bottom: 4px;
 }
+/* Faux-label spacer so the TODAY button aligns vertically with the date input below its label */
+.vd-faux-label {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.7rem;
+    color: transparent;
+    line-height: 1.4;
+    height: 1.4em;
+    margin-bottom: 4px;
+    user-select: none;
+}
+/* Style the TODAY button to feel paired with the date input */
+.vd-today-btn-wrap div.stButton > button,
+.vd-today-btn-wrap [data-testid="stButton"] button {
+    width: 100% !important;
+    background: PANEL_COLOR !important;
+    color: TEXT_COLOR !important;
+    border: 1px solid BORDER_COLOR !important;
+    border-radius: 8px !important;
+    padding: 0 14px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    font-family: JetBrains Mono, monospace !important;
+    font-size: 0.6rem !important;
+    letter-spacing: 0.22em !important;
+    text-transform: uppercase !important;
+    box-shadow: none !important;
+    transition: border-color 0.2s, color 0.2s, background 0.2s !important;
+}
+.vd-today-btn-wrap div.stButton > button:hover,
+.vd-today-btn-wrap [data-testid="stButton"] button:hover {
+    border-color: ACCENT_WARM_COLOR !important;
+    color: ACCENT_WARM_COLOR !important;
+    background: PANEL_COLOR !important;
+}
 
 /* Event chips inside calendar cells */
 .cal-event-chip {
@@ -1257,7 +1291,11 @@ footer { visibility: hidden; }
 
 /* ---- INPUTS ---- */
 .stTextInput > div > div > input,
-.stTextArea > div > div > textarea {
+.stTextArea > div > div > textarea,
+.stDateInput input,
+.stTimeInput input,
+[data-testid="stDateInput"] input,
+[data-testid="stTimeInput"] input {
     background: PANEL_COLOR !important;
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
@@ -1267,8 +1305,15 @@ footer { visibility: hidden; }
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
 }
 .stTextInput > div > div > input:hover,
-.stTextArea > div > div > textarea:hover {
+.stTextArea > div > div > textarea:hover,
+.stDateInput input:hover,
+.stTimeInput input:hover {
     border-color: TEXT_DIM_COLOR !important;
+}
+/* DateInput / TimeInput popovers + outer container */
+.stDateInput > div,
+.stTimeInput > div {
+    background: transparent !important;
 }
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
@@ -2518,8 +2563,10 @@ if leads:
     st.markdown('<div class="view-day-wrap">', unsafe_allow_html=True)
     vd_col, vd_today_col, _vd_sp = st.columns([2, 1, 6])
     with vd_today_col:
-        st.markdown('<div style="height:32px;"></div>', unsafe_allow_html=True)  # vertical spacer to align with input
-        if st.button('JUMP TO TODAY', key='vd_today_btn'):
+        # Invisible faux-label to align the button vertically with the date input (which has its own label above)
+        st.markdown('<div class="vd-faux-label">&nbsp;</div>', unsafe_allow_html=True)
+        st.markdown('<div class="vd-today-btn-wrap">', unsafe_allow_html=True)
+        if st.button('↺ TODAY', key='vd_today_btn', use_container_width=True):
             # Drop the widget's stored value so it reinitializes with our new default
             if 'view_day_picker' in st.session_state:
                 del st.session_state['view_day_picker']
@@ -2527,6 +2574,7 @@ if leads:
             st.session_state.cal_year = _today_d.year
             st.session_state.cal_month = _today_d.month
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
     with vd_col:
         picked_day = st.date_input('// VIEW DAY', value=_focus_d, key='view_day_picker')
     st.markdown('</div>', unsafe_allow_html=True)
