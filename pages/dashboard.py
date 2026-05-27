@@ -1709,6 +1709,22 @@ def delete_event(event_id):
         st.error('Error deleting event: ' + str(e))
         return False
 
+def update_event(event_id, event_date, event_time, title, location, notes, lead_id):
+    try:
+        data = {
+            'event_date': event_date,
+            'title': title,
+            'event_time': event_time,  # may be None — that's OK to clear time
+            'location': location,
+            'notes': notes,
+            'lead_id': lead_id,
+        }
+        get_supabase().table('events').update(data).eq('id', event_id).execute()
+        return True
+    except Exception as e:
+        st.error('Error updating event: ' + str(e))
+        return False
+
 def get_minutes(lead):
     try:
         t1 = datetime.strptime(lead.get('timestamp', ''), '%Y-%m-%d %H:%M')
@@ -2692,28 +2708,72 @@ if leads:
     total_upcoming = sum(len(v) for v in groups.values())
     st.markdown(sec_label('AGENDA', '<span class="section-count">' + str(total_upcoming) + ' upcoming</span>'), unsafe_allow_html=True)
 
-    # Add-Event toggle + form
+    # Find the event being edited, if any
+    editing_event = None
+    if st.session_state.get('editing_event_id'):
+        editing_event = next((e for e in _events_for_agenda if e.get('id') == st.session_state.editing_event_id), None)
+        if not editing_event:
+            # Stale id — clear it
+            del st.session_state['editing_event_id']
+
+    # Add/Edit Event toggle + form
     add_col, _addsp = st.columns([2, 8])
     with add_col:
-        btn_label = '+ ADD EVENT' if not st.session_state.show_event_form else '× CANCEL'
+        if editing_event:
+            btn_label = '× CANCEL EDIT'
+        elif st.session_state.show_event_form:
+            btn_label = '× CANCEL'
+        else:
+            btn_label = '+ ADD EVENT'
         if st.button(btn_label, key='add_event_toggle'):
+            # Cancel — close form AND clear edit mode
             st.session_state.show_event_form = not st.session_state.show_event_form
+            if 'editing_event_id' in st.session_state:
+                del st.session_state['editing_event_id']
+            # Drop widget state so a fresh open starts blank
+            for _wk in ('ev_date', 'ev_time', 'ev_title', 'ev_location', 'ev_lead', 'ev_notes'):
+                if _wk in st.session_state:
+                    del st.session_state[_wk]
             st.rerun()
 
     if st.session_state.show_event_form:
+        # Compute defaults — pre-fill from editing_event if any
+        _def_date = _today_dd
+        _def_time = _dtime(10, 0)
+        _def_title = ''
+        _def_location = ''
+        _def_notes = ''
+        _def_lead_id = None
+        if editing_event:
+            try:
+                _def_date = datetime.strptime(str(editing_event.get('event_date', '')), '%Y-%m-%d').date()
+            except:
+                pass
+            _ev_t_str = editing_event.get('event_time')
+            if _ev_t_str:
+                try:
+                    _def_time = datetime.strptime(str(_ev_t_str)[:5], '%H:%M').time()
+                except:
+                    pass
+            _def_title = editing_event.get('title') or ''
+            _def_location = editing_event.get('location') or ''
+            _def_notes = editing_event.get('notes') or ''
+            _def_lead_id = editing_event.get('lead_id')
+
+        form_title = '// EDIT EVENT' if editing_event else '// NEW EVENT'
         st.markdown('<div class="add-event-panel">', unsafe_allow_html=True)
-        st.markdown('<div class="add-event-title">// NEW EVENT</div>', unsafe_allow_html=True)
+        st.markdown('<div class="add-event-title">' + form_title + '</div>', unsafe_allow_html=True)
         ef1, ef2, ef3 = st.columns([1, 1, 2])
         with ef1:
-            ev_date = st.date_input('// DATE', value=_today_dd, key='ev_date')
+            ev_date = st.date_input('// DATE', value=_def_date, key='ev_date')
         with ef2:
-            ev_time_obj = st.time_input('// TIME', value=_dtime(10, 0), key='ev_time', step=300)
+            ev_time_obj = st.time_input('// TIME', value=_def_time, key='ev_time', step=300)
         with ef3:
-            ev_title = st.text_input('// TITLE', placeholder='Visita de Sergio', key='ev_title')
+            ev_title = st.text_input('// TITLE', value=_def_title, placeholder='Visita de Sergio', key='ev_title')
 
         ef4, ef5 = st.columns([1, 1])
         with ef4:
-            ev_location = st.text_input('// LOCATION', placeholder='Casa Urubo', key='ev_location')
+            ev_location = st.text_input('// LOCATION', value=_def_location, placeholder='Casa Urubo', key='ev_location')
         with ef5:
             # Lead dropdown
             _lead_options = ['(no linked lead)']
@@ -2721,29 +2781,52 @@ if leads:
             for _l in leads:
                 _lead_options.append(_l.get('name', 'Unknown') + ' · ' + str(_l.get('phone', '')))
                 _lead_id_list.append(_l.get('id'))
-            ev_lead_choice = st.selectbox('// LINKED LEAD (optional)', _lead_options, key='ev_lead')
+            # Find index of pre-filled lead
+            try:
+                _def_lead_idx = _lead_id_list.index(_def_lead_id)
+            except ValueError:
+                _def_lead_idx = 0
+            ev_lead_choice = st.selectbox('// LINKED LEAD (optional)', _lead_options, index=_def_lead_idx, key='ev_lead')
             ev_lead_id = _lead_id_list[_lead_options.index(ev_lead_choice)]
 
-        ev_notes = st.text_area('// NOTES', placeholder='Visita en la zona Urubo, llevar contrato y fotos del terreno...', key='ev_notes', height=68)
+        ev_notes = st.text_area('// NOTES', value=_def_notes, placeholder='Visita en la zona Urubo, llevar contrato y fotos del terreno...', key='ev_notes', height=68)
 
         save_col, _savesp = st.columns([1, 5])
         with save_col:
-            if st.button('SAVE EVENT', key='ev_save'):
+            save_label = 'UPDATE EVENT' if editing_event else 'SAVE EVENT'
+            if st.button(save_label, key='ev_save'):
                 if not ev_title.strip():
                     st.error('Title is required.')
                 else:
                     final_time = ev_time_obj.strftime('%H:%M:%S') if ev_time_obj else None
-                    ok = add_event(
-                        event_date=ev_date.strftime('%Y-%m-%d'),
-                        event_time=final_time,
-                        title=ev_title.strip(),
-                        location=ev_location.strip() if ev_location else None,
-                        notes=ev_notes.strip() if ev_notes else None,
-                        lead_id=ev_lead_id,
-                    )
+                    if editing_event:
+                        ok = update_event(
+                            event_id=editing_event['id'],
+                            event_date=ev_date.strftime('%Y-%m-%d'),
+                            event_time=final_time,
+                            title=ev_title.strip(),
+                            location=ev_location.strip() if ev_location else None,
+                            notes=ev_notes.strip() if ev_notes else None,
+                            lead_id=ev_lead_id,
+                        )
+                    else:
+                        ok = add_event(
+                            event_date=ev_date.strftime('%Y-%m-%d'),
+                            event_time=final_time,
+                            title=ev_title.strip(),
+                            location=ev_location.strip() if ev_location else None,
+                            notes=ev_notes.strip() if ev_notes else None,
+                            lead_id=ev_lead_id,
+                        )
                     if ok:
-                        st.success('Event saved.')
+                        st.success('Event updated.' if editing_event else 'Event saved.')
                         st.session_state.show_event_form = False
+                        if 'editing_event_id' in st.session_state:
+                            del st.session_state['editing_event_id']
+                        # Drop widget state so the next open starts fresh
+                        for _wk in ('ev_date', 'ev_time', 'ev_title', 'ev_location', 'ev_lead', 'ev_notes'):
+                            if _wk in st.session_state:
+                                del st.session_state[_wk]
                         st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -2809,19 +2892,32 @@ if leads:
         agenda_html += '</div>'
         st.markdown(agenda_html, unsafe_allow_html=True)
 
-        # Per-event delete buttons (rendered as a discreet trailing row)
+        # Per-event edit/delete buttons (rendered as a discreet trailing row)
         with st.expander('// MANAGE EVENTS', expanded=False):
             for _e in _events_for_agenda:
                 _eid = _e.get('id')
                 _t = (_e.get('event_time') or '')[:5]
                 _date_str = str(_e.get('event_date', ''))
                 row_label = _date_str + (' ' + _t if _t else '') + '  ·  ' + (_e.get('title') or '')
-                ec1, ec2 = st.columns([8, 1])
+                ec1, ec2, ec3 = st.columns([7, 1, 1])
                 with ec1:
                     st.markdown('<div style="padding:6px 0;font-family:JetBrains Mono,monospace;font-size:0.6rem;color:' + TEXT + ';letter-spacing:0.08em;">' + row_label + '</div>', unsafe_allow_html=True)
                 with ec2:
+                    if st.button('EDIT', key='edit_ev_' + str(_eid)):
+                        # Open the form in edit mode, pre-filled from this event
+                        for _wk in ('ev_date', 'ev_time', 'ev_title', 'ev_location', 'ev_lead', 'ev_notes'):
+                            if _wk in st.session_state:
+                                del st.session_state[_wk]
+                        st.session_state.editing_event_id = _eid
+                        st.session_state.show_event_form = True
+                        st.rerun()
+                with ec3:
                     if st.button('DELETE', key='del_ev_' + str(_eid)):
                         delete_event(_eid)
+                        # If we were editing this event, clear that too
+                        if st.session_state.get('editing_event_id') == _eid:
+                            del st.session_state['editing_event_id']
+                            st.session_state.show_event_form = False
                         st.rerun()
 
 # ======================================================
