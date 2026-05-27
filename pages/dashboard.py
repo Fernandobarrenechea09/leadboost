@@ -441,16 +441,25 @@ footer { visibility: hidden; }
     background: PANEL_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 12px;
-    padding: 22px 26px;
+    padding: 24px 28px;
     animation: lb-fade-up 0.4s ease both;
 }
 .heatmap-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
+    align-items: flex-start;
+    margin-bottom: 22px;
+    padding-bottom: 16px;
     border-bottom: 1px solid BORDER_COLOR;
+    gap: 24px;
+}
+.heatmap-title-block { flex: 1; min-width: 0; }
+.heatmap-meta-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
 }
 .heatmap-title {
     font-family: JetBrains Mono, monospace;
@@ -458,21 +467,44 @@ footer { visibility: hidden; }
     letter-spacing: 0.22em;
     color: TEXT_DIM_COLOR;
     text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.heatmap-subtitle {
+    font-family: Fraunces, serif;
+    font-size: 0.95rem;
+    color: TEXT_COLOR;
+    font-style: italic;
+    font-weight: 300;
+    line-height: 1.4;
+    max-width: 480px;
+    letter-spacing: -0.005em;
 }
 .heatmap-meta {
     font-family: Fraunces, serif;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     color: TEXT_COLOR;
     font-style: italic;
     font-weight: 300;
 }
-.heatmap-svg-wrap { width: 100%; max-width: 100%; overflow: hidden; }
+.heatmap-busiest {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.46rem;
+    letter-spacing: 0.18em;
+    color: ACCENT_WARM_COLOR;
+    text-transform: uppercase;
+}
+.heatmap-svg-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 6px 0;
+}
 .heatmap-legend {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 14px;
     font-family: JetBrains Mono, monospace;
     font-size: 0.46rem;
     letter-spacing: 0.16em;
@@ -481,8 +513,8 @@ footer { visibility: hidden; }
 }
 .heatmap-legend-cells { display: inline-flex; gap: 3px; }
 .heatmap-legend-cell {
-    width: 10px;
-    height: 10px;
+    width: 11px;
+    height: 11px;
     border-radius: 2px;
     background: ACCENT_WARM_COLOR;
 }
@@ -898,6 +930,74 @@ div.stDownloadButton > button:hover {
 /* Reduce Streamlit column gap */
 [data-testid="stHorizontalBlock"] { gap: 0.5rem !important; }
 
+/* ---- COLLAPSIBLE SECTION CARDS (st.expander) ---- */
+[data-testid="stExpander"],
+div[data-testid="stExpander"] {
+    background: PANEL_COLOR !important;
+    border: 1px solid BORDER_COLOR !important;
+    border-radius: 12px !important;
+    margin-bottom: 10px !important;
+    transition: border-color 0.2s !important;
+    overflow: hidden !important;
+}
+[data-testid="stExpander"]:hover,
+div[data-testid="stExpander"]:hover {
+    border-color: TEXT_DIM_COLOR !important;
+}
+[data-testid="stExpander"] details {
+    background: transparent !important;
+    border: none !important;
+}
+[data-testid="stExpander"] details > summary,
+[data-testid="stExpander"] summary {
+    font-family: JetBrains Mono, monospace !important;
+    font-size: 0.62rem !important;
+    letter-spacing: 0.22em !important;
+    color: TEXT_COLOR !important;
+    text-transform: uppercase !important;
+    padding: 20px 24px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 12px !important;
+    cursor: pointer !important;
+    list-style: none !important;
+    transition: color 0.2s, background 0.15s !important;
+}
+[data-testid="stExpander"] details > summary:hover,
+[data-testid="stExpander"] summary:hover {
+    color: ACCENT_WARM_COLOR !important;
+    background: rgba(196, 99, 63, 0.04) !important;
+}
+[data-testid="stExpander"] details > summary p,
+[data-testid="stExpander"] summary p {
+    font-family: JetBrains Mono, monospace !important;
+    font-size: 0.62rem !important;
+    letter-spacing: 0.22em !important;
+    text-transform: uppercase !important;
+    margin: 0 !important;
+}
+[data-testid="stExpander"] details[open] > summary {
+    border-bottom: 1px solid BORDER_COLOR !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+[data-testid="stExpander"] svg {
+    fill: TEXT_DIM_COLOR !important;
+    color: TEXT_DIM_COLOR !important;
+    transition: transform 0.2s !important;
+}
+[data-testid="stExpander"] [data-testid="stExpanderDetails"],
+[data-testid="stExpander"] details[open] > div {
+    padding: 18px 24px 22px 24px !important;
+    background: transparent !important;
+    animation: lb-fade-in 0.25s ease both !important;
+}
+/* Reset inner section labels — they're now redundant inside expanders */
+[data-testid="stExpander"] .section-label {
+    padding-top: 0 !important;
+    margin-bottom: 12px !important;
+}
+
 /* ---- FOLLOW-UP SCROLLABLE LIST ---- */
 .follow-up-list {
     max-height: 312px;
@@ -1113,6 +1213,15 @@ def sec_label(name, right_html=''):
             '</span>'
             + right_html + '</div>')
 
+def expander_label(name, teaser=''):
+    """Build an editorial expander summary string. Increments the section counter."""
+    _sec_n[0] += 1
+    num = str(_sec_n[0]).zfill(2)
+    base = '//  ' + num + '   ·   ' + name
+    if teaser:
+        base += '   ·   ' + teaser
+    return base
+
 def daily_counts(leads_list, score_filter=None, days=30):
     today = datetime.now().date()
     dates = [(today - timedelta(days=days-1-i)).strftime('%Y-%m-%d') for i in range(days)]
@@ -1155,8 +1264,13 @@ def time_ago(ts_str):
 
 def heatmap_svg(leads_list, color, weeks=12):
     today = datetime.now().date()
+    # Snap end-date to the most recent Sunday so each column is a clean Mon-Sun week
+    today_dow = today.weekday()  # 0=Mon, 6=Sun
+    days_to_sunday = (6 - today_dow) % 7
+    end = today + timedelta(days=days_to_sunday)
     days = weeks * 7
-    start = today - timedelta(days=days-1)
+    start = end - timedelta(days=days-1)  # this is a Monday
+
     counts = {}
     for l in leads_list:
         ts = (l.get('timestamp') or '')[:10]
@@ -1166,23 +1280,62 @@ def heatmap_svg(leads_list, color, weeks=12):
         except:
             continue
     max_count = max(counts.values()) if counts else 0
-    cell = 13
-    gap = 4
-    w = weeks * (cell + gap)
-    h = 7 * (cell + gap)
-    svg = '<svg width="100%" height="' + str(h) + '" viewBox="0 0 ' + str(w) + ' ' + str(h) + '" preserveAspectRatio="xMidYMid meet" style="display:block;">'
+
+    cell = 18
+    gap = 5
+    label_col_w = 36   # space for day-of-week labels on the left
+    label_row_h = 22   # space for month labels along the top
+
+    grid_w = weeks * (cell + gap)
+    grid_h = 7 * (cell + gap)
+    total_w = label_col_w + grid_w
+    total_h = label_row_h + grid_h
+
+    svg = '<svg width="100%" height="' + str(total_h) + '" viewBox="0 0 ' + str(total_w) + ' ' + str(total_h) + '" preserveAspectRatio="xMidYMid meet" style="display:block;">'
+
+    # Month labels along the top — only when month changes between weeks
+    last_month = None
+    for wi in range(weeks):
+        sample = start + timedelta(days=wi * 7)
+        if sample.month != last_month:
+            x = label_col_w + wi * (cell + gap)
+            svg += ('<text x="' + str(x) + '" y="' + str(label_row_h - 8)
+                    + '" font-family="JetBrains Mono, monospace" font-size="9"'
+                    + ' fill="' + TEXT_DIM + '" letter-spacing="1.6">'
+                    + sample.strftime('%b').upper() + '</text>')
+            last_month = sample.month
+
+    # Day-of-week labels (left) — show Mon / Wed / Fri / Sun
+    day_labels = ['MON', '', 'WED', '', 'FRI', '', 'SUN']
+    for di, lbl in enumerate(day_labels):
+        if not lbl:
+            continue
+        y = label_row_h + di * (cell + gap) + cell - 5
+        svg += ('<text x="0" y="' + str(y)
+                + '" font-family="JetBrains Mono, monospace" font-size="8.5"'
+                + ' fill="' + TEXT_DIM + '" letter-spacing="1.2">' + lbl + '</text>')
+
+    # Cells
     for wi in range(weeks):
         for di in range(7):
             i = wi * 7 + di
             day = start + timedelta(days=i)
             count = counts.get(day, 0)
-            if max_count > 0 and count > 0:
-                opacity = 0.20 + (count / max_count) * 0.80
+            is_future = day > today
+            if is_future:
+                # Future cells: very faint, dashed feel
+                opacity = 0.04
+            elif max_count > 0 and count > 0:
+                opacity = 0.25 + (count / max_count) * 0.75
             else:
-                opacity = 0.08
-            x = wi * (cell + gap)
-            y = di * (cell + gap)
-            svg += '<rect x="' + str(x) + '" y="' + str(y) + '" width="' + str(cell) + '" height="' + str(cell) + '" rx="2" fill="' + color + '" opacity="' + str(round(opacity, 2)) + '"><title>' + day.strftime('%b %d') + ': ' + str(count) + ' leads</title></rect>'
+                opacity = 0.10
+            x = label_col_w + wi * (cell + gap)
+            y = label_row_h + di * (cell + gap)
+            svg += ('<rect x="' + str(x) + '" y="' + str(y)
+                    + '" width="' + str(cell) + '" height="' + str(cell)
+                    + '" rx="3" fill="' + color + '" opacity="' + str(round(opacity, 2)) + '">'
+                    + '<title>' + day.strftime('%a %b %d') + ': ' + str(count) + ' lead' + ('s' if count != 1 else '') + '</title></rect>')
+
     svg += '</svg>'
     return svg
 
@@ -1443,208 +1596,250 @@ with mini_col:
     st.markdown(stack, unsafe_allow_html=True)
 
 # ======================================================
-# CONVERSION FUNNEL
+# PRE-COMPUTE METRICS FOR EXPANDER TEASERS + PULL-QUOTE
 # ======================================================
 if leads:
-    st.markdown(sec_label('PIPELINE'), unsafe_allow_html=True)
-    st.markdown(funnel_strip(leads), unsafe_allow_html=True)
+    _today_date = datetime.now().strftime('%Y-%m-%d')
+    today_leads = sum(1 for l in leads if l.get('timestamp', '').startswith(_today_date))
+    pending_contact = sum(1 for l in leads if l.get('status', 'Nuevo') == 'Nuevo')
+    conv_rate = str(round((hot + warm) / total * 100)) + '%' if total > 0 else '0%'
+    # Pipeline stage counts
+    _stage_keys = ['Nuevo', 'Contactado', 'Visitado', 'Cerrado']
+    _stage_counts = {k: sum(1 for l in leads if l.get('status', 'Nuevo') == k) for k in _stage_keys}
+else:
+    today_leads = 0
+    pending_contact = 0
+    conv_rate = '0%'
+    _stage_counts = {}
 
 # ======================================================
-# CHARTS
+# PULL-QUOTE — always visible, surfaces the most striking metric
+# ======================================================
+quote_text = None
+quote_attr = None
+if total > 0:
+    conv_n = round((hot + warm) / total * 100)
+    if conv_n >= 50:
+        quote_text = '<span class="pull-quote-text-accent">' + str(conv_n) + '%</span> of your leads are warm or hot — your best signal yet.'
+        quote_attr = '// CONVERSION INSIGHT'
+    elif hot >= 3:
+        quote_text = '<span class="pull-quote-text-accent">' + str(hot) + ' hot leads</span> in the pipeline. Move fast — response time matters.'
+        quote_attr = '// PRIORITY SIGNAL'
+    elif top_zone_name and _top_zone_pair and _top_zone_pair[0][1] >= 2:
+        quote_text = '<span class="pull-quote-text-accent">' + top_zone_name + '</span> leads the zones with ' + str(_top_zone_pair[0][1]) + ' leads. Worth doubling down.'
+        quote_attr = '// MARKET FOCUS'
+    elif resp_minutes_list and avg_resp is not None and avg_resp <= 30:
+        quote_text = 'Average response time: <span class="pull-quote-text-accent">' + fmt(avg_resp) + '</span>. Fast enough to win.'
+        quote_attr = '// PERFORMANCE'
+    else:
+        quote_text = 'Steady pipeline. <span class="pull-quote-text-accent">' + str(total) + '</span> leads on file, ' + str(pending_count) + ' still waiting on you.'
+        quote_attr = '// OPERATIONS'
+if quote_text:
+    st.markdown(pull_quote(quote_text, quote_attr), unsafe_allow_html=True)
+
+# ======================================================
+# CONVERSION FUNNEL  (collapsible)
 # ======================================================
 if leads:
-    st.markdown(sec_label('ANALYTICS'), unsafe_allow_html=True)
-    ch1, ch2 = st.columns(2)
+    _pipe_teaser = str(_stage_counts.get('Nuevo', 0)) + ' NEW · ' + str(_stage_counts.get('Contactado', 0)) + ' CONTACTED · ' + str(_stage_counts.get('Visitado', 0)) + ' VISITED · ' + str(_stage_counts.get('Cerrado', 0)) + ' CLOSED'
+    with st.expander(expander_label('PIPELINE', _pipe_teaser), expanded=False):
+        st.markdown(funnel_strip(leads), unsafe_allow_html=True)
 
-    with ch1:
-        dates = [l.get('timestamp', '')[:10] for l in leads if l.get('timestamp')]
-        if dates:
-            df = pd.DataFrame({'date': dates})
-            df['date'] = pd.to_datetime(df['date'])
-            daily = df.groupby('date').size().reset_index(name='Leads').sort_values('date')
+# ======================================================
+# CHARTS  (collapsible)
+# ======================================================
+if leads:
+    with st.expander(expander_label('ANALYTICS', 'LEADS OVER TIME · BUDGET DISTRIBUTION'), expanded=False):
+        ch1, ch2 = st.columns(2)
 
-            base = alt.Chart(daily)
+        with ch1:
+            dates = [l.get('timestamp', '')[:10] for l in leads if l.get('timestamp')]
+            if dates:
+                df = pd.DataFrame({'date': dates})
+                df['date'] = pd.to_datetime(df['date'])
+                daily = df.groupby('date').size().reset_index(name='Leads').sort_values('date')
 
-            area_layer = base.mark_area(
-                line={'color': CHART_LINE, 'strokeWidth': 2.2},
-                color=alt.Gradient(
-                    gradient='linear',
-                    stops=[
-                        alt.GradientStop(color=CHART_FILL, offset=0),
-                        alt.GradientStop(color=BG, offset=1)
-                    ],
-                    x1=1, x2=1, y1=1, y2=0
-                ),
-                interpolate='monotone',
-                opacity=0.95
-            ).encode(
-                x=alt.X('date:T', axis=alt.Axis(
-                    labelFont='JetBrains Mono',
-                    labelFontSize=10,
-                    labelColor=TEXT_DIM,
-                    domainColor=BORDER,
-                    tickColor=BORDER,
-                    grid=False,
-                    title=None,
-                    format='%b %d',
-                    labelAngle=0,
-                    tickCount=6
-                )),
-                y=alt.Y('Leads:Q', axis=alt.Axis(
-                    labelFont='JetBrains Mono',
-                    labelFontSize=10,
-                    labelColor=TEXT_DIM,
-                    domainColor=BORDER,
-                    tickColor=BORDER,
-                    gridColor=BORDER,
-                    gridOpacity=0.4,
-                    title=None,
-                    tickCount=4
-                ))
-            )
-            dot_layer = base.mark_point(
-                filled=True, size=50, color=CHART_LINE, strokeWidth=2, stroke=PANEL
-            ).encode(x='date:T', y='Leads:Q')
-            label_layer = base.mark_text(
-                font='JetBrains Mono', fontSize=10, color=CHART_LINE, dy=-13
-            ).encode(x='date:T', y='Leads:Q', text='Leads:Q')
+                base = alt.Chart(daily)
 
-            area_chart = alt.layer(area_layer, dot_layer, label_layer).properties(
-                height=180, background='transparent'
-            ).configure_view(strokeWidth=0)
+                area_layer = base.mark_area(
+                    line={'color': CHART_LINE, 'strokeWidth': 2.2},
+                    color=alt.Gradient(
+                        gradient='linear',
+                        stops=[
+                            alt.GradientStop(color=CHART_FILL, offset=0),
+                            alt.GradientStop(color=BG, offset=1)
+                        ],
+                        x1=1, x2=1, y1=1, y2=0
+                    ),
+                    interpolate='monotone',
+                    opacity=0.95
+                ).encode(
+                    x=alt.X('date:T', axis=alt.Axis(
+                        labelFont='JetBrains Mono',
+                        labelFontSize=10,
+                        labelColor=TEXT_DIM,
+                        domainColor=BORDER,
+                        tickColor=BORDER,
+                        grid=False,
+                        title=None,
+                        format='%b %d',
+                        labelAngle=0,
+                        tickCount=6
+                    )),
+                    y=alt.Y('Leads:Q', axis=alt.Axis(
+                        labelFont='JetBrains Mono',
+                        labelFontSize=10,
+                        labelColor=TEXT_DIM,
+                        domainColor=BORDER,
+                        tickColor=BORDER,
+                        gridColor=BORDER,
+                        gridOpacity=0.4,
+                        title=None,
+                        tickCount=4
+                    ))
+                )
+                dot_layer = base.mark_point(
+                    filled=True, size=50, color=CHART_LINE, strokeWidth=2, stroke=PANEL
+                ).encode(x='date:T', y='Leads:Q')
+                label_layer = base.mark_text(
+                    font='JetBrains Mono', fontSize=10, color=CHART_LINE, dy=-13
+                ).encode(x='date:T', y='Leads:Q', text='Leads:Q')
 
-            header = '<div class="chart-panel"><div class="chart-header">'
-            header += '<div class="chart-title">// LEADS OVER TIME</div>'
-            header += '<div class="chart-big-num">' + str(total) + ' total</div>'
-            header += '</div>'
-            st.markdown(header, unsafe_allow_html=True)
-            st.altair_chart(area_chart, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                area_chart = alt.layer(area_layer, dot_layer, label_layer).properties(
+                    height=180, background='transparent'
+                ).configure_view(strokeWidth=0)
 
-    with ch2:
-        def bucket(b):
-            try:
-                v = int(str(b).replace(',', '').replace('.', '').replace('$', '').strip())
-                if v < 50000: return '< 50k'
-                if v < 100000: return '50-100k'
-                if v < 150000: return '100-150k'
-                return '> 150k'
-            except:
-                return 'Unknown'
+                header = '<div class="chart-panel"><div class="chart-header">'
+                header += '<div class="chart-title">// LEADS OVER TIME</div>'
+                header += '<div class="chart-big-num">' + str(total) + ' total</div>'
+                header += '</div>'
+                st.markdown(header, unsafe_allow_html=True)
+                st.altair_chart(area_chart, use_container_width=True)
+                st.markdown('</div>', unsafe_allow_html=True)
 
-        order = ['< 50k', '50-100k', '100-150k', '> 150k']
-        buckets = [bucket(l.get('budget', '0')) for l in leads]
-        counts_df = pd.DataFrame({'Rango': buckets})
-        counts_df = counts_df[counts_df['Rango'] != 'Unknown']
-        if not counts_df.empty:
-            counts_data = counts_df['Rango'].value_counts().reindex(order, fill_value=0).reset_index()
-            counts_data.columns = ['Rango', 'Leads']
+        with ch2:
+            def bucket(b):
+                try:
+                    v = int(str(b).replace(',', '').replace('.', '').replace('$', '').strip())
+                    if v < 50000: return '< 50k'
+                    if v < 100000: return '50-100k'
+                    if v < 150000: return '100-150k'
+                    return '> 150k'
+                except:
+                    return 'Unknown'
 
-            bar_base = alt.Chart(counts_data)
-            bar_layer = bar_base.mark_bar(
-                color=CHART_LINE,
-                opacity=0.92,
-                cornerRadiusTopLeft=3,
-                cornerRadiusTopRight=3
-            ).encode(
-                x=alt.X('Rango:N', sort=order, axis=alt.Axis(
-                    labelFont='JetBrains Mono',
-                    labelFontSize=10,
-                    labelColor=TEXT_DIM,
-                    domainColor=BORDER,
-                    tickColor=BORDER,
-                    title=None,
-                    labelAngle=0
-                )),
-                y=alt.Y('Leads:Q', axis=alt.Axis(
-                    labelFont='JetBrains Mono',
-                    labelFontSize=10,
-                    labelColor=TEXT_DIM,
-                    domainColor=BORDER,
-                    tickColor=BORDER,
-                    gridColor=BORDER,
-                    gridOpacity=0.4,
-                    title=None,
-                    tickCount=4
-                ))
-            )
-            bar_label_layer = bar_base.mark_text(
-                font='JetBrains Mono', fontSize=11, color=CHART_LINE, dy=-8
-            ).encode(
-                x=alt.X('Rango:N', sort=order),
-                y='Leads:Q',
-                text=alt.Text('Leads:Q')
-            ).transform_filter(alt.datum.Leads > 0)
+            order = ['< 50k', '50-100k', '100-150k', '> 150k']
+            buckets = [bucket(l.get('budget', '0')) for l in leads]
+            counts_df = pd.DataFrame({'Rango': buckets})
+            counts_df = counts_df[counts_df['Rango'] != 'Unknown']
+            if not counts_df.empty:
+                counts_data = counts_df['Rango'].value_counts().reindex(order, fill_value=0).reset_index()
+                counts_data.columns = ['Rango', 'Leads']
 
-            bar_chart = alt.layer(bar_layer, bar_label_layer).properties(
-                height=180, background='transparent'
-            ).configure_view(strokeWidth=0)
+                bar_base = alt.Chart(counts_data)
+                bar_layer = bar_base.mark_bar(
+                    color=CHART_LINE,
+                    opacity=0.92,
+                    cornerRadiusTopLeft=3,
+                    cornerRadiusTopRight=3
+                ).encode(
+                    x=alt.X('Rango:N', sort=order, axis=alt.Axis(
+                        labelFont='JetBrains Mono',
+                        labelFontSize=10,
+                        labelColor=TEXT_DIM,
+                        domainColor=BORDER,
+                        tickColor=BORDER,
+                        title=None,
+                        labelAngle=0
+                    )),
+                    y=alt.Y('Leads:Q', axis=alt.Axis(
+                        labelFont='JetBrains Mono',
+                        labelFontSize=10,
+                        labelColor=TEXT_DIM,
+                        domainColor=BORDER,
+                        tickColor=BORDER,
+                        gridColor=BORDER,
+                        gridOpacity=0.4,
+                        title=None,
+                        tickCount=4
+                    ))
+                )
+                bar_label_layer = bar_base.mark_text(
+                    font='JetBrains Mono', fontSize=11, color=CHART_LINE, dy=-8
+                ).encode(
+                    x=alt.X('Rango:N', sort=order),
+                    y='Leads:Q',
+                    text=alt.Text('Leads:Q')
+                ).transform_filter(alt.datum.Leads > 0)
 
-            header = '<div class="chart-panel"><div class="chart-header">'
-            header += '<div class="chart-title">// BUDGET DISTRIBUTION</div>'
-            header += '<div class="chart-big-num">USD ranges</div>'
-            header += '</div>'
-            st.markdown(header, unsafe_allow_html=True)
-            st.altair_chart(bar_chart, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                bar_chart = alt.layer(bar_layer, bar_label_layer).properties(
+                    height=180, background='transparent'
+                ).configure_view(strokeWidth=0)
+
+                header = '<div class="chart-panel"><div class="chart-header">'
+                header += '<div class="chart-title">// BUDGET DISTRIBUTION</div>'
+                header += '<div class="chart-big-num">USD ranges</div>'
+                header += '</div>'
+                st.markdown(header, unsafe_allow_html=True)
+                st.altair_chart(bar_chart, use_container_width=True)
+                st.markdown('</div>', unsafe_allow_html=True)
 
 # ======================================================
 # CADENCE — calendar heatmap of daily lead volume
 # ======================================================
 if leads:
-    st.markdown(sec_label('CADENCE', '<span class="section-count">last 12 weeks</span>'), unsafe_allow_html=True)
-    hm_svg = heatmap_svg(leads, ACCENT_WARM, weeks=12)
-    hm_html = '<div class="heatmap-wrap">'
-    hm_html += '<div class="heatmap-header">'
-    hm_html += '<div class="heatmap-title">// DAILY LEAD VOLUME</div>'
-    hm_html += '<div class="heatmap-meta">' + str(total) + ' over 84 days</div>'
-    hm_html += '</div>'
-    hm_html += '<div class="heatmap-svg-wrap">' + hm_svg + '</div>'
-    # Mini legend
-    hm_html += '<div class="heatmap-legend"><span>LESS</span>'
-    hm_html += '<span class="heatmap-legend-cells">'
-    for op in [0.08, 0.25, 0.45, 0.65, 0.95]:
-        hm_html += '<span class="heatmap-legend-cell" style="opacity:' + str(op) + ';"></span>'
-    hm_html += '</span><span>MORE</span></div>'
-    hm_html += '</div>'
-    st.markdown(hm_html, unsafe_allow_html=True)
+    # Compute busiest day for the explanation
+    _hm_busiest_count = 0
+    _hm_busiest_day = None
+    for l in leads:
+        ts = (l.get('timestamp') or '')[:10]
+        try:
+            d = datetime.strptime(ts, '%Y-%m-%d').date()
+            c = sum(1 for _l in leads if (_l.get('timestamp') or '')[:10] == ts)
+            if c > _hm_busiest_count:
+                _hm_busiest_count = c
+                _hm_busiest_day = d
+        except:
+            continue
+    busiest_text = ''
+    if _hm_busiest_day:
+        busiest_text = _hm_busiest_day.strftime('%b %d').upper() + ' &middot; ' + str(_hm_busiest_count) + ' LEAD' + ('S' if _hm_busiest_count != 1 else '')
+
+    _cad_teaser = str(total) + ' LEADS OVER 12 WEEKS'
+    with st.expander(expander_label('CADENCE', _cad_teaser), expanded=False):
+        hm_svg = heatmap_svg(leads, ACCENT_WARM, weeks=12)
+        hm_html = '<div class="heatmap-wrap">'
+        hm_html += '<div class="heatmap-header">'
+        hm_html += '<div class="heatmap-title-block">'
+        hm_html += '<div class="heatmap-title">// DAILY LEAD VOLUME</div>'
+        hm_html += '<div class="heatmap-subtitle">Each square is a day. Darker squares mean more leads received on that day.</div>'
+        hm_html += '</div>'
+        hm_html += '<div class="heatmap-meta-block">'
+        hm_html += '<div class="heatmap-meta">' + str(total) + ' over 84 days</div>'
+        if busiest_text:
+            hm_html += '<div class="heatmap-busiest">BUSIEST &middot; ' + busiest_text + '</div>'
+        hm_html += '</div>'
+        hm_html += '</div>'
+        hm_html += '<div class="heatmap-svg-wrap">' + hm_svg + '</div>'
+        # Mini legend
+        hm_html += '<div class="heatmap-legend"><span>LESS</span>'
+        hm_html += '<span class="heatmap-legend-cells">'
+        for op in [0.10, 0.30, 0.50, 0.72, 1.0]:
+            hm_html += '<span class="heatmap-legend-cell" style="opacity:' + str(op) + ';"></span>'
+        hm_html += '</span><span>MORE</span></div>'
+        hm_html += '</div>'
+        st.markdown(hm_html, unsafe_allow_html=True)
 
 # ======================================================
-# DAILY STATS
+# DAILY STATS  (collapsible)
 # ======================================================
 if leads:
-    today_date = datetime.now().strftime('%Y-%m-%d')
-    today_leads = sum(1 for l in leads if l.get('timestamp', '').startswith(today_date))
-    pending_contact = sum(1 for l in leads if l.get('status', 'Nuevo') == 'Nuevo')
-    conv_rate = str(round((hot + warm) / total * 100)) + '%' if total > 0 else '0%'
-    st.markdown(sec_label('TODAY'), unsafe_allow_html=True)
-    d1, d2, d3 = st.columns(3)
-    with d1: st.markdown(stat_card('// TODAY\'S LEADS', today_leads, 'RECEIVED TODAY'), unsafe_allow_html=True)
-    with d2: st.markdown(stat_card('// PENDING CONTACT', pending_contact, 'NEED FOLLOW-UP', accent=True), unsafe_allow_html=True)
-    with d3: st.markdown(stat_card('// CONVERSION RATE', conv_rate, 'HOT + WARM / TOTAL'), unsafe_allow_html=True)
-
-    # Pull-quote insight: surface the most striking metric
-    quote_text = None
-    quote_attr = None
-    if total > 0:
-        conv_n = round((hot + warm) / total * 100)
-        if conv_n >= 50:
-            quote_text = '<span class="pull-quote-text-accent">' + str(conv_n) + '%</span> of your leads are warm or hot — your best signal yet.'
-            quote_attr = '// CONVERSION INSIGHT'
-        elif hot >= 3:
-            quote_text = '<span class="pull-quote-text-accent">' + str(hot) + ' hot leads</span> in the pipeline. Move fast — response time matters.'
-            quote_attr = '// PRIORITY SIGNAL'
-        elif top_zone_name and _top_zone_pair and _top_zone_pair[0][1] >= 2:
-            quote_text = '<span class="pull-quote-text-accent">' + top_zone_name + '</span> leads the zones with ' + str(_top_zone_pair[0][1]) + ' leads. Worth doubling down.'
-            quote_attr = '// MARKET FOCUS'
-        elif resp_minutes_list and avg_resp is not None and avg_resp <= 30:
-            quote_text = 'Average response time: <span class="pull-quote-text-accent">' + fmt(avg_resp) + '</span>. Fast enough to win.'
-            quote_attr = '// PERFORMANCE'
-        else:
-            quote_text = 'Steady pipeline. <span class="pull-quote-text-accent">' + str(total) + '</span> leads on file, ' + str(pending_count) + ' still waiting on you.'
-            quote_attr = '// OPERATIONS'
-    if quote_text:
-        st.markdown(pull_quote(quote_text, quote_attr), unsafe_allow_html=True)
+    _today_teaser = str(today_leads) + ' NEW · ' + str(pending_contact) + ' PENDING · ' + conv_rate + ' CONVERSION'
+    with st.expander(expander_label('TODAY', _today_teaser), expanded=False):
+        d1, d2, d3 = st.columns(3)
+        with d1: st.markdown(stat_card('// TODAY\'S LEADS', today_leads, 'RECEIVED TODAY'), unsafe_allow_html=True)
+        with d2: st.markdown(stat_card('// PENDING CONTACT', pending_contact, 'NEED FOLLOW-UP', accent=True), unsafe_allow_html=True)
+        with d3: st.markdown(stat_card('// CONVERSION RATE', conv_rate, 'HOT + WARM / TOTAL'), unsafe_allow_html=True)
 
 # ======================================================
 # TOP ZONES + FOLLOW-UPS
@@ -1683,32 +1878,35 @@ def follow_up_panel(leads_list):
     return html
 
 if leads:
-    st.markdown(sec_label('ZONES &amp; FOLLOW-UPS'), unsafe_allow_html=True)
-    zones_html = zones_leaderboard(leads)
-    zl, zr = st.columns(2)
-    with zl:
-        if zones_html:
-            header = '<div class="chart-panel"><div class="chart-header">'
-            header += '<div class="chart-title">// TOP ZONES</div>'
-            header += '<div class="chart-big-num">by lead count</div>'
-            header += '</div>'
-            st.markdown(header + zones_html + '</div>', unsafe_allow_html=True)
-    with zr:
-        st.markdown(follow_up_panel(leads), unsafe_allow_html=True)
+    _z_teaser = ('TOP: ' + top_zone_name.upper()) if top_zone_name else 'ZONES'
+    _z_teaser += ' · ' + str(pending_count) + ' FOLLOW-UPS PENDING'
+    with st.expander(expander_label('ZONES & FOLLOW-UPS', _z_teaser), expanded=False):
+        zones_html = zones_leaderboard(leads)
+        zl, zr = st.columns(2)
+        with zl:
+            if zones_html:
+                header = '<div class="chart-panel"><div class="chart-header">'
+                header += '<div class="chart-title">// TOP ZONES</div>'
+                header += '<div class="chart-big-num">by lead count</div>'
+                header += '</div>'
+                st.markdown(header + zones_html + '</div>', unsafe_allow_html=True)
+        with zr:
+            st.markdown(follow_up_panel(leads), unsafe_allow_html=True)
 
 # ======================================================
-# RESPONSE TIME
+# RESPONSE TIME  (collapsible)
 # ======================================================
-timed = [{'name': l.get('name', '-'), 'minutes': get_minutes(l)} for l in leads if get_minutes(l) is not None]
-if timed:
-    avg = sum(t['minutes'] for t in timed) / len(timed)
-    fastest = min(timed, key=lambda x: x['minutes'])
-    slowest = max(timed, key=lambda x: x['minutes'])
-    st.markdown(sec_label('RESPONSE TIME', '<span class="section-count">' + str(len(timed)) + ' contacted</span>'), unsafe_allow_html=True)
-    t1, t2, t3 = st.columns(3)
-    with t1: st.markdown(resp_card('// AVG RESPONSE', fmt(int(avg)), 'ACROSS ' + str(len(timed)) + ' LEADS'), unsafe_allow_html=True)
-    with t2: st.markdown(resp_card('// FASTEST', fmt(fastest['minutes']), fastest['name'].upper(), accent=True), unsafe_allow_html=True)
-    with t3: st.markdown(resp_card('// SLOWEST', fmt(slowest['minutes']), slowest['name'].upper()), unsafe_allow_html=True)
+timed_full = [{'name': l.get('name', '-'), 'minutes': get_minutes(l)} for l in leads if get_minutes(l) is not None]
+if timed_full:
+    avg = sum(t['minutes'] for t in timed_full) / len(timed_full)
+    fastest = min(timed_full, key=lambda x: x['minutes'])
+    slowest = max(timed_full, key=lambda x: x['minutes'])
+    _rt_teaser = 'AVG ' + fmt(int(avg)) + ' · FASTEST ' + fmt(fastest['minutes']) + ' · ' + str(len(timed_full)) + ' CONTACTED'
+    with st.expander(expander_label('RESPONSE TIME', _rt_teaser), expanded=False):
+        t1, t2, t3 = st.columns(3)
+        with t1: st.markdown(resp_card('// AVG RESPONSE', fmt(int(avg)), 'ACROSS ' + str(len(timed_full)) + ' LEADS'), unsafe_allow_html=True)
+        with t2: st.markdown(resp_card('// FASTEST', fmt(fastest['minutes']), fastest['name'].upper(), accent=True), unsafe_allow_html=True)
+        with t3: st.markdown(resp_card('// SLOWEST', fmt(slowest['minutes']), slowest['name'].upper()), unsafe_allow_html=True)
 
 # ======================================================
 # SEARCH + FILTERS
