@@ -4,7 +4,7 @@ import io
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time as _dtime
 from urllib.parse import quote
 import pandas as pd
 import altair as alt
@@ -598,6 +598,25 @@ footer { visibility: hidden; }
     letter-spacing: 0.2em;
     color: ACCENT_WARM_COLOR;
 }
+.cal-cell.focus {
+    border-color: ACCENT_COLOR;
+    border-width: 2px;
+    padding: 7px 9px;
+    box-shadow: 0 0 0 3px BG_COLOR, 0 0 0 4px ACCENT_COLOR;
+}
+.cal-cell.focus.today {
+    border-color: ACCENT_WARM_COLOR;
+    box-shadow: 0 0 0 3px BG_COLOR, 0 0 0 4px ACCENT_WARM_COLOR;
+}
+.cal-cell.focus::before {
+    content: '▾';
+    position: absolute;
+    top: 4px;
+    left: 8px;
+    font-size: 0.6rem;
+    color: ACCENT_COLOR;
+    line-height: 1;
+}
 .cal-cell.has-hot {
     background: linear-gradient(180deg, PANEL_COLOR 0%, BG_COLOR 60%);
 }
@@ -658,6 +677,135 @@ footer { visibility: hidden; }
     min-height: 28px !important;
     height: 28px !important;
     width: 100% !important;
+}
+
+/* ---- DAY DETAIL CARD (focus day expansion) ---- */
+.day-detail-card {
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-left: 3px solid ACCENT_COLOR;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 12px;
+    animation: lb-fade-up 0.3s ease both;
+}
+.day-detail-card.is-today { border-left-color: ACCENT_WARM_COLOR; }
+.day-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid BORDER_COLOR;
+}
+.day-detail-title {
+    font-family: Fraunces, serif;
+    font-size: 1.6rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    letter-spacing: -0.025em;
+    line-height: 1;
+}
+.day-detail-badge {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.22em;
+    color: ACCENT_WARM_COLOR;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid ACCENT_WARM_COLOR;
+    border-radius: 16px;
+}
+.day-detail-section { margin-bottom: 20px; }
+.day-detail-section:last-child { margin-bottom: 0; }
+.day-detail-label {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.52rem;
+    letter-spacing: 0.22em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.day-detail-event {
+    display: flex;
+    gap: 18px;
+    padding: 12px 0;
+    border-bottom: 1px solid BORDER_COLOR;
+}
+.day-detail-event:last-child { border-bottom: none; }
+.day-detail-event-time {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    color: ACCENT_WARM_COLOR;
+    text-transform: uppercase;
+    min-width: 76px;
+    padding-top: 3px;
+    flex-shrink: 0;
+}
+.day-detail-event-body { flex: 1; }
+.day-detail-event-title {
+    font-family: Fraunces, serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    margin-bottom: 5px;
+    letter-spacing: -0.005em;
+}
+.day-detail-event-loc {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.14em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.day-detail-event-notes {
+    font-family: Inter, sans-serif;
+    font-size: 0.82rem;
+    color: TEXT_COLOR;
+    opacity: 0.88;
+    line-height: 1.5;
+    margin-top: 4px;
+}
+.day-detail-lead {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid BORDER_COLOR;
+}
+.day-detail-lead:last-child { border-bottom: none; }
+.day-detail-lead-name {
+    font-family: Fraunces, serif;
+    font-size: 0.98rem;
+    font-style: italic;
+    color: TEXT_COLOR;
+    flex: 1;
+    font-weight: 300;
+}
+.day-detail-lead-meta {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.46rem;
+    letter-spacing: 0.14em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+.day-detail-empty {
+    font-family: Fraunces, serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: TEXT_DIM_COLOR;
+    padding: 16px 0 8px 0;
+    font-weight: 300;
+}
+
+/* View-day picker — match other labels */
+.view-day-wrap {
+    margin-top: 12px;
+    margin-bottom: 4px;
 }
 
 /* Event chips inside calendar cells */
@@ -2290,6 +2438,11 @@ if leads:
             st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # Focus day state
+    if 'focus_day_val' not in st.session_state:
+        st.session_state.focus_day_val = _today_d
+    _focus_d = st.session_state.focus_day_val
+
     # Build the grid (Mon-first)
     _c_obj = _cal.Calendar(firstweekday=0)
     _grid_dates = list(_c_obj.itermonthdates(_cyr, _cmo))
@@ -2305,6 +2458,8 @@ if leads:
             classes.append('other-month')
         if _d == _today_d:
             classes.append('today')
+        if _d == _focus_d and _d.month == _cmo:
+            classes.append('focus')
         day_leads = _cell_leads.get(_d, [])
         n = len(day_leads)
         hot_n = sum(1 for x in day_leads if x.get('score') == 'HOT')
@@ -2358,6 +2513,89 @@ if leads:
     # Close cal-wrap
     grid_html += '</div>'
     st.markdown(grid_html, unsafe_allow_html=True)
+
+    # ---- VIEW DAY PICKER + DAY DETAIL CARD ----
+    st.markdown('<div class="view-day-wrap">', unsafe_allow_html=True)
+    vd_col, vd_today_col, _vd_sp = st.columns([2, 1, 6])
+    with vd_col:
+        picked_day = st.date_input('// VIEW DAY', value=_focus_d, key='view_day_picker')
+    with vd_today_col:
+        st.markdown('<div style="height:32px;"></div>', unsafe_allow_html=True)  # vertical spacer to align with input
+        if st.button('JUMP TO TODAY', key='vd_today_btn'):
+            picked_day = _today_d
+            st.session_state.view_day_picker = _today_d
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Sync focus_day state
+    if picked_day != _focus_d:
+        st.session_state.focus_day_val = picked_day
+        # Also switch the calendar month if picked day is in a different month
+        if picked_day.year != _cyr or picked_day.month != _cmo:
+            st.session_state.cal_year = picked_day.year
+            st.session_state.cal_month = picked_day.month
+        st.rerun()
+
+    # Build day-detail card
+    is_today = picked_day == _today_d
+    day_title = picked_day.strftime('%A, %B %d')
+
+    day_events = [_e for _e in events_all if str(_e.get('event_date', '')) == picked_day.strftime('%Y-%m-%d')]
+    day_events.sort(key=lambda e: str(e.get('event_time') or '99:99'))
+    day_leads = [_l for _l in leads if (_l.get('timestamp') or '').startswith(picked_day.strftime('%Y-%m-%d'))]
+
+    card_class = 'day-detail-card' + (' is-today' if is_today else '')
+    detail_html = '<div class="' + card_class + '">'
+    detail_html += '<div class="day-detail-header">'
+    detail_html += '<div class="day-detail-title">' + day_title + '</div>'
+    if is_today:
+        detail_html += '<div class="day-detail-badge">TODAY</div>'
+    detail_html += '</div>'
+
+    # Events section
+    if day_events:
+        detail_html += '<div class="day-detail-section">'
+        detail_html += '<div class="day-detail-label">// EVENTS &middot; ' + str(len(day_events)) + '</div>'
+        for _e in day_events:
+            _t = (_e.get('event_time') or '')[:5]
+            _title_str = _e.get('title') or ''
+            _loc_str = _e.get('location') or ''
+            _notes_str = _e.get('notes') or ''
+            detail_html += '<div class="day-detail-event">'
+            detail_html += '<div class="day-detail-event-time">' + (_t if _t else 'ALL DAY') + '</div>'
+            detail_html += '<div class="day-detail-event-body">'
+            detail_html += '<div class="day-detail-event-title">' + _title_str + '</div>'
+            meta_bits = []
+            if _loc_str:
+                meta_bits.append(_loc_str.upper())
+            if _e.get('lead_id'):
+                _linked_l = next((l for l in leads if l.get('id') == _e['lead_id']), None)
+                if _linked_l:
+                    meta_bits.append('LEAD &middot; ' + (_linked_l.get('name') or '').upper())
+            if meta_bits:
+                detail_html += '<div class="day-detail-event-loc">' + ' &middot; '.join(meta_bits) + '</div>'
+            if _notes_str:
+                detail_html += '<div class="day-detail-event-notes">' + _notes_str + '</div>'
+            detail_html += '</div></div>'
+        detail_html += '</div>'
+
+    # Leads received section
+    if day_leads:
+        detail_html += '<div class="day-detail-section">'
+        detail_html += '<div class="day-detail-label">// LEADS RECEIVED &middot; ' + str(len(day_leads)) + '</div>'
+        for _l in day_leads:
+            _sc = _l.get('score', 'COLD')
+            detail_html += '<div class="day-detail-lead">'
+            detail_html += '<span class="badge score-' + _sc.lower() + '">' + _sc + '</span>'
+            detail_html += '<span class="day-detail-lead-name">' + (_l.get('name') or '-') + '</span>'
+            detail_html += '<span class="day-detail-lead-meta">' + (_l.get('property_type') or '') + ' &middot; $' + str(_l.get('budget', '-')) + ' &middot; ' + (_l.get('area') or '').upper() + '</span>'
+            detail_html += '</div>'
+        detail_html += '</div>'
+
+    if not day_events and not day_leads:
+        detail_html += '<div class="day-detail-empty">No activity on this day. Use <strong>+ ADD EVENT</strong> below to schedule something.</div>'
+
+    detail_html += '</div>'
+    st.markdown(detail_html, unsafe_allow_html=True)
 
 # ======================================================
 # AGENDA — upcoming events grouped by period
@@ -2416,7 +2654,7 @@ if leads:
         with ef1:
             ev_date = st.date_input('// DATE', value=_today_dd, key='ev_date')
         with ef2:
-            ev_time_str = st.text_input('// TIME (HH:MM)', value='10:00', key='ev_time', placeholder='10:00')
+            ev_time_obj = st.time_input('// TIME', value=_dtime(10, 0), key='ev_time', step=300)
         with ef3:
             ev_title = st.text_input('// TITLE', placeholder='Visita de Sergio', key='ev_title')
 
@@ -2441,14 +2679,7 @@ if leads:
                 if not ev_title.strip():
                     st.error('Title is required.')
                 else:
-                    # Validate time
-                    final_time = None
-                    if ev_time_str.strip():
-                        try:
-                            t = datetime.strptime(ev_time_str.strip(), '%H:%M')
-                            final_time = t.strftime('%H:%M:%S')
-                        except:
-                            st.warning('Time format should be HH:MM (e.g., 10:30). Saving without time.')
+                    final_time = ev_time_obj.strftime('%H:%M:%S') if ev_time_obj else None
                     ok = add_event(
                         event_date=ev_date.strftime('%Y-%m-%d'),
                         event_time=final_time,
@@ -2493,9 +2724,15 @@ if leads:
                 if period_name in ('THIS WEEK', 'LATER'):
                     time_html += _date_disp
                     if _t:
-                        time_html += '<br><span style="opacity:0.75;">' + _t + '</span>'
+                        time_html += '<br><span style="opacity:0.78;font-size:0.55rem;letter-spacing:0.14em;">' + _t + '</span>'
+                    else:
+                        time_html += '<br><span style="opacity:0.5;font-size:0.42rem;letter-spacing:0.14em;">ALL DAY</span>'
                 else:
-                    time_html += _t if _t else 'ALL DAY'
+                    # TODAY / TOMORROW — emphasize time
+                    if _t:
+                        time_html += '<span style="font-size:0.7rem;">' + _t + '</span>'
+                    else:
+                        time_html += 'ALL DAY'
                 time_html += '</div>'
 
                 # Body
