@@ -2517,16 +2517,21 @@ if leads:
     # ---- VIEW DAY PICKER + DAY DETAIL CARD ----
     st.markdown('<div class="view-day-wrap">', unsafe_allow_html=True)
     vd_col, vd_today_col, _vd_sp = st.columns([2, 1, 6])
-    with vd_col:
-        picked_day = st.date_input('// VIEW DAY', value=_focus_d, key='view_day_picker')
     with vd_today_col:
         st.markdown('<div style="height:32px;"></div>', unsafe_allow_html=True)  # vertical spacer to align with input
         if st.button('JUMP TO TODAY', key='vd_today_btn'):
-            picked_day = _today_d
-            st.session_state.view_day_picker = _today_d
+            # Drop the widget's stored value so it reinitializes with our new default
+            if 'view_day_picker' in st.session_state:
+                del st.session_state['view_day_picker']
+            st.session_state.focus_day_val = _today_d
+            st.session_state.cal_year = _today_d.year
+            st.session_state.cal_month = _today_d.month
+            st.rerun()
+    with vd_col:
+        picked_day = st.date_input('// VIEW DAY', value=_focus_d, key='view_day_picker')
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Sync focus_day state
+    # Sync focus_day state when picker changes
     if picked_day != _focus_d:
         st.session_state.focus_day_val = picked_day
         # Also switch the calendar month if picked day is in a different month
