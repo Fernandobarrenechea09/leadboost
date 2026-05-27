@@ -998,6 +998,47 @@ div[data-testid="stExpander"]:hover {
     margin-bottom: 12px !important;
 }
 
+/* ---- LEAD EXPANDERS — per-lead score-colored left border ---- */
+.lead-expander-wrap { margin-bottom: 8px; }
+.lead-expander-wrap [data-testid="stExpander"],
+.lead-expander-wrap div[data-testid="stExpander"] {
+    border-left-width: 3px !important;
+    border-radius: 10px !important;
+    margin-bottom: 0 !important;
+}
+.lead-expander-wrap.lead-hot [data-testid="stExpander"] {
+    border-left-color: ACCENT_WARM_COLOR !important;
+}
+.lead-expander-wrap.lead-warm [data-testid="stExpander"] {
+    border-left-color: WARM_ACCENT_COLOR !important;
+}
+.lead-expander-wrap.lead-cold [data-testid="stExpander"] {
+    border-left-color: BORDER_COLOR !important;
+}
+.lead-expander-wrap [data-testid="stExpander"] summary {
+    padding: 16px 22px !important;
+    font-family: Inter, sans-serif !important;
+    font-size: 0.78rem !important;
+    letter-spacing: 0.04em !important;
+    text-transform: none !important;
+    color: TEXT_COLOR !important;
+}
+.lead-expander-wrap [data-testid="stExpander"] summary p {
+    font-family: Inter, sans-serif !important;
+    font-size: 0.78rem !important;
+    letter-spacing: 0.04em !important;
+    text-transform: none !important;
+}
+.lead-expander-wrap [data-testid="stExpander"] summary strong,
+.lead-expander-wrap [data-testid="stExpander"] summary p strong {
+    font-family: Fraunces, serif !important;
+    font-style: italic !important;
+    font-weight: 300 !important;
+    font-size: 1.25rem !important;
+    letter-spacing: -0.01em !important;
+    color: TEXT_COLOR !important;
+}
+
 /* ---- FOLLOW-UP SCROLLABLE LIST ---- */
 .follow-up-list {
     max-height: 312px;
@@ -1638,151 +1679,150 @@ if quote_text:
     st.markdown(pull_quote(quote_text, quote_attr), unsafe_allow_html=True)
 
 # ======================================================
-# CONVERSION FUNNEL  (collapsible)
+# CONVERSION FUNNEL
 # ======================================================
 if leads:
-    _pipe_teaser = str(_stage_counts.get('Nuevo', 0)) + ' NEW · ' + str(_stage_counts.get('Contactado', 0)) + ' CONTACTED · ' + str(_stage_counts.get('Visitado', 0)) + ' VISITED · ' + str(_stage_counts.get('Cerrado', 0)) + ' CLOSED'
-    with st.expander(expander_label('PIPELINE', _pipe_teaser), expanded=False):
-        st.markdown(funnel_strip(leads), unsafe_allow_html=True)
+    st.markdown(sec_label('PIPELINE'), unsafe_allow_html=True)
+    st.markdown(funnel_strip(leads), unsafe_allow_html=True)
 
 # ======================================================
-# CHARTS  (collapsible)
+# CHARTS
 # ======================================================
 if leads:
-    with st.expander(expander_label('ANALYTICS', 'LEADS OVER TIME · BUDGET DISTRIBUTION'), expanded=False):
-        ch1, ch2 = st.columns(2)
+    st.markdown(sec_label('ANALYTICS'), unsafe_allow_html=True)
+    ch1, ch2 = st.columns(2)
 
-        with ch1:
-            dates = [l.get('timestamp', '')[:10] for l in leads if l.get('timestamp')]
-            if dates:
-                df = pd.DataFrame({'date': dates})
-                df['date'] = pd.to_datetime(df['date'])
-                daily = df.groupby('date').size().reset_index(name='Leads').sort_values('date')
+    with ch1:
+        dates = [l.get('timestamp', '')[:10] for l in leads if l.get('timestamp')]
+        if dates:
+            df = pd.DataFrame({'date': dates})
+            df['date'] = pd.to_datetime(df['date'])
+            daily = df.groupby('date').size().reset_index(name='Leads').sort_values('date')
 
-                base = alt.Chart(daily)
+            base = alt.Chart(daily)
 
-                area_layer = base.mark_area(
-                    line={'color': CHART_LINE, 'strokeWidth': 2.2},
-                    color=alt.Gradient(
-                        gradient='linear',
-                        stops=[
-                            alt.GradientStop(color=CHART_FILL, offset=0),
-                            alt.GradientStop(color=BG, offset=1)
-                        ],
-                        x1=1, x2=1, y1=1, y2=0
-                    ),
-                    interpolate='monotone',
-                    opacity=0.95
-                ).encode(
-                    x=alt.X('date:T', axis=alt.Axis(
-                        labelFont='JetBrains Mono',
-                        labelFontSize=10,
-                        labelColor=TEXT_DIM,
-                        domainColor=BORDER,
-                        tickColor=BORDER,
-                        grid=False,
-                        title=None,
-                        format='%b %d',
-                        labelAngle=0,
-                        tickCount=6
-                    )),
-                    y=alt.Y('Leads:Q', axis=alt.Axis(
-                        labelFont='JetBrains Mono',
-                        labelFontSize=10,
-                        labelColor=TEXT_DIM,
-                        domainColor=BORDER,
-                        tickColor=BORDER,
-                        gridColor=BORDER,
-                        gridOpacity=0.4,
-                        title=None,
-                        tickCount=4
-                    ))
-                )
-                dot_layer = base.mark_point(
-                    filled=True, size=50, color=CHART_LINE, strokeWidth=2, stroke=PANEL
-                ).encode(x='date:T', y='Leads:Q')
-                label_layer = base.mark_text(
-                    font='JetBrains Mono', fontSize=10, color=CHART_LINE, dy=-13
-                ).encode(x='date:T', y='Leads:Q', text='Leads:Q')
+            area_layer = base.mark_area(
+                line={'color': CHART_LINE, 'strokeWidth': 2.2},
+                color=alt.Gradient(
+                    gradient='linear',
+                    stops=[
+                        alt.GradientStop(color=CHART_FILL, offset=0),
+                        alt.GradientStop(color=BG, offset=1)
+                    ],
+                    x1=1, x2=1, y1=1, y2=0
+                ),
+                interpolate='monotone',
+                opacity=0.95
+            ).encode(
+                x=alt.X('date:T', axis=alt.Axis(
+                    labelFont='JetBrains Mono',
+                    labelFontSize=10,
+                    labelColor=TEXT_DIM,
+                    domainColor=BORDER,
+                    tickColor=BORDER,
+                    grid=False,
+                    title=None,
+                    format='%b %d',
+                    labelAngle=0,
+                    tickCount=6
+                )),
+                y=alt.Y('Leads:Q', axis=alt.Axis(
+                    labelFont='JetBrains Mono',
+                    labelFontSize=10,
+                    labelColor=TEXT_DIM,
+                    domainColor=BORDER,
+                    tickColor=BORDER,
+                    gridColor=BORDER,
+                    gridOpacity=0.4,
+                    title=None,
+                    tickCount=4
+                ))
+            )
+            dot_layer = base.mark_point(
+                filled=True, size=50, color=CHART_LINE, strokeWidth=2, stroke=PANEL
+            ).encode(x='date:T', y='Leads:Q')
+            label_layer = base.mark_text(
+                font='JetBrains Mono', fontSize=10, color=CHART_LINE, dy=-13
+            ).encode(x='date:T', y='Leads:Q', text='Leads:Q')
 
-                area_chart = alt.layer(area_layer, dot_layer, label_layer).properties(
-                    height=180, background='transparent'
-                ).configure_view(strokeWidth=0)
+            area_chart = alt.layer(area_layer, dot_layer, label_layer).properties(
+                height=180, background='transparent'
+            ).configure_view(strokeWidth=0)
 
-                header = '<div class="chart-panel"><div class="chart-header">'
-                header += '<div class="chart-title">// LEADS OVER TIME</div>'
-                header += '<div class="chart-big-num">' + str(total) + ' total</div>'
-                header += '</div>'
-                st.markdown(header, unsafe_allow_html=True)
-                st.altair_chart(area_chart, use_container_width=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+            header = '<div class="chart-panel"><div class="chart-header">'
+            header += '<div class="chart-title">// LEADS OVER TIME</div>'
+            header += '<div class="chart-big-num">' + str(total) + ' total</div>'
+            header += '</div>'
+            st.markdown(header, unsafe_allow_html=True)
+            st.altair_chart(area_chart, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        with ch2:
-            def bucket(b):
-                try:
-                    v = int(str(b).replace(',', '').replace('.', '').replace('$', '').strip())
-                    if v < 50000: return '< 50k'
-                    if v < 100000: return '50-100k'
-                    if v < 150000: return '100-150k'
-                    return '> 150k'
-                except:
-                    return 'Unknown'
+    with ch2:
+        def bucket(b):
+            try:
+                v = int(str(b).replace(',', '').replace('.', '').replace('$', '').strip())
+                if v < 50000: return '< 50k'
+                if v < 100000: return '50-100k'
+                if v < 150000: return '100-150k'
+                return '> 150k'
+            except:
+                return 'Unknown'
 
-            order = ['< 50k', '50-100k', '100-150k', '> 150k']
-            buckets = [bucket(l.get('budget', '0')) for l in leads]
-            counts_df = pd.DataFrame({'Rango': buckets})
-            counts_df = counts_df[counts_df['Rango'] != 'Unknown']
-            if not counts_df.empty:
-                counts_data = counts_df['Rango'].value_counts().reindex(order, fill_value=0).reset_index()
-                counts_data.columns = ['Rango', 'Leads']
+        order = ['< 50k', '50-100k', '100-150k', '> 150k']
+        buckets = [bucket(l.get('budget', '0')) for l in leads]
+        counts_df = pd.DataFrame({'Rango': buckets})
+        counts_df = counts_df[counts_df['Rango'] != 'Unknown']
+        if not counts_df.empty:
+            counts_data = counts_df['Rango'].value_counts().reindex(order, fill_value=0).reset_index()
+            counts_data.columns = ['Rango', 'Leads']
 
-                bar_base = alt.Chart(counts_data)
-                bar_layer = bar_base.mark_bar(
-                    color=CHART_LINE,
-                    opacity=0.92,
-                    cornerRadiusTopLeft=3,
-                    cornerRadiusTopRight=3
-                ).encode(
-                    x=alt.X('Rango:N', sort=order, axis=alt.Axis(
-                        labelFont='JetBrains Mono',
-                        labelFontSize=10,
-                        labelColor=TEXT_DIM,
-                        domainColor=BORDER,
-                        tickColor=BORDER,
-                        title=None,
-                        labelAngle=0
-                    )),
-                    y=alt.Y('Leads:Q', axis=alt.Axis(
-                        labelFont='JetBrains Mono',
-                        labelFontSize=10,
-                        labelColor=TEXT_DIM,
-                        domainColor=BORDER,
-                        tickColor=BORDER,
-                        gridColor=BORDER,
-                        gridOpacity=0.4,
-                        title=None,
-                        tickCount=4
-                    ))
-                )
-                bar_label_layer = bar_base.mark_text(
-                    font='JetBrains Mono', fontSize=11, color=CHART_LINE, dy=-8
-                ).encode(
-                    x=alt.X('Rango:N', sort=order),
-                    y='Leads:Q',
-                    text=alt.Text('Leads:Q')
-                ).transform_filter(alt.datum.Leads > 0)
+            bar_base = alt.Chart(counts_data)
+            bar_layer = bar_base.mark_bar(
+                color=CHART_LINE,
+                opacity=0.92,
+                cornerRadiusTopLeft=3,
+                cornerRadiusTopRight=3
+            ).encode(
+                x=alt.X('Rango:N', sort=order, axis=alt.Axis(
+                    labelFont='JetBrains Mono',
+                    labelFontSize=10,
+                    labelColor=TEXT_DIM,
+                    domainColor=BORDER,
+                    tickColor=BORDER,
+                    title=None,
+                    labelAngle=0
+                )),
+                y=alt.Y('Leads:Q', axis=alt.Axis(
+                    labelFont='JetBrains Mono',
+                    labelFontSize=10,
+                    labelColor=TEXT_DIM,
+                    domainColor=BORDER,
+                    tickColor=BORDER,
+                    gridColor=BORDER,
+                    gridOpacity=0.4,
+                    title=None,
+                    tickCount=4
+                ))
+            )
+            bar_label_layer = bar_base.mark_text(
+                font='JetBrains Mono', fontSize=11, color=CHART_LINE, dy=-8
+            ).encode(
+                x=alt.X('Rango:N', sort=order),
+                y='Leads:Q',
+                text=alt.Text('Leads:Q')
+            ).transform_filter(alt.datum.Leads > 0)
 
-                bar_chart = alt.layer(bar_layer, bar_label_layer).properties(
-                    height=180, background='transparent'
-                ).configure_view(strokeWidth=0)
+            bar_chart = alt.layer(bar_layer, bar_label_layer).properties(
+                height=180, background='transparent'
+            ).configure_view(strokeWidth=0)
 
-                header = '<div class="chart-panel"><div class="chart-header">'
-                header += '<div class="chart-title">// BUDGET DISTRIBUTION</div>'
-                header += '<div class="chart-big-num">USD ranges</div>'
-                header += '</div>'
-                st.markdown(header, unsafe_allow_html=True)
-                st.altair_chart(bar_chart, use_container_width=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+            header = '<div class="chart-panel"><div class="chart-header">'
+            header += '<div class="chart-title">// BUDGET DISTRIBUTION</div>'
+            header += '<div class="chart-big-num">USD ranges</div>'
+            header += '</div>'
+            st.markdown(header, unsafe_allow_html=True)
+            st.altair_chart(bar_chart, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
 # ======================================================
 # CADENCE — calendar heatmap of daily lead volume
@@ -1805,41 +1845,39 @@ if leads:
     if _hm_busiest_day:
         busiest_text = _hm_busiest_day.strftime('%b %d').upper() + ' &middot; ' + str(_hm_busiest_count) + ' LEAD' + ('S' if _hm_busiest_count != 1 else '')
 
-    _cad_teaser = str(total) + ' LEADS OVER 12 WEEKS'
-    with st.expander(expander_label('CADENCE', _cad_teaser), expanded=False):
-        hm_svg = heatmap_svg(leads, ACCENT_WARM, weeks=12)
-        hm_html = '<div class="heatmap-wrap">'
-        hm_html += '<div class="heatmap-header">'
-        hm_html += '<div class="heatmap-title-block">'
-        hm_html += '<div class="heatmap-title">// DAILY LEAD VOLUME</div>'
-        hm_html += '<div class="heatmap-subtitle">Each square is a day. Darker squares mean more leads received on that day.</div>'
-        hm_html += '</div>'
-        hm_html += '<div class="heatmap-meta-block">'
-        hm_html += '<div class="heatmap-meta">' + str(total) + ' over 84 days</div>'
-        if busiest_text:
-            hm_html += '<div class="heatmap-busiest">BUSIEST &middot; ' + busiest_text + '</div>'
-        hm_html += '</div>'
-        hm_html += '</div>'
-        hm_html += '<div class="heatmap-svg-wrap">' + hm_svg + '</div>'
-        # Mini legend
-        hm_html += '<div class="heatmap-legend"><span>LESS</span>'
-        hm_html += '<span class="heatmap-legend-cells">'
-        for op in [0.10, 0.30, 0.50, 0.72, 1.0]:
-            hm_html += '<span class="heatmap-legend-cell" style="opacity:' + str(op) + ';"></span>'
-        hm_html += '</span><span>MORE</span></div>'
-        hm_html += '</div>'
-        st.markdown(hm_html, unsafe_allow_html=True)
+    st.markdown(sec_label('CADENCE', '<span class="section-count">last 12 weeks</span>'), unsafe_allow_html=True)
+    hm_svg = heatmap_svg(leads, ACCENT_WARM, weeks=12)
+    hm_html = '<div class="heatmap-wrap">'
+    hm_html += '<div class="heatmap-header">'
+    hm_html += '<div class="heatmap-title-block">'
+    hm_html += '<div class="heatmap-title">// DAILY LEAD VOLUME</div>'
+    hm_html += '<div class="heatmap-subtitle">Each square is a day. Darker squares mean more leads received on that day.</div>'
+    hm_html += '</div>'
+    hm_html += '<div class="heatmap-meta-block">'
+    hm_html += '<div class="heatmap-meta">' + str(total) + ' over 84 days</div>'
+    if busiest_text:
+        hm_html += '<div class="heatmap-busiest">BUSIEST &middot; ' + busiest_text + '</div>'
+    hm_html += '</div>'
+    hm_html += '</div>'
+    hm_html += '<div class="heatmap-svg-wrap">' + hm_svg + '</div>'
+    # Mini legend
+    hm_html += '<div class="heatmap-legend"><span>LESS</span>'
+    hm_html += '<span class="heatmap-legend-cells">'
+    for op in [0.10, 0.30, 0.50, 0.72, 1.0]:
+        hm_html += '<span class="heatmap-legend-cell" style="opacity:' + str(op) + ';"></span>'
+    hm_html += '</span><span>MORE</span></div>'
+    hm_html += '</div>'
+    st.markdown(hm_html, unsafe_allow_html=True)
 
 # ======================================================
-# DAILY STATS  (collapsible)
+# DAILY STATS
 # ======================================================
 if leads:
-    _today_teaser = str(today_leads) + ' NEW · ' + str(pending_contact) + ' PENDING · ' + conv_rate + ' CONVERSION'
-    with st.expander(expander_label('TODAY', _today_teaser), expanded=False):
-        d1, d2, d3 = st.columns(3)
-        with d1: st.markdown(stat_card('// TODAY\'S LEADS', today_leads, 'RECEIVED TODAY'), unsafe_allow_html=True)
-        with d2: st.markdown(stat_card('// PENDING CONTACT', pending_contact, 'NEED FOLLOW-UP', accent=True), unsafe_allow_html=True)
-        with d3: st.markdown(stat_card('// CONVERSION RATE', conv_rate, 'HOT + WARM / TOTAL'), unsafe_allow_html=True)
+    st.markdown(sec_label('TODAY'), unsafe_allow_html=True)
+    d1, d2, d3 = st.columns(3)
+    with d1: st.markdown(stat_card('// TODAY\'S LEADS', today_leads, 'RECEIVED TODAY'), unsafe_allow_html=True)
+    with d2: st.markdown(stat_card('// PENDING CONTACT', pending_contact, 'NEED FOLLOW-UP', accent=True), unsafe_allow_html=True)
+    with d3: st.markdown(stat_card('// CONVERSION RATE', conv_rate, 'HOT + WARM / TOTAL'), unsafe_allow_html=True)
 
 # ======================================================
 # TOP ZONES + FOLLOW-UPS
@@ -1878,48 +1916,69 @@ def follow_up_panel(leads_list):
     return html
 
 if leads:
-    _z_teaser = ('TOP: ' + top_zone_name.upper()) if top_zone_name else 'ZONES'
-    _z_teaser += ' · ' + str(pending_count) + ' FOLLOW-UPS PENDING'
-    with st.expander(expander_label('ZONES & FOLLOW-UPS', _z_teaser), expanded=False):
-        zones_html = zones_leaderboard(leads)
-        zl, zr = st.columns(2)
-        with zl:
-            if zones_html:
-                header = '<div class="chart-panel"><div class="chart-header">'
-                header += '<div class="chart-title">// TOP ZONES</div>'
-                header += '<div class="chart-big-num">by lead count</div>'
-                header += '</div>'
-                st.markdown(header + zones_html + '</div>', unsafe_allow_html=True)
-        with zr:
-            st.markdown(follow_up_panel(leads), unsafe_allow_html=True)
+    st.markdown(sec_label('ZONES &amp; FOLLOW-UPS'), unsafe_allow_html=True)
+    zones_html = zones_leaderboard(leads)
+    zl, zr = st.columns(2)
+    with zl:
+        if zones_html:
+            header = '<div class="chart-panel"><div class="chart-header">'
+            header += '<div class="chart-title">// TOP ZONES</div>'
+            header += '<div class="chart-big-num">by lead count</div>'
+            header += '</div>'
+            st.markdown(header + zones_html + '</div>', unsafe_allow_html=True)
+    with zr:
+        st.markdown(follow_up_panel(leads), unsafe_allow_html=True)
 
 # ======================================================
-# RESPONSE TIME  (collapsible)
+# RESPONSE TIME
 # ======================================================
 timed_full = [{'name': l.get('name', '-'), 'minutes': get_minutes(l)} for l in leads if get_minutes(l) is not None]
 if timed_full:
     avg = sum(t['minutes'] for t in timed_full) / len(timed_full)
     fastest = min(timed_full, key=lambda x: x['minutes'])
     slowest = max(timed_full, key=lambda x: x['minutes'])
-    _rt_teaser = 'AVG ' + fmt(int(avg)) + ' · FASTEST ' + fmt(fastest['minutes']) + ' · ' + str(len(timed_full)) + ' CONTACTED'
-    with st.expander(expander_label('RESPONSE TIME', _rt_teaser), expanded=False):
-        t1, t2, t3 = st.columns(3)
-        with t1: st.markdown(resp_card('// AVG RESPONSE', fmt(int(avg)), 'ACROSS ' + str(len(timed_full)) + ' LEADS'), unsafe_allow_html=True)
-        with t2: st.markdown(resp_card('// FASTEST', fmt(fastest['minutes']), fastest['name'].upper(), accent=True), unsafe_allow_html=True)
-        with t3: st.markdown(resp_card('// SLOWEST', fmt(slowest['minutes']), slowest['name'].upper()), unsafe_allow_html=True)
+    st.markdown(sec_label('RESPONSE TIME', '<span class="section-count">' + str(len(timed_full)) + ' contacted</span>'), unsafe_allow_html=True)
+    t1, t2, t3 = st.columns(3)
+    with t1: st.markdown(resp_card('// AVG RESPONSE', fmt(int(avg)), 'ACROSS ' + str(len(timed_full)) + ' LEADS'), unsafe_allow_html=True)
+    with t2: st.markdown(resp_card('// FASTEST', fmt(fastest['minutes']), fastest['name'].upper(), accent=True), unsafe_allow_html=True)
+    with t3: st.markdown(resp_card('// SLOWEST', fmt(slowest['minutes']), slowest['name'].upper()), unsafe_allow_html=True)
 
 # ======================================================
 # SEARCH + FILTERS
 # ======================================================
 st.markdown(sec_label('LEADS'), unsafe_allow_html=True)
 
-search_col, f1, f2 = st.columns([3, 1, 1])
+# Build month list from leads' timestamps (most recent first)
+_months_seen = set()
+for _l in leads:
+    _ts = (_l.get('timestamp') or '')[:7]  # YYYY-MM
+    if len(_ts) == 7:
+        try:
+            datetime.strptime(_ts, '%Y-%m')
+            _months_seen.add(_ts)
+        except:
+            pass
+_months_sorted = sorted(_months_seen, reverse=True)
+_month_label_to_key = {'All time': None}
+_month_options = ['All time']
+for _m in _months_sorted:
+    try:
+        _d = datetime.strptime(_m, '%Y-%m')
+        _label = _d.strftime('%B %Y')
+        _month_options.append(_label)
+        _month_label_to_key[_label] = _m
+    except:
+        pass
+
+search_col, f1, f2, f3 = st.columns([2, 1, 1, 1])
 with search_col:
     search = st.text_input('// SEARCH', placeholder='Name or phone number', label_visibility='collapsed')
 with f1:
     filter_score = st.selectbox('// SCORE', ['All', 'HOT', 'WARM', 'COLD'])
 with f2:
     filter_status = st.selectbox('// STATUS', ['All', 'Nuevo', 'Contactado', 'Visitado', 'Cerrado'])
+with f3:
+    filter_month = st.selectbox('// MONTH', _month_options)
 
 filtered = leads
 if search.strip():
@@ -1929,6 +1988,10 @@ if filter_score != 'All':
     filtered = [l for l in filtered if l.get('score') == filter_score]
 if filter_status != 'All':
     filtered = [l for l in filtered if l.get('status', 'Nuevo') == filter_status]
+if filter_month != 'All time':
+    _month_key = _month_label_to_key.get(filter_month)
+    if _month_key:
+        filtered = [l for l in filtered if (l.get('timestamp') or '').startswith(_month_key)]
 
 leads_hdr_badges = ('<span class="badge score-hot" style="margin-left:6px;">HOT ' + str(hot) + '</span>'
                     '<span class="badge score-warm" style="margin-left:5px;">WARM ' + str(warm) + '</span>'
@@ -1950,6 +2013,7 @@ if not filtered:
     st.markdown('<div class="empty-state">No leads match your filters.</div>', unsafe_allow_html=True)
 else:
     statuses_list = ['Nuevo', 'Contactado', 'Visitado', 'Cerrado']
+    score_md_map = {'HOT': ':red[**HOT**]', 'WARM': ':orange[**WARM**]', 'COLD': ':gray[**COLD**]'}
     for lead in filtered:
         lead_id = lead.get('id')
         score = lead.get('score', 'COLD')
@@ -1962,68 +2026,77 @@ else:
         timeline = lead.get('timeline', '-')
         ts = lead.get('timestamp', '-')
         minutes = get_minutes(lead)
+        ago = time_ago(lead.get('timestamp', ''))
 
-        if score == 'HOT':
-            score_badge = ('<span style="position:relative;display:inline-flex;align-items:center;">'
-                           '<span style="position:absolute;inset:0;border-radius:20px;background:' + ACCENT_WARM + ';animation:lb-hot-pulse 2s ease-out infinite;pointer-events:none;"></span>'
-                           '<span class="badge score-hot">HOT</span>'
-                           '</span>')
-        else:
-            score_badge = '<span class="badge score-' + score.lower() + '">' + score + '</span>'
-        status_badge = '<span class="badge">' + status.upper() + '</span>'
-        resp_html = ''
-        if minutes is not None:
-            resp_html = '<span class="resp-time">' + fmt(minutes) + ' &nbsp;</span>'
+        # Markdown label for the expander summary
+        score_md = score_md_map.get(score, ':gray[COLD]')
+        # Compact parts: name (bold) · SCORE (colored) · STATUS · $budget · zone · ago
+        label_parts = ['**' + name + '**', score_md, status.upper(), '$' + str(budget)]
+        if area:
+            label_parts.append(area.upper())
+        if ago:
+            label_parts.append(ago)
+        lead_label = '   ·   '.join(label_parts)
 
         wa_msg = 'Hola ' + name + ', soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interes en ' + ptype + ' en ' + area + '. Tienes un momento para hablar?'
         wa_link = 'https://wa.me/591' + phone + '?text=' + quote(wa_msg)
 
-        card = '<div class="lead-card lead-card-' + score.lower() + '">'
-        card += '<div class="lead-top">'
-        card += '<span class="lead-name">' + name + '</span>'
-        card += '<div class="lead-badges">' + resp_html + status_badge + '&nbsp;' + score_badge + '</div>'
-        card += '</div>'
-        card += '<div class="lead-grid">'
-        card += '<div><span class="field-label">// PHONE</span>' + str(lead.get('phone', '-')) + '</div>'
-        card += '<div><span class="field-label">// PROPERTY</span>' + ptype + '</div>'
-        card += '<div><span class="field-label">// LOCATION</span>' + area + '</div>'
-        card += '<div><span class="field-label">// BUDGET</span>$' + str(budget) + '</div>'
-        card += '<div><span class="field-label">// TIMELINE</span>' + str(timeline) + ' meses</div>'
-        card += '<div><span class="field-label">// SCORE</span>' + score + '</div>'
-        card += '</div>'
-        card += '<div class="lead-footer">'
-        card += '<span class="lead-ts">// RECEIVED &middot; ' + str(ts) + '</span>'
-        card += '<a class="wa-btn" href="' + wa_link + '" target="_blank">// WHATSAPP</a>'
-        card += '</div>'
-        card += '</div>'
-        st.markdown(card, unsafe_allow_html=True)
+        # Apply a per-lead class via a wrapper div around the expander
+        st.markdown('<div class="lead-expander-wrap lead-' + score.lower() + '">', unsafe_allow_html=True)
+        with st.expander(lead_label, expanded=False):
+            # Inner header: response time pill if available
+            resp_html = ''
+            if minutes is not None:
+                resp_html = '<span class="resp-time" style="margin-right:8px;">' + fmt(minutes) + ' RESPONSE</span>'
+            if resp_html:
+                st.markdown('<div style="margin-bottom:6px;">' + resp_html + '</div>', unsafe_allow_html=True)
 
-        status_cols = st.columns(4)
-        for si, s in enumerate(statuses_list):
-            with status_cols[si]:
-                is_current = status == s
-                if st.button(s.upper(), key='s_' + str(lead_id) + '_' + s, disabled=is_current):
-                    update_status(lead_id, s)
+            # Field grid
+            grid_html = '<div class="lead-grid">'
+            grid_html += '<div><span class="field-label">// PHONE</span>' + str(lead.get('phone', '-')) + '</div>'
+            grid_html += '<div><span class="field-label">// PROPERTY</span>' + ptype + '</div>'
+            grid_html += '<div><span class="field-label">// LOCATION</span>' + area + '</div>'
+            grid_html += '<div><span class="field-label">// BUDGET</span>$' + str(budget) + '</div>'
+            grid_html += '<div><span class="field-label">// TIMELINE</span>' + str(timeline) + ' meses</div>'
+            grid_html += '<div><span class="field-label">// SCORE</span>' + score + '</div>'
+            grid_html += '</div>'
+            st.markdown(grid_html, unsafe_allow_html=True)
+
+            # Footer with received timestamp + WhatsApp button
+            footer_html = '<div class="lead-footer" style="margin-top:14px;padding-top:12px;border-top:1px solid ' + BORDER + ';">'
+            footer_html += '<span class="lead-ts">// RECEIVED &middot; ' + str(ts) + '</span>'
+            footer_html += '<a class="wa-btn" href="' + wa_link + '" target="_blank">// WHATSAPP</a>'
+            footer_html += '</div>'
+            st.markdown(footer_html, unsafe_allow_html=True)
+
+            # Status buttons
+            st.markdown('<div style="font-family:JetBrains Mono,monospace;font-size:0.52rem;letter-spacing:0.22em;color:' + TEXT_DIM + ';text-transform:uppercase;margin-top:16px;margin-bottom:6px;">// STATUS</div>', unsafe_allow_html=True)
+            status_cols = st.columns(4)
+            for si, s in enumerate(statuses_list):
+                with status_cols[si]:
+                    is_current = status == s
+                    if st.button(s.upper(), key='s_' + str(lead_id) + '_' + s, disabled=is_current):
+                        update_status(lead_id, s)
+                        st.rerun()
+
+            # Notes
+            current_note = lead.get('notes') or ''
+            note_input = st.text_area(
+                '// NOTES',
+                value=current_note,
+                key='note_' + str(lead_id),
+                placeholder='Add agent notes here...',
+                height=64,
+                label_visibility='visible'
+            )
+            if st.button('SAVE NOTE', key='save_note_' + str(lead_id)):
+                try:
+                    get_supabase().table('leads').update({'notes': note_input}).eq('id', lead_id).execute()
+                    st.success('Saved.')
                     st.rerun()
-
-        current_note = lead.get('notes') or ''
-        note_input = st.text_area(
-            '// NOTES',
-            value=current_note,
-            key='note_' + str(lead_id),
-            placeholder='Add agent notes here...',
-            height=64,
-            label_visibility='visible'
-        )
-        if st.button('SAVE NOTE', key='save_note_' + str(lead_id)):
-            try:
-                get_supabase().table('leads').update({'notes': note_input}).eq('id', lead_id).execute()
-                st.success('Saved.')
-                st.rerun()
-            except Exception as e:
-                st.error('Error: ' + str(e))
-
-        st.markdown('<div style="margin-bottom:16px"></div>', unsafe_allow_html=True)
+                except Exception as e:
+                    st.error('Error: ' + str(e))
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ======================================================
 # LOGOUT + FOOTER
