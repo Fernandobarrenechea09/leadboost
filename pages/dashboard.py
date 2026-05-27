@@ -660,6 +660,169 @@ footer { visibility: hidden; }
     width: 100% !important;
 }
 
+/* Event chips inside calendar cells */
+.cal-event-chip {
+    display: block;
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.46rem;
+    letter-spacing: 0.08em;
+    color: ACCENT_WARM_COLOR;
+    text-transform: uppercase;
+    margin-top: 4px;
+    padding: 2px 5px;
+    background: ACCENT_WARM_COLOR;
+    background: linear-gradient(90deg, rgba(196,99,63,0.18), rgba(196,99,63,0.06));
+    border-left: 2px solid ACCENT_WARM_COLOR;
+    border-radius: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+.cal-event-extra {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.42rem;
+    color: TEXT_DIM_COLOR;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+/* ---- AGENDA ---- */
+.agenda-wrap {
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-radius: 12px;
+    padding: 24px 28px;
+    animation: lb-fade-up 0.4s ease both;
+}
+.agenda-group { margin-bottom: 24px; }
+.agenda-group:last-child { margin-bottom: 0; }
+.agenda-period-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid BORDER_COLOR;
+}
+.agenda-period {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.24em;
+    color: TEXT_COLOR;
+    text-transform: uppercase;
+}
+.agenda-period-count {
+    font-family: Fraunces, serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_DIM_COLOR;
+}
+.agenda-empty {
+    font-family: Fraunces, serif;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: TEXT_DIM_COLOR;
+    padding: 4px 0;
+}
+.agenda-item {
+    display: flex;
+    gap: 16px;
+    padding: 12px 4px;
+    border-bottom: 1px solid BORDER_COLOR;
+    transition: padding-left 0.15s;
+}
+.agenda-item:last-child { border-bottom: none; }
+.agenda-item:hover { padding-left: 10px; }
+.agenda-item-time {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.16em;
+    color: ACCENT_WARM_COLOR;
+    text-transform: uppercase;
+    min-width: 64px;
+    padding-top: 4px;
+    flex-shrink: 0;
+}
+.agenda-item-body { flex: 1; min-width: 0; }
+.agenda-item-title {
+    font-family: Fraunces, serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    letter-spacing: -0.005em;
+}
+.agenda-item-meta {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.14em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.agenda-item-notes {
+    font-family: Inter, sans-serif;
+    font-size: 0.78rem;
+    color: TEXT_COLOR;
+    opacity: 0.85;
+    line-height: 1.4;
+    margin-top: 4px;
+}
+.agenda-item-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Lead activity inside agenda — different style */
+.agenda-lead-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 4px;
+    border-bottom: 1px solid BORDER_COLOR;
+    transition: padding-left 0.15s;
+}
+.agenda-lead-row:hover { padding-left: 10px; }
+.agenda-lead-name {
+    font-family: Fraunces, serif;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: TEXT_COLOR;
+    font-weight: 300;
+    flex: 1;
+}
+.agenda-lead-tag {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.46rem;
+    letter-spacing: 0.14em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+
+/* Add Event form panel */
+.add-event-panel {
+    background: BG_COLOR;
+    border: 1px dashed BORDER_COLOR;
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin: 8px 0 16px 0;
+}
+.add-event-title {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
+    color: ACCENT_WARM_COLOR;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
 /* ---- PULL-QUOTE CALLOUTS ---- */
 .pull-quote {
     display: flex;
@@ -1313,6 +1476,45 @@ def update_status(lead_id, new_status):
         get_supabase().table('leads').update(data).eq('id', lead_id).execute()
     except Exception as e:
         st.error('Error: ' + str(e))
+
+# ======================================================
+# EVENTS (agenda items)
+# ======================================================
+def fetch_events():
+    try:
+        res = get_supabase().table('events').select('*').order('event_date').order('event_time').execute()
+        return res.data or []
+    except Exception:
+        # Table may not exist yet — fail silently
+        return []
+
+def add_event(event_date, event_time, title, location, notes, lead_id):
+    try:
+        data = {
+            'event_date': event_date,
+            'title': title,
+        }
+        if event_time:
+            data['event_time'] = event_time
+        if location:
+            data['location'] = location
+        if notes:
+            data['notes'] = notes
+        if lead_id:
+            data['lead_id'] = lead_id
+        get_supabase().table('events').insert(data).execute()
+        return True
+    except Exception as e:
+        st.error('Error adding event: ' + str(e))
+        return False
+
+def delete_event(event_id):
+    try:
+        get_supabase().table('events').delete().eq('id', event_id).execute()
+        return True
+    except Exception as e:
+        st.error('Error deleting event: ' + str(e))
+        return False
 
 def get_minutes(lead):
     try:
@@ -2035,17 +2237,28 @@ if leads:
         except:
             continue
 
+    # Fetch events and build event map (date -> list of events)
+    events_all = fetch_events()
+    _cell_events = {}
+    for _e in events_all:
+        try:
+            _ed = datetime.strptime(str(_e.get('event_date')), '%Y-%m-%d').date()
+            _cell_events.setdefault(_ed, []).append(_e)
+        except:
+            continue
+
     # Month summary stats
     _month_total = sum(1 for _l in leads if (_l.get('timestamp') or '')[:7] == datetime(_cyr, _cmo, 1).strftime('%Y-%m'))
     _month_hot = sum(1 for _l in leads if (_l.get('timestamp') or '')[:7] == datetime(_cyr, _cmo, 1).strftime('%Y-%m') and _l.get('score') == 'HOT')
+    _month_events = sum(1 for _e in events_all if str(_e.get('event_date', ''))[:7] == datetime(_cyr, _cmo, 1).strftime('%Y-%m'))
 
     # Section label
-    st.markdown(sec_label('CALENDAR', '<span class="section-count">' + str(_month_total) + ' leads this month</span>'), unsafe_allow_html=True)
+    st.markdown(sec_label('CALENDAR', '<span class="section-count">' + str(_month_total) + ' leads &middot; ' + str(_month_events) + ' events this month</span>'), unsafe_allow_html=True)
 
     # Month title + nav
     title_html = '<div class="cal-header">'
     title_html += '<div class="cal-month-title">' + _cur_month_label + '</div>'
-    title_html += '<div class="cal-month-meta">// ' + str(_month_total) + ' LEADS &middot; ' + str(_month_hot) + ' HOT</div>'
+    title_html += '<div class="cal-month-meta">// ' + str(_month_total) + ' LEADS &middot; ' + str(_month_hot) + ' HOT &middot; ' + str(_month_events) + ' EVENTS</div>'
     title_html += '</div>'
 
     # Start the calendar wrapper
@@ -2111,6 +2324,8 @@ if leads:
             if cold_n: tip_parts.append(str(cold_n) + ' COLD')
             tip += ' &middot; '.join(tip_parts)
 
+        day_events = _cell_events.get(_d, [])
+        ev_n = len(day_events)
         grid_html += '<div class="' + ' '.join(classes) + '" title="' + tip + '">'
         grid_html += '<div class="cal-day-num">' + str(_d.day) + '</div>'
         if n > 0:
@@ -2125,13 +2340,199 @@ if leads:
             for _ in range(n_cold): dots += '<span class="cal-dot dot-cold"></span>'
             grid_html += '<div class="cal-dots">' + dots + '</div>'
             grid_html += '<div class="cal-count">' + str(n) + ' lead' + ('s' if n != 1 else '') + '</div>'
-        else:
+        elif ev_n == 0:
             grid_html += '<div class="cal-empty">—</div>'
+        # Event chips — show up to 2 events per cell with overflow indicator
+        if ev_n > 0:
+            for _ev in day_events[:2]:
+                _ev_title = (_ev.get('title') or '').upper()[:18]
+                _ev_time = (_ev.get('event_time') or '')[:5]  # HH:MM
+                _label = _ev_title
+                if _ev_time:
+                    _label = _ev_time + ' ' + _ev_title
+                grid_html += '<div class="cal-event-chip">' + _label + '</div>'
+            if ev_n > 2:
+                grid_html += '<div class="cal-event-extra">+' + str(ev_n - 2) + ' MORE</div>'
         grid_html += '</div>'
     grid_html += '</div>'
     # Close cal-wrap
     grid_html += '</div>'
     st.markdown(grid_html, unsafe_allow_html=True)
+
+# ======================================================
+# AGENDA — upcoming events grouped by period
+# ======================================================
+if leads:
+    if 'show_event_form' not in st.session_state:
+        st.session_state.show_event_form = False
+
+    # Re-fetch in case events were added (the CALENDAR block already fetched, reuse)
+    try:
+        _events_for_agenda = events_all
+    except NameError:
+        _events_for_agenda = fetch_events()
+
+    _today_dd = datetime.now().date()
+    _tomorrow_dd = _today_dd + timedelta(days=1)
+    _week_end_dd = _today_dd + timedelta(days=7)
+
+    # Group events
+    groups = {'TODAY': [], 'TOMORROW': [], 'THIS WEEK': [], 'LATER': []}
+    for _e in _events_for_agenda:
+        try:
+            _ed = datetime.strptime(str(_e.get('event_date')), '%Y-%m-%d').date()
+        except:
+            continue
+        if _ed < _today_dd:
+            continue  # skip past events
+        if _ed == _today_dd:
+            groups['TODAY'].append(_e)
+        elif _ed == _tomorrow_dd:
+            groups['TOMORROW'].append(_e)
+        elif _ed <= _week_end_dd:
+            groups['THIS WEEK'].append(_e)
+        else:
+            groups['LATER'].append(_e)
+
+    # Sort each group by date then time
+    for k in groups:
+        groups[k].sort(key=lambda e: (str(e.get('event_date', '')), str(e.get('event_time') or '99:99')))
+
+    total_upcoming = sum(len(v) for v in groups.values())
+    st.markdown(sec_label('AGENDA', '<span class="section-count">' + str(total_upcoming) + ' upcoming</span>'), unsafe_allow_html=True)
+
+    # Add-Event toggle + form
+    add_col, _addsp = st.columns([2, 8])
+    with add_col:
+        btn_label = '+ ADD EVENT' if not st.session_state.show_event_form else '× CANCEL'
+        if st.button(btn_label, key='add_event_toggle'):
+            st.session_state.show_event_form = not st.session_state.show_event_form
+            st.rerun()
+
+    if st.session_state.show_event_form:
+        st.markdown('<div class="add-event-panel">', unsafe_allow_html=True)
+        st.markdown('<div class="add-event-title">// NEW EVENT</div>', unsafe_allow_html=True)
+        ef1, ef2, ef3 = st.columns([1, 1, 2])
+        with ef1:
+            ev_date = st.date_input('// DATE', value=_today_dd, key='ev_date')
+        with ef2:
+            ev_time_str = st.text_input('// TIME (HH:MM)', value='10:00', key='ev_time', placeholder='10:00')
+        with ef3:
+            ev_title = st.text_input('// TITLE', placeholder='Visita de Sergio', key='ev_title')
+
+        ef4, ef5 = st.columns([1, 1])
+        with ef4:
+            ev_location = st.text_input('// LOCATION', placeholder='Casa Urubo', key='ev_location')
+        with ef5:
+            # Lead dropdown
+            _lead_options = ['(no linked lead)']
+            _lead_id_list = [None]
+            for _l in leads:
+                _lead_options.append(_l.get('name', 'Unknown') + ' · ' + str(_l.get('phone', '')))
+                _lead_id_list.append(_l.get('id'))
+            ev_lead_choice = st.selectbox('// LINKED LEAD (optional)', _lead_options, key='ev_lead')
+            ev_lead_id = _lead_id_list[_lead_options.index(ev_lead_choice)]
+
+        ev_notes = st.text_area('// NOTES', placeholder='Visita en la zona Urubo, llevar contrato y fotos del terreno...', key='ev_notes', height=68)
+
+        save_col, _savesp = st.columns([1, 5])
+        with save_col:
+            if st.button('SAVE EVENT', key='ev_save'):
+                if not ev_title.strip():
+                    st.error('Title is required.')
+                else:
+                    # Validate time
+                    final_time = None
+                    if ev_time_str.strip():
+                        try:
+                            t = datetime.strptime(ev_time_str.strip(), '%H:%M')
+                            final_time = t.strftime('%H:%M:%S')
+                        except:
+                            st.warning('Time format should be HH:MM (e.g., 10:30). Saving without time.')
+                    ok = add_event(
+                        event_date=ev_date.strftime('%Y-%m-%d'),
+                        event_time=final_time,
+                        title=ev_title.strip(),
+                        location=ev_location.strip() if ev_location else None,
+                        notes=ev_notes.strip() if ev_notes else None,
+                        lead_id=ev_lead_id,
+                    )
+                    if ok:
+                        st.success('Event saved.')
+                        st.session_state.show_event_form = False
+                        st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Render agenda groups
+    if total_upcoming == 0:
+        st.markdown('<div class="agenda-wrap"><div class="agenda-empty">No upcoming events. Click <strong>+ ADD EVENT</strong> to schedule a visit, follow-up, or reminder.</div></div>', unsafe_allow_html=True)
+    else:
+        # Build leads-by-id map for linking
+        _lead_by_id = {l.get('id'): l for l in leads}
+
+        agenda_html = '<div class="agenda-wrap">'
+        for period_name, items in groups.items():
+            if not items:
+                continue
+            agenda_html += '<div class="agenda-group">'
+            agenda_html += '<div class="agenda-period-row">'
+            agenda_html += '<div class="agenda-period">// ' + period_name + '</div>'
+            agenda_html += '<div class="agenda-period-count">' + str(len(items)) + ' item' + ('s' if len(items) != 1 else '') + '</div>'
+            agenda_html += '</div>'
+            for _e in items:
+                _t = (_e.get('event_time') or '')[:5]
+                _date_str = str(_e.get('event_date', ''))
+                try:
+                    _dobj = datetime.strptime(_date_str, '%Y-%m-%d').date()
+                    _date_disp = _dobj.strftime('%b %d').upper()
+                except:
+                    _date_disp = _date_str
+
+                # Time / date display
+                time_html = '<div class="agenda-item-time">'
+                if period_name in ('THIS WEEK', 'LATER'):
+                    time_html += _date_disp
+                    if _t:
+                        time_html += '<br><span style="opacity:0.75;">' + _t + '</span>'
+                else:
+                    time_html += _t if _t else 'ALL DAY'
+                time_html += '</div>'
+
+                # Body
+                agenda_html += '<div class="agenda-item">'
+                agenda_html += time_html
+                agenda_html += '<div class="agenda-item-body">'
+                agenda_html += '<div class="agenda-item-title">' + (_e.get('title') or '') + '</div>'
+                meta_parts = []
+                if _e.get('location'):
+                    meta_parts.append(_e['location'].upper())
+                if _e.get('lead_id') and _lead_by_id.get(_e['lead_id']):
+                    _linked = _lead_by_id[_e['lead_id']]
+                    meta_parts.append('LEAD &middot; ' + _linked.get('name', '').upper())
+                if meta_parts:
+                    agenda_html += '<div class="agenda-item-meta">' + ' &middot; '.join(meta_parts) + '</div>'
+                if _e.get('notes'):
+                    agenda_html += '<div class="agenda-item-notes">' + _e['notes'] + '</div>'
+                agenda_html += '</div>'  # close body
+                agenda_html += '</div>'  # close item
+            agenda_html += '</div>'  # close group
+        agenda_html += '</div>'
+        st.markdown(agenda_html, unsafe_allow_html=True)
+
+        # Per-event delete buttons (rendered as a discreet trailing row)
+        with st.expander('// MANAGE EVENTS', expanded=False):
+            for _e in _events_for_agenda:
+                _eid = _e.get('id')
+                _t = (_e.get('event_time') or '')[:5]
+                _date_str = str(_e.get('event_date', ''))
+                row_label = _date_str + (' ' + _t if _t else '') + '  ·  ' + (_e.get('title') or '')
+                ec1, ec2 = st.columns([8, 1])
+                with ec1:
+                    st.markdown('<div style="padding:6px 0;font-family:JetBrains Mono,monospace;font-size:0.6rem;color:' + TEXT + ';letter-spacing:0.08em;">' + row_label + '</div>', unsafe_allow_html=True)
+                with ec2:
+                    if st.button('DELETE', key='del_ev_' + str(_eid)):
+                        delete_event(_eid)
+                        st.rerun()
 
 # ======================================================
 # DAILY STATS
