@@ -2074,9 +2074,12 @@ def compute_priority(leads_list, max_items=20):
                 reason_html = '<span class="pr-accent">' + score + '</span> &middot; FOLLOW-UP DUE &middot; 1 DAY SINCE CONTACT'
             else:
                 reason_html = '<span class="pr-accent">' + score + '</span> &middot; FOLLOW-UP DUE &middot; ' + str(contact_days) + ' DAYS SINCE CONTACT'
-        scored.append({'lead': l, 'urgency': urgency, 'reason_html': reason_html})
+        # Score rank: HOT first, then WARM, then COLD (lower = higher priority)
+        score_rank = {'HOT': 0, 'WARM': 1, 'COLD': 2}.get(score, 3)
+        scored.append({'lead': l, 'urgency': urgency, 'reason_html': reason_html, 'score_rank': score_rank})
 
-    scored.sort(key=lambda x: x['urgency'], reverse=True)
+    # Primary sort: score (HOT > WARM > COLD). Secondary: urgency (older/more urgent first within score).
+    scored.sort(key=lambda x: (x['score_rank'], -x['urgency']))
     return scored[:max_items]
 
 def expander_label(name, teaser=''):
