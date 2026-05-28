@@ -1755,28 +1755,65 @@ div[data-testid="stExpander"]:hover {
     margin-bottom: 12px !important;
 }
 
-/* ---- LEAD EXPANDERS — per-lead score-colored border + animation ---- */
-.lead-expander-wrap { margin-bottom: 8px; }
-.lead-expander-wrap [data-testid="stExpander"],
-.lead-expander-wrap div[data-testid="stExpander"] {
+/* ---- LEAD EXPANDERS — score-colored border + corner indicator (via :has() on inner anchor) ---- */
+[data-testid="stExpander"]:has(.lead-anchor) {
+    position: relative !important;
     border-left-width: 5px !important;
     border-radius: 10px !important;
-    margin-bottom: 0 !important;
     transform-origin: center;
 }
-.lead-expander-wrap.lead-hot [data-testid="stExpander"] {
+[data-testid="stExpander"]:has(.lead-anchor-hot) {
     border-color: ACCENT_WARM_COLOR55 !important;
     border-left-color: ACCENT_WARM_COLOR !important;
     animation: lb-card-pulse-hot 3s ease-in-out infinite;
 }
-.lead-expander-wrap.lead-warm [data-testid="stExpander"] {
+[data-testid="stExpander"]:has(.lead-anchor-warm) {
     border-color: WARM_ACCENT_COLOR55 !important;
     border-left-color: WARM_ACCENT_COLOR !important;
     animation: lb-card-shake-warm 5.5s ease-in-out infinite;
 }
-.lead-expander-wrap.lead-cold [data-testid="stExpander"] {
+[data-testid="stExpander"]:has(.lead-anchor-cold) {
     border-left-color: BORDER_COLOR !important;
 }
+
+/* Hidden anchor — used only for CSS :has() targeting */
+.lead-anchor { display: none !important; }
+
+/* Visible score strip at top of expanded content + corner indicator */
+.lead-strip {
+    position: relative;
+    height: 4px;
+    margin: -14px -22px 16px -22px;
+    border-radius: 2px 2px 0 0;
+}
+.lead-strip-hot  { background: ACCENT_WARM_COLOR; }
+.lead-strip-warm { background: WARM_ACCENT_COLOR; }
+.lead-strip-cold { background: BORDER_COLOR; }
+
+/* Top-right animated indicator dot — pulse for HOT, shake for WARM */
+.lead-indicator {
+    position: absolute;
+    top: -3px;
+    right: 12px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    z-index: 10;
+}
+.lead-indicator-hot {
+    background: ACCENT_WARM_COLOR;
+    box-shadow: 0 0 0 0 ACCENT_WARM_COLOR;
+    animation: lb-hot-ping 2s ease-out infinite;
+}
+.lead-indicator-warm {
+    background: WARM_ACCENT_COLOR;
+    animation: lb-warm-shake 4s ease-in-out infinite;
+    transform-origin: center;
+}
+.lead-indicator-cold {
+    background: BORDER_COLOR;
+}
+
 @keyframes lb-card-pulse-hot {
     0%, 100% { box-shadow: 0 0 0 0 ACCENT_WARM_COLOR00; }
     50%      { box-shadow: 0 0 14px 1px ACCENT_WARM_COLOR33; }
@@ -1787,7 +1824,7 @@ div[data-testid="stExpander"]:hover {
     96%           { transform: translateX(1px)  rotate(0.25deg); }
     98%           { transform: translateX(-0.5px); }
 }
-.lead-expander-wrap [data-testid="stExpander"] summary {
+[data-testid="stExpander"]:has(.lead-anchor) summary {
     padding: 16px 22px !important;
     font-family: Inter, sans-serif !important;
     font-size: 0.78rem !important;
@@ -1795,14 +1832,14 @@ div[data-testid="stExpander"]:hover {
     text-transform: none !important;
     color: TEXT_COLOR !important;
 }
-.lead-expander-wrap [data-testid="stExpander"] summary p {
+[data-testid="stExpander"]:has(.lead-anchor) summary p {
     font-family: Inter, sans-serif !important;
     font-size: 0.78rem !important;
     letter-spacing: 0.04em !important;
     text-transform: none !important;
 }
-.lead-expander-wrap [data-testid="stExpander"] summary strong,
-.lead-expander-wrap [data-testid="stExpander"] summary p strong {
+[data-testid="stExpander"]:has(.lead-anchor) summary strong,
+[data-testid="stExpander"]:has(.lead-anchor) summary p strong {
     font-family: Fraunces, serif !important;
     font-style: italic !important;
     font-weight: 300 !important;
@@ -3510,8 +3547,11 @@ else:
         wa_link = 'https://wa.me/591' + phone + '?text=' + quote(wa_msg)
 
         # Apply a per-lead class via a wrapper div around the expander
-        st.markdown('<div class="lead-expander-wrap lead-' + score.lower() + '">', unsafe_allow_html=True)
         with st.expander(lead_label, expanded=False):
+            # Hidden anchor for CSS :has() targeting (sets border + animation on the expander itself)
+            st.markdown('<div class="lead-anchor lead-anchor-' + score.lower() + '"></div>', unsafe_allow_html=True)
+            # Visible score strip + top-right animated indicator
+            st.markdown('<div class="lead-strip lead-strip-' + score.lower() + '"><div class="lead-indicator lead-indicator-' + score.lower() + '"></div></div>', unsafe_allow_html=True)
             # Inner header: response time pill if available
             resp_html = ''
             if minutes is not None:
@@ -3564,7 +3604,6 @@ else:
                     st.rerun()
                 except Exception as e:
                     st.error('Error: ' + str(e))
-        st.markdown('</div>', unsafe_allow_html=True)
 
 # ======================================================
 # LOGOUT + FOOTER
