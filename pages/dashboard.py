@@ -670,13 +670,17 @@ footer { visibility: hidden; }
 /* Calendar nav buttons — slimmer than default */
 .cal-nav-row { margin-bottom: 4px; }
 .cal-nav-row div.stButton > button {
-    padding: 4px 10px !important;
+    padding: 6px 16px !important;
     font-size: 0.5rem !important;
-    letter-spacing: 0.18em !important;
+    letter-spacing: 0.14em !important;
     border-radius: 6px !important;
-    min-height: 28px !important;
-    height: 28px !important;
+    min-height: 32px !important;
+    height: 32px !important;
     width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1.2 !important;
 }
 
 /* ---- DAY DETAIL CARD (focus day expansion) ---- */
@@ -825,15 +829,19 @@ footer { visibility: hidden; }
     color: TEXT_COLOR !important;
     border: 1px solid BORDER_COLOR !important;
     border-radius: 8px !important;
-    padding: 0 14px !important;
+    padding: 0 22px !important;
     height: 38px !important;
     min-height: 38px !important;
     font-family: JetBrains Mono, monospace !important;
-    font-size: 0.6rem !important;
-    letter-spacing: 0.22em !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.16em !important;
     text-transform: uppercase !important;
     box-shadow: none !important;
     transition: border-color 0.2s, color 0.2s, background 0.2s !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1.2 !important;
 }
 .vd-today-btn-wrap div.stButton > button:hover,
 .vd-today-btn-wrap [data-testid="stButton"] button:hover {
@@ -1342,14 +1350,29 @@ div.stButton > button {
     color: TEXT_DIM_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 8px;
-    padding: 7px 16px;
+    padding: 8px 24px;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
     font-size: 0.58rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     transition: all 0.15s;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    min-height: 38px;
+}
+div.stButton > button p,
+div.stButton > button span,
+div.stButton > button div {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    letter-spacing: inherit !important;
+    line-height: inherit !important;
 }
 div.stButton > button:hover:not(:disabled) {
     border-color: TEXT_COLOR;
@@ -1379,14 +1402,28 @@ div.stDownloadButton > button {
     color: TEXT_DIM_COLOR;
     border: 1px solid BORDER_COLOR;
     border-radius: 8px;
-    padding: 7px 16px;
+    padding: 8px 24px;
     font-family: JetBrains Mono, monospace;
     font-weight: 500;
     font-size: 0.58rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     white-space: nowrap;
     transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    min-height: 38px;
+}
+div.stDownloadButton > button p,
+div.stDownloadButton > button span,
+div.stDownloadButton > button div {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    letter-spacing: inherit !important;
 }
 div.stDownloadButton > button:hover {
     border-color: TEXT_COLOR;
@@ -2153,7 +2190,7 @@ with btn_refresh:
 with btn_export:
     if leads:
         st.download_button(
-            label='EXPORT XLSX //',
+            label='// EXPORT XLSX',
             data=generate_excel(leads),
             file_name='leadboost_leads.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
