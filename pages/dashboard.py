@@ -269,6 +269,32 @@ footer { visibility: hidden; }
     color: BG_COLOR;
     transform: translateY(-1px);
 }
+/* Empty state for priority card */
+.priority-empty-card {
+    border-left-color: BORDER_COLOR;
+}
+.priority-empty {
+    padding: 36px 4px 32px 4px;
+    text-align: left;
+}
+.priority-empty-title {
+    font-family: Fraunces, serif;
+    font-size: 2rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-bottom: 10px;
+}
+.priority-empty-sub {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.54rem;
+    letter-spacing: 0.18em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    max-width: 540px;
+}
 
 /* ---- BRIEFING PROSE ---- */
 .lb-briefing {
@@ -1575,6 +1601,35 @@ div.stDownloadButton > button:hover {
 }
 
 /* ---- EMPTY STATE ---- */
+.empty-state-rich {
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-left: 4px solid BORDER_COLOR;
+    border-radius: 14px;
+    padding: 56px 36px 52px 36px;
+    margin-top: 8px;
+    animation: lb-fade-up 0.4s ease both;
+}
+.empty-state-title {
+    font-family: Fraunces, serif;
+    font-size: 2.4rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 14px;
+}
+.empty-state-sub {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+    max-width: 560px;
+    line-height: 1.6;
+}
+
 .empty-state {
     text-align: center;
     padding: 40px 20px;
@@ -2365,6 +2420,19 @@ st.markdown(hero, unsafe_allow_html=True)
 # ======================================================
 if leads:
     _priorities = compute_priority(leads, max_items=20)
+    if not _priorities:
+        # Empty state — all active leads have been actioned
+        _p_empty = '<div class="priority-card priority-empty-card">'
+        _p_empty += '<div class="priority-header">'
+        _p_empty += '<div class="priority-label">// PRIORITY &middot; WHAT TO DO NOW</div>'
+        _p_empty += '<div class="priority-meta">all clear</div>'
+        _p_empty += '</div>'
+        _p_empty += '<div class="priority-empty">'
+        _p_empty += '<div class="priority-empty-title">All caught up.</div>'
+        _p_empty += '<div class="priority-empty-sub">No urgent actions right now. Every active lead has been contacted.</div>'
+        _p_empty += '</div>'
+        _p_empty += '</div>'
+        st.markdown(_p_empty, unsafe_allow_html=True)
     if _priorities:
         _p_html = '<div class="priority-card">'
         _p_html += '<div class="priority-header">'
@@ -3069,7 +3137,13 @@ if leads:
 
     # Render agenda groups
     if total_upcoming == 0:
-        st.markdown('<div class="agenda-wrap"><div class="agenda-empty">No upcoming events. Click <strong>+ ADD EVENT</strong> to schedule a visit, follow-up, or reminder.</div></div>', unsafe_allow_html=True)
+        _ag_empty = '<div class="agenda-wrap">'
+        _ag_empty += '<div class="empty-state-rich" style="background:transparent;border:none;padding:24px 8px 16px 8px;border-left:none;border-radius:0;">'
+        _ag_empty += '<div class="empty-state-title">Nothing scheduled.</div>'
+        _ag_empty += '<div class="empty-state-sub">Click <strong style="color:' + ACCENT_WARM + ';">+ ADD EVENT</strong> above to plan a visit, follow-up call, or reminder.</div>'
+        _ag_empty += '</div>'
+        _ag_empty += '</div>'
+        st.markdown(_ag_empty, unsafe_allow_html=True)
     else:
         # Build leads-by-id map for linking
         _lead_by_id = {l.get('id'): l for l in leads}
@@ -3322,7 +3396,26 @@ st.markdown(
 # LEAD CARDS
 # ======================================================
 if not filtered:
-    st.markdown('<div class="empty-state">No leads match your filters.</div>', unsafe_allow_html=True)
+    _has_filters_active = bool(search.strip()) or filter_score != 'All' or filter_status != 'All' or filter_month != 'All time'
+    if total == 0:
+        # Truly empty — no leads ever
+        _empty_html = '<div class="empty-state-rich">'
+        _empty_html += '<div class="empty-state-title">No leads yet.</div>'
+        _empty_html += '<div class="empty-state-sub">New leads will appear here automatically as they come in through the chat assistant.</div>'
+        _empty_html += '</div>'
+        st.markdown(_empty_html, unsafe_allow_html=True)
+    elif _has_filters_active:
+        _empty_html = '<div class="empty-state-rich">'
+        _empty_html += '<div class="empty-state-title">Nothing matches.</div>'
+        _empty_html += '<div class="empty-state-sub">Adjust the filters above to see more leads, or clear them to see everything.</div>'
+        _empty_html += '</div>'
+        st.markdown(_empty_html, unsafe_allow_html=True)
+    else:
+        _empty_html = '<div class="empty-state-rich">'
+        _empty_html += '<div class="empty-state-title">No leads to show.</div>'
+        _empty_html += '<div class="empty-state-sub">Once you have leads they will appear here.</div>'
+        _empty_html += '</div>'
+        st.markdown(_empty_html, unsafe_allow_html=True)
 else:
     statuses_list = ['Nuevo', 'Contactado', 'Visitado', 'Cerrado']
     score_md_map = {'HOT': ':red[**HOT**]', 'WARM': ':orange[**WARM**]', 'COLD': ':gray[**COLD**]'}
