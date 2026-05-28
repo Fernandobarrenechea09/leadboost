@@ -2730,8 +2730,8 @@ if leads:
     # We'll store the form values under non-widget keys (ev_*_val) to survive widget-key rotation
     if 'ev_date_val' not in st.session_state:
         st.session_state.ev_date_val = _today_dd
-    if 'ev_time_val' not in st.session_state:
-        st.session_state.ev_time_val = _dtime(10, 0)
+    if 'ev_time_str_val' not in st.session_state:
+        st.session_state.ev_time_str_val = '10:00'
     if 'ev_title_val' not in st.session_state:
         st.session_state.ev_title_val = ''
     if 'ev_location_val' not in st.session_state:
@@ -2756,7 +2756,7 @@ if leads:
                 if 'editing_event_id' in st.session_state:
                     del st.session_state['editing_event_id']
                 st.session_state.ev_date_val = _today_dd
-                st.session_state.ev_time_val = _dtime(10, 0)
+                st.session_state.ev_time_str_val = '10:00'
                 st.session_state.ev_title_val = ''
                 st.session_state.ev_location_val = ''
                 st.session_state.ev_lead_val = '(no linked lead)'
@@ -2766,7 +2766,7 @@ if leads:
             else:
                 # Opening for NEW — set blank defaults, fresh widget keys
                 st.session_state.ev_date_val = _today_dd
-                st.session_state.ev_time_val = _dtime(10, 0)
+                st.session_state.ev_time_str_val = '10:00'
                 st.session_state.ev_title_val = ''
                 st.session_state.ev_location_val = ''
                 st.session_state.ev_lead_val = '(no linked lead)'
@@ -2788,7 +2788,7 @@ if leads:
         with ef1:
             ev_date = st.date_input('// DATE', value=st.session_state.ev_date_val, key='ev_date_' + sid)
         with ef2:
-            ev_time_obj = st.time_input('// TIME', value=st.session_state.ev_time_val, key='ev_time_' + sid)
+            ev_time_str = st.text_input('// TIME (HH:MM)', value=st.session_state.ev_time_str_val, placeholder='10:00', key='ev_time_' + sid)
         with ef3:
             ev_title = st.text_input('// TITLE', value=st.session_state.ev_title_val, placeholder='Visita de Sergio', key='ev_title_' + sid)
 
@@ -2812,7 +2812,14 @@ if leads:
                 if not ev_title.strip():
                     st.error('Title is required.')
                 else:
-                    final_time = ev_time_obj.strftime('%H:%M:%S') if ev_time_obj else None
+                    final_time = None
+                    _t_str = (ev_time_str or '').strip()
+                    if _t_str:
+                        try:
+                            _parsed_t = datetime.strptime(_t_str, '%H:%M')
+                            final_time = _parsed_t.strftime('%H:%M:%S')
+                        except ValueError:
+                            st.warning('Time should be HH:MM (e.g., 10:30 or 14:00). Saving without time.')
                     if editing_event:
                         ok = update_event(
                             event_id=editing_event['id'],
@@ -2839,7 +2846,7 @@ if leads:
                             del st.session_state['editing_event_id']
                         # Reset stored values + bump session id so next open is fresh
                         st.session_state.ev_date_val = _today_dd
-                        st.session_state.ev_time_val = _dtime(10, 0)
+                        st.session_state.ev_time_str_val = '10:00'
                         st.session_state.ev_title_val = ''
                         st.session_state.ev_location_val = ''
                         st.session_state.ev_lead_val = '(no linked lead)'
@@ -2927,10 +2934,10 @@ if leads:
                             _ed_d = datetime.strptime(str(_e.get('event_date', '')), '%Y-%m-%d').date()
                         except:
                             _ed_d = _today_dd
-                        _ed_time = _dtime(10, 0)
+                        _ed_time_str = '10:00'
                         if _e.get('event_time'):
                             try:
-                                _ed_time = datetime.strptime(str(_e['event_time'])[:5], '%H:%M').time()
+                                _ed_time_str = str(_e['event_time'])[:5]  # 'HH:MM'
                             except:
                                 pass
                         # Lead display string for the dropdown
@@ -2944,7 +2951,7 @@ if leads:
 
                         # Store under stable *_val keys, bump session id for fresh widgets
                         st.session_state.ev_date_val = _ed_d
-                        st.session_state.ev_time_val = _ed_time
+                        st.session_state.ev_time_str_val = _ed_time_str
                         st.session_state.ev_title_val = _e.get('title') or ''
                         st.session_state.ev_location_val = _e.get('location') or ''
                         st.session_state.ev_lead_val = _ed_lead_disp
