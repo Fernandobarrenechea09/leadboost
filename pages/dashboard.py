@@ -158,6 +158,108 @@ footer { visibility: hidden; }
 }
 .lb-hero-accent { color: ACCENT_WARM_COLOR; }
 
+/* ---- PRIORITY CARD ---- */
+.priority-card {
+    background: PANEL_COLOR;
+    border: 1px solid BORDER_COLOR;
+    border-left: 4px solid ACCENT_WARM_COLOR;
+    border-radius: 14px;
+    padding: 4px 26px;
+    margin-top: 6px;
+    margin-bottom: 14px;
+    animation: lb-fade-up 0.4s ease both;
+}
+.priority-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 18px 0 14px 0;
+    border-bottom: 1px solid BORDER_COLOR;
+    margin-bottom: 4px;
+}
+.priority-label {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
+    color: ACCENT_WARM_COLOR;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+.priority-meta {
+    font-family: Fraunces, serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_DIM_COLOR;
+}
+.priority-row {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 16px 0;
+    border-bottom: 1px solid BORDER_COLOR;
+    transition: padding-left 0.15s, background 0.15s;
+}
+.priority-row:last-child { border-bottom: none; }
+.priority-row:hover { padding-left: 8px; }
+.priority-num {
+    font-family: Fraunces, serif;
+    font-size: 1.7rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_DIM_COLOR;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    min-width: 42px;
+    flex-shrink: 0;
+}
+.priority-row:first-of-type .priority-num {
+    color: ACCENT_WARM_COLOR;
+}
+.priority-body {
+    flex: 1;
+    min-width: 0;
+}
+.priority-name {
+    font-family: Fraunces, serif;
+    font-size: 1.45rem;
+    font-style: italic;
+    font-weight: 300;
+    color: TEXT_COLOR;
+    line-height: 1.15;
+    margin-bottom: 6px;
+    letter-spacing: -0.015em;
+}
+.priority-reason {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.52rem;
+    letter-spacing: 0.18em;
+    color: TEXT_DIM_COLOR;
+    text-transform: uppercase;
+}
+.priority-reason .pr-accent {
+    color: ACCENT_WARM_COLOR;
+}
+.priority-action {
+    font-family: JetBrains Mono, monospace;
+    font-size: 0.54rem;
+    letter-spacing: 0.18em;
+    color: ACCENT_WARM_COLOR;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid ACCENT_WARM_COLOR;
+    padding: 8px 18px;
+    border-radius: 24px;
+    transition: background 0.15s, color 0.15s, transform 0.15s;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+.priority-action:hover {
+    background: ACCENT_WARM_COLOR;
+    color: BG_COLOR;
+    transform: translateY(-1px);
+}
+
 /* ---- BRIEFING PROSE ---- */
 .lb-briefing {
     font-family: Fraunces, serif;
@@ -1862,6 +1964,56 @@ def sec_label(name, right_html=''):
             '</span>'
             + right_html + '</div>')
 
+def compute_priority(leads_list, max_items=3):
+    """Score each lead by urgency and return the top max_items needing action."""
+    now = datetime.now()
+    scored = []
+    for l in leads_list:
+        status = l.get('status', 'Nuevo')
+        # Skip closed/visited — those don't need next action
+        if status in ('Visitado', 'Cerrado'):
+            continue
+        score = l.get('score', 'COLD')
+        ts = l.get('timestamp', '') or ''
+        try:
+            ts_dt = datetime.strptime(ts[:16], '%Y-%m-%d %H:%M')
+            age_days = max(0, (now - ts_dt).days)
+        except:
+            age_days = 0
+
+        # Score-based weight (HOT > WARM > COLD)
+        score_weight = {'HOT': 100, 'WARM': 55, 'COLD': 25}.get(score, 20)
+        # Status modifier
+        if status == 'Nuevo':
+            urgency = score_weight + age_days * 3
+            if age_days == 0:
+                reason_html = '<span class="pr-accent">' + score + '</span> &middot; NEW LEAD &middot; ACT TODAY'
+            elif age_days == 1:
+                reason_html = '<span class="pr-accent">' + score + '</span> &middot; NEW &middot; 1 DAY WAITING'
+            else:
+                reason_html = '<span class="pr-accent">' + score + '</span> &middot; NEW &middot; ' + str(age_days) + ' DAYS WAITING'
+        else:  # Contactado
+            # Days since contacted (or fall back to received age)
+            contacted_at = (l.get('contacted_at') or '').strip()
+            contact_days = age_days
+            if contacted_at:
+                try:
+                    c_dt = datetime.strptime(contacted_at[:16], '%Y-%m-%d %H:%M')
+                    contact_days = max(0, (now - c_dt).days)
+                except:
+                    pass
+            urgency = (score_weight - 25) + contact_days * 2
+            if contact_days == 0:
+                reason_html = '<span class="pr-accent">' + score + '</span> &middot; CONTACTED TODAY &middot; KEEP MOMENTUM'
+            elif contact_days == 1:
+                reason_html = '<span class="pr-accent">' + score + '</span> &middot; FOLLOW-UP DUE &middot; 1 DAY SINCE CONTACT'
+            else:
+                reason_html = '<span class="pr-accent">' + score + '</span> &middot; FOLLOW-UP DUE &middot; ' + str(contact_days) + ' DAYS SINCE CONTACT'
+        scored.append({'lead': l, 'urgency': urgency, 'reason_html': reason_html})
+
+    scored.sort(key=lambda x: x['urgency'], reverse=True)
+    return scored[:max_items]
+
 def expander_label(name, teaser=''):
     """Build an editorial expander summary string. Increments the section counter."""
     _sec_n[0] += 1
@@ -2197,6 +2349,43 @@ hero += '<div class="lb-hero-date">' + today_full + '<br>LOCAL TIME &middot; ' +
 hero += '</div>'
 hero += '</div>'
 st.markdown(hero, unsafe_allow_html=True)
+
+# ======================================================
+# PRIORITY — most urgent next actions for the agent
+# ======================================================
+if leads:
+    _priorities = compute_priority(leads, max_items=3)
+    if _priorities:
+        _p_html = '<div class="priority-card">'
+        _p_html += '<div class="priority-header">'
+        _p_html += '<div class="priority-label">// PRIORITY &middot; WHAT TO DO NOW</div>'
+        _p_html += '<div class="priority-meta">' + str(len(_priorities)) + ' action' + ('s' if len(_priorities) != 1 else '') + '</div>'
+        _p_html += '</div>'
+        for _idx, _p in enumerate(_priorities, 1):
+            _pl = _p['lead']
+            _p_name = _pl.get('name', '-')
+            _p_phone = (_pl.get('phone', '') or '').replace('+', '').replace(' ', '').replace('-', '')
+            _p_ptype = _pl.get('property_type', '') or ''
+            _p_area = _pl.get('area', '') or ''
+            _p_budget = _pl.get('budget', '-')
+            _p_wa_msg = 'Hola ' + _p_name + ', soy de la agencia inmobiliaria LeadBoost. Te contactamos porque mostraste interes en ' + _p_ptype + ' en ' + _p_area + '. Tienes un momento para hablar?'
+            _p_wa_link = 'https://wa.me/591' + _p_phone + '?text=' + quote(_p_wa_msg)
+
+            _p_html += '<div class="priority-row">'
+            _p_html += '<div class="priority-num">' + str(_idx).zfill(2) + '</div>'
+            _p_html += '<div class="priority-body">'
+            _p_html += '<div class="priority-name">' + _p_name + '</div>'
+            _p_reason_meta = _p['reason_html']
+            if _p_budget and str(_p_budget) != '-':
+                _p_reason_meta += ' &middot; $' + str(_p_budget)
+            if _p_area:
+                _p_reason_meta += ' &middot; ' + _p_area.upper()
+            _p_html += '<div class="priority-reason">' + _p_reason_meta + '</div>'
+            _p_html += '</div>'
+            _p_html += '<a class="priority-action" href="' + _p_wa_link + '" target="_blank">// WHATSAPP</a>'
+            _p_html += '</div>'
+        _p_html += '</div>'
+        st.markdown(_p_html, unsafe_allow_html=True)
 
 # ======================================================
 # TOP ACTIONS
