@@ -42,7 +42,7 @@ if st.session_state.theme == 'light':
     HOT_BG = '#EDD5CC'
     WARM_BG = '#E8DCC0'
     COLD_BG = '#D6D9CD'
-    WARM_ACCENT = '#B8924A'
+    WARM_ACCENT = '#CC9A33'
 else:
     BG = '#18150F'
     PANEL = '#221E16'
@@ -56,7 +56,7 @@ else:
     HOT_BG = '#3A2820'
     WARM_BG = '#332B1E'
     COLD_BG = '#252420'
-    WARM_ACCENT = '#C4A35A'
+    WARM_ACCENT = '#DDB04A'
 
 # ======================================================
 # CSS
@@ -249,7 +249,11 @@ footer { visibility: hidden; }
 }
 .priority-reason .pr-accent {
     color: ACCENT_WARM_COLOR;
+    font-weight: 700;
 }
+.priority-reason .pr-accent-hot { color: ACCENT_WARM_COLOR; font-weight: 700; }
+.priority-reason .pr-accent-warm { color: WARM_ACCENT_COLOR; font-weight: 700; }
+.priority-reason .pr-accent-cold { color: TEXT_DIM_COLOR; font-weight: 700; }
 .priority-action {
     font-family: JetBrains Mono, monospace;
     font-size: 0.54rem;
@@ -348,6 +352,8 @@ footer { visibility: hidden; }
     color: TEXT_DIM_COLOR;
 }
 .lb-hero-ring-stat.hot { color: ACCENT_WARM_COLOR; }
+.lb-hero-ring-stat.warm { color: WARM_ACCENT_COLOR; }
+.lb-hero-ring-stat.cold { color: TEXT_DIM_COLOR; }
 .lb-hero-date {
     font-family: JetBrains Mono, monospace;
     font-size: 0.58rem;
@@ -555,6 +561,8 @@ footer { visibility: hidden; }
     font-variant-numeric: tabular-nums;
 }
 .mini-stat-value-accent { color: ACCENT_WARM_COLOR; }
+.mini-stat-value-warm { color: WARM_ACCENT_COLOR; }
+.mini-stat-value-cold { color: TEXT_DIM_COLOR; }
 .mini-stat-right {
     display: flex;
     flex-direction: column;
@@ -1342,9 +1350,21 @@ footer { visibility: hidden; }
     color: TEXT_COLOR;
     display: inline-block;
 }
-.score-hot { background: HOT_BG_COLOR; border-color: ACCENT_WARM_COLOR; }
-.score-warm { background: WARM_BG_COLOR; }
-.score-cold { background: COLD_BG_COLOR; }
+.score-hot {
+    background: HOT_BG_COLOR;
+    border-color: ACCENT_WARM_COLOR;
+    color: ACCENT_WARM_COLOR;
+}
+.score-warm {
+    background: WARM_BG_COLOR;
+    border-color: WARM_ACCENT_COLOR;
+    color: WARM_ACCENT_COLOR;
+}
+.score-cold {
+    background: COLD_BG_COLOR;
+    border-color: BORDER_COLOR;
+    color: TEXT_DIM_COLOR;
+}
 
 /* ---- LEAD CARDS ---- */
 .lead-card {
@@ -1362,7 +1382,8 @@ footer { visibility: hidden; }
 }
 .lead-card-hot { border-color: ACCENT_WARM_COLOR55; }
 .lead-card-hot:hover { border-color: ACCENT_WARM_COLOR; }
-.lead-card-warm { border-color: BORDER_COLOR; }
+.lead-card-warm { border-color: WARM_ACCENT_COLOR55; }
+.lead-card-warm:hover { border-color: WARM_ACCENT_COLOR; }
 .lead-card-cold { border-color: BORDER_COLOR; }
 .lead-top {
     display: flex;
@@ -2052,11 +2073,11 @@ def compute_priority(leads_list, max_items=20):
         if status == 'Nuevo':
             urgency = score_weight + age_days * 3
             if age_days == 0:
-                reason_html = '<span class="pr-accent">' + score + '</span> &middot; NEW LEAD &middot; ACT TODAY'
+                reason_html = '<span class="pr-accent-' + score.lower() + '">' + score + '</span> &middot; NEW LEAD &middot; ACT TODAY'
             elif age_days == 1:
-                reason_html = '<span class="pr-accent">' + score + '</span> &middot; NEW &middot; 1 DAY WAITING'
+                reason_html = '<span class="pr-accent-' + score.lower() + '">' + score + '</span> &middot; NEW &middot; 1 DAY WAITING'
             else:
-                reason_html = '<span class="pr-accent">' + score + '</span> &middot; NEW &middot; ' + str(age_days) + ' DAYS WAITING'
+                reason_html = '<span class="pr-accent-' + score.lower() + '">' + score + '</span> &middot; NEW &middot; ' + str(age_days) + ' DAYS WAITING'
         else:  # Contactado
             # Days since contacted (or fall back to received age)
             contacted_at = (l.get('contacted_at') or '').strip()
@@ -2069,11 +2090,11 @@ def compute_priority(leads_list, max_items=20):
                     pass
             urgency = (score_weight - 25) + contact_days * 2
             if contact_days == 0:
-                reason_html = '<span class="pr-accent">' + score + '</span> &middot; CONTACTED TODAY &middot; KEEP MOMENTUM'
+                reason_html = '<span class="pr-accent-' + score.lower() + '">' + score + '</span> &middot; CONTACTED TODAY &middot; KEEP MOMENTUM'
             elif contact_days == 1:
-                reason_html = '<span class="pr-accent">' + score + '</span> &middot; FOLLOW-UP DUE &middot; 1 DAY SINCE CONTACT'
+                reason_html = '<span class="pr-accent-' + score.lower() + '">' + score + '</span> &middot; FOLLOW-UP DUE &middot; 1 DAY SINCE CONTACT'
             else:
-                reason_html = '<span class="pr-accent">' + score + '</span> &middot; FOLLOW-UP DUE &middot; ' + str(contact_days) + ' DAYS SINCE CONTACT'
+                reason_html = '<span class="pr-accent-' + score.lower() + '">' + score + '</span> &middot; FOLLOW-UP DUE &middot; ' + str(contact_days) + ' DAYS SINCE CONTACT'
         # Score rank: HOT first, then WARM, then COLD (lower = higher priority)
         score_rank = {'HOT': 0, 'WARM': 1, 'COLD': 2}.get(score, 3)
         scored.append({'lead': l, 'urgency': urgency, 'reason_html': reason_html, 'score_rank': score_rank})
@@ -2218,8 +2239,16 @@ def pull_quote(text_html, attribution=''):
     html += '</div></div>'
     return html
 
-def mini_stat(label, value, pct_text, sparkline_html='', accent=False):
-    val_class = 'mini-stat-value mini-stat-value-accent' if accent else 'mini-stat-value'
+def mini_stat(label, value, pct_text, sparkline_html='', accent=False, score=None):
+    base = 'mini-stat-value'
+    if score == 'HOT' or accent:
+        val_class = base + ' mini-stat-value-accent'
+    elif score == 'WARM':
+        val_class = base + ' mini-stat-value-warm'
+    elif score == 'COLD':
+        val_class = base + ' mini-stat-value-cold'
+    else:
+        val_class = base
     html = '<div class="mini-stat">'
     html += '<div class="mini-stat-left">'
     html += '<div class="mini-stat-label">' + label + '</div>'
@@ -2409,8 +2438,8 @@ hero += '<div class="lb-hero-ring-wrap">'
 hero += ring
 hero += '<div class="lb-hero-ring-stats">'
 hero += '<div class="lb-hero-ring-stat hot">&#x25CF; ' + str(hot) + ' hot</div>'
-hero += '<div class="lb-hero-ring-stat">' + str(warm) + ' warm</div>'
-hero += '<div class="lb-hero-ring-stat">' + str(cold) + ' cold</div>'
+hero += '<div class="lb-hero-ring-stat warm">&#x25CF; ' + str(warm) + ' warm</div>'
+hero += '<div class="lb-hero-ring-stat cold">' + str(cold) + ' cold</div>'
 hero += '</div>'
 hero += '</div>'
 hero += '<div class="lb-hero-date">' + today_full + '<br>LOCAL TIME &middot; ' + now_time + '</div>'
@@ -2510,9 +2539,9 @@ with big_col:
     st.markdown(big_stat_card('// TOTAL LEADS &middot; ALL TIME', total, delta_text, sparkline_full=big_spark), unsafe_allow_html=True)
 with mini_col:
     stack = '<div class="mini-stat-stack">'
-    stack += mini_stat('// HOT', hot, pct(hot) + ' OF TOTAL', sparkline_html=hot_spark, accent=True)
-    stack += mini_stat('// WARM', warm, pct(warm) + ' OF TOTAL', sparkline_html=warm_spark)
-    stack += mini_stat('// COLD', cold, pct(cold) + ' OF TOTAL', sparkline_html=cold_spark)
+    stack += mini_stat('// HOT', hot, pct(hot) + ' OF TOTAL', sparkline_html=hot_spark, score='HOT')
+    stack += mini_stat('// WARM', warm, pct(warm) + ' OF TOTAL', sparkline_html=warm_spark, score='WARM')
+    stack += mini_stat('// COLD', cold, pct(cold) + ' OF TOTAL', sparkline_html=cold_spark, score='COLD')
     stack += '</div>'
     st.markdown(stack, unsafe_allow_html=True)
 
