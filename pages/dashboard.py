@@ -1312,6 +1312,25 @@ footer { visibility: hidden; }
     font-size: 0.86rem !important;
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
 }
+
+/* Form input labels — darker, mono caps, editorial */
+[data-testid="stWidgetLabel"],
+[data-testid="stWidgetLabel"] p,
+[data-testid="stWidgetLabel"] label,
+.stTextInput label,
+.stTextArea label,
+.stDateInput label,
+.stTimeInput label,
+.stSelectbox label,
+.stNumberInput label {
+    font-family: JetBrains Mono, monospace !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.22em !important;
+    color: TEXT_COLOR !important;
+    text-transform: uppercase !important;
+    font-weight: 500 !important;
+    opacity: 0.85;
+}
 .stTextInput > div > div > input:hover,
 .stTextArea > div > div > textarea:hover,
 .stDateInput input:hover,
@@ -2614,7 +2633,7 @@ if leads:
 
     # ---- VIEW DAY PICKER + DAY DETAIL CARD ----
     st.markdown('<div class="view-day-wrap">', unsafe_allow_html=True)
-    vd_col, vd_today_col, _vd_sp = st.columns([2, 1, 6])
+    vd_col, vd_today_col, _vd_sp = st.columns([2, 2, 6])
     with vd_today_col:
         # Invisible faux-label to align the button vertically with the date input (which has its own label above)
         st.markdown('<div class="vd-faux-label">&nbsp;</div>', unsafe_allow_html=True)
