@@ -1779,6 +1779,36 @@ div[data-testid="stExpander"]:hover {
 /* Hidden anchor — used only for CSS :has() targeting */
 .lead-anchor { display: none !important; }
 
+/* Ensure expander's content container can host absolutely-positioned children */
+[data-testid="stExpander"]:has(.lead-anchor) [data-testid="stExpanderDetails"],
+[data-testid="stExpander"]:has(.lead-anchor) details[open] > div {
+    position: relative !important;
+    overflow: visible !important;
+}
+
+/* Full-height vertical bar on the LEFT side of the expanded content */
+.lead-side-bar {
+    position: absolute;
+    top: -14px;
+    bottom: -22px;
+    left: -25px;
+    width: 5px;
+    pointer-events: none;
+    z-index: 6;
+    border-radius: 2px;
+}
+.lead-side-bar-hot  {
+    background: ACCENT_WARM_COLOR;
+    box-shadow: 0 0 10px ACCENT_WARM_COLOR55;
+}
+.lead-side-bar-warm {
+    background: WARM_ACCENT_COLOR;
+    box-shadow: 0 0 8px WARM_ACCENT_COLOR55;
+}
+.lead-side-bar-cold {
+    background: BORDER_COLOR;
+}
+
 /* Visible score strip at top of expanded content + corner indicator */
 .lead-strip {
     position: relative;
@@ -3550,8 +3580,12 @@ else:
         with st.expander(lead_label, expanded=False):
             # Hidden anchor for CSS :has() targeting (sets border + animation on the expander itself)
             st.markdown('<div class="lead-anchor lead-anchor-' + score.lower() + '"></div>', unsafe_allow_html=True)
-            # Visible score strip + top-right animated indicator
-            st.markdown('<div class="lead-strip lead-strip-' + score.lower() + '"><div class="lead-indicator lead-indicator-' + score.lower() + '"></div></div>', unsafe_allow_html=True)
+            # Visible: full-height left side bar + top score strip + top-right animated indicator
+            st.markdown(
+                '<div class="lead-side-bar lead-side-bar-' + score.lower() + '"></div>'
+                '<div class="lead-strip lead-strip-' + score.lower() + '"><div class="lead-indicator lead-indicator-' + score.lower() + '"></div></div>',
+                unsafe_allow_html=True
+            )
             # Inner header: response time pill if available
             resp_html = ''
             if minutes is not None:
