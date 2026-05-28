@@ -156,7 +156,7 @@ footer { visibility: hidden; }
     font-weight: 300;
     letter-spacing: -0.035em;
 }
-.lb-hero-accent { color: ACCENT_WARM_COLOR; }
+.lb-hero-accent { color: ACCENT_COLOR; }
 
 /* ---- BRIEFING PROSE ---- */
 .lb-briefing {
@@ -182,7 +182,7 @@ footer { visibility: hidden; }
 }
 .b-place {
     font-style: italic;
-    color: ACCENT_WARM_COLOR;
+    color: TEXT_COLOR;
     font-weight: 400;
 }
 .lb-hero-right {
@@ -491,7 +491,7 @@ footer { visibility: hidden; }
     font-family: JetBrains Mono, monospace;
     font-size: 0.46rem;
     letter-spacing: 0.18em;
-    color: ACCENT_WARM_COLOR;
+    color: ACCENT_COLOR;
     text-transform: uppercase;
 }
 .heatmap-svg-wrap {
@@ -584,7 +584,7 @@ footer { visibility: hidden; }
 }
 .cal-cell.other-month { opacity: 0.32; }
 .cal-cell.today {
-    border-color: ACCENT_WARM_COLOR;
+    border-color: ACCENT_COLOR;
     border-width: 2px;
     padding: 7px 9px;
 }
@@ -596,7 +596,7 @@ footer { visibility: hidden; }
     font-family: JetBrains Mono, monospace;
     font-size: 0.42rem;
     letter-spacing: 0.2em;
-    color: ACCENT_WARM_COLOR;
+    color: ACCENT_COLOR;
 }
 .cal-cell.focus {
     border-color: ACCENT_COLOR;
@@ -605,8 +605,8 @@ footer { visibility: hidden; }
     box-shadow: 0 0 0 3px BG_COLOR, 0 0 0 4px ACCENT_COLOR;
 }
 .cal-cell.focus.today {
-    border-color: ACCENT_WARM_COLOR;
-    box-shadow: 0 0 0 3px BG_COLOR, 0 0 0 4px ACCENT_WARM_COLOR;
+    border-color: ACCENT_COLOR;
+    box-shadow: 0 0 0 3px BG_COLOR, 0 0 0 4px ACCENT_COLOR;
 }
 .cal-cell.focus::before {
     content: '▾';
@@ -631,7 +631,7 @@ footer { visibility: hidden; }
     letter-spacing: -0.01em;
     font-feature-settings: "tnum";
 }
-.cal-cell.today .cal-day-num { color: ACCENT_WARM_COLOR; }
+.cal-cell.today .cal-day-num { color: ACCENT_COLOR; }
 .cal-dots {
     display: flex;
     gap: 3px;
@@ -693,7 +693,7 @@ footer { visibility: hidden; }
     margin-top: 12px;
     animation: lb-fade-up 0.3s ease both;
 }
-.day-detail-card.is-today { border-left-color: ACCENT_WARM_COLOR; }
+.day-detail-card.is-today { border-left-color: ACCENT_COLOR; border-left-width: 4px; }
 .day-detail-header {
     display: flex;
     justify-content: space-between;
@@ -715,10 +715,10 @@ footer { visibility: hidden; }
     font-family: JetBrains Mono, monospace;
     font-size: 0.48rem;
     letter-spacing: 0.22em;
-    color: ACCENT_WARM_COLOR;
+    color: ACCENT_COLOR;
     text-transform: uppercase;
     padding: 4px 10px;
-    border: 1px solid ACCENT_WARM_COLOR;
+    border: 1px solid ACCENT_COLOR;
     border-radius: 16px;
 }
 .day-detail-section { margin-bottom: 20px; }
@@ -742,7 +742,7 @@ footer { visibility: hidden; }
     font-family: JetBrains Mono, monospace;
     font-size: 0.62rem;
     letter-spacing: 0.16em;
-    color: ACCENT_WARM_COLOR;
+    color: ACCENT_COLOR;
     text-transform: uppercase;
     min-width: 76px;
     padding-top: 3px;
@@ -845,8 +845,8 @@ footer { visibility: hidden; }
 }
 .vd-today-btn-wrap div.stButton > button:hover,
 .vd-today-btn-wrap [data-testid="stButton"] button:hover {
-    border-color: ACCENT_WARM_COLOR !important;
-    color: ACCENT_WARM_COLOR !important;
+    border-color: ACCENT_COLOR !important;
+    color: ACCENT_COLOR !important;
     background: PANEL_COLOR !important;
 }
 
@@ -856,13 +856,12 @@ footer { visibility: hidden; }
     font-family: JetBrains Mono, monospace;
     font-size: 0.46rem;
     letter-spacing: 0.08em;
-    color: ACCENT_WARM_COLOR;
+    color: ACCENT_COLOR;
     text-transform: uppercase;
     margin-top: 4px;
     padding: 2px 5px;
-    background: ACCENT_WARM_COLOR;
-    background: linear-gradient(90deg, rgba(196,99,63,0.18), rgba(196,99,63,0.06));
-    border-left: 2px solid ACCENT_WARM_COLOR;
+    background: PANEL_COLOR;
+    border-left: 2px solid ACCENT_COLOR;
     border-radius: 2px;
     white-space: nowrap;
     overflow: hidden;
@@ -930,7 +929,7 @@ footer { visibility: hidden; }
     font-family: JetBrains Mono, monospace;
     font-size: 0.5rem;
     letter-spacing: 0.16em;
-    color: ACCENT_WARM_COLOR;
+    color: ACCENT_COLOR;
     text-transform: uppercase;
     min-width: 64px;
     padding-top: 4px;
@@ -1008,7 +1007,7 @@ footer { visibility: hidden; }
     font-family: JetBrains Mono, monospace;
     font-size: 0.58rem;
     letter-spacing: 0.22em;
-    color: ACCENT_WARM_COLOR;
+    color: ACCENT_COLOR;
     text-transform: uppercase;
     margin-bottom: 12px;
 }
@@ -1344,8 +1343,8 @@ footer { visibility: hidden; }
 }
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
-    border-color: ACCENT_WARM_COLOR !important;
-    box-shadow: 0 0 0 2px ACCENT_WARM_COLOR33 !important;
+    border-color: ACCENT_COLOR !important;
+    box-shadow: 0 0 0 2px ACCENT_COLOR33 !important;
     outline: none !important;
 }
 .stSelectbox > div > div {
@@ -1518,8 +1517,8 @@ div[data-testid="stExpander"]:hover {
 }
 [data-testid="stExpander"] details > summary:hover,
 [data-testid="stExpander"] summary:hover {
-    color: ACCENT_WARM_COLOR !important;
-    background: rgba(196, 99, 63, 0.04) !important;
+    color: ACCENT_COLOR !important;
+    background: rgba(0, 0, 0, 0.025) !important;
 }
 [data-testid="stExpander"] details > summary p,
 [data-testid="stExpander"] summary p {
@@ -3043,7 +3042,7 @@ def follow_up_panel(leads_list):
     pending = sorted(pending, key=lambda l: l.get('timestamp', ''), reverse=True)
     html = '<div class="chart-panel"><div class="chart-header">'
     html += '<div class="chart-title">// FOLLOW-UPS</div>'
-    html += '<div class="chart-big-num" style="color:' + ACCENT_WARM + ';font-size:1.15rem;">' + str(len(pending)) + ' pending</div>'
+    html += '<div class="chart-big-num" style="color:' + TEXT + ';font-size:1.15rem;">' + str(len(pending)) + ' pending</div>'
     html += '</div>'
     if not pending:
         html += '<div style="font-family:JetBrains Mono,monospace;font-size:0.5rem;color:' + TEXT_DIM + ';letter-spacing:0.16em;padding:20px 0;text-align:center;">ALL LEADS CONTACTED.</div>'
