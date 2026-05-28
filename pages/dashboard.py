@@ -1755,22 +1755,37 @@ div[data-testid="stExpander"]:hover {
     margin-bottom: 12px !important;
 }
 
-/* ---- LEAD EXPANDERS — per-lead score-colored left border ---- */
+/* ---- LEAD EXPANDERS — per-lead score-colored border + animation ---- */
 .lead-expander-wrap { margin-bottom: 8px; }
 .lead-expander-wrap [data-testid="stExpander"],
 .lead-expander-wrap div[data-testid="stExpander"] {
-    border-left-width: 3px !important;
+    border-left-width: 5px !important;
     border-radius: 10px !important;
     margin-bottom: 0 !important;
+    transform-origin: center;
 }
 .lead-expander-wrap.lead-hot [data-testid="stExpander"] {
+    border-color: ACCENT_WARM_COLOR55 !important;
     border-left-color: ACCENT_WARM_COLOR !important;
+    animation: lb-card-pulse-hot 3s ease-in-out infinite;
 }
 .lead-expander-wrap.lead-warm [data-testid="stExpander"] {
+    border-color: WARM_ACCENT_COLOR55 !important;
     border-left-color: WARM_ACCENT_COLOR !important;
+    animation: lb-card-shake-warm 5.5s ease-in-out infinite;
 }
 .lead-expander-wrap.lead-cold [data-testid="stExpander"] {
     border-left-color: BORDER_COLOR !important;
+}
+@keyframes lb-card-pulse-hot {
+    0%, 100% { box-shadow: 0 0 0 0 ACCENT_WARM_COLOR00; }
+    50%      { box-shadow: 0 0 14px 1px ACCENT_WARM_COLOR33; }
+}
+@keyframes lb-card-shake-warm {
+    0%, 92%, 100% { transform: translateX(0) rotate(0deg); }
+    94%           { transform: translateX(-1px) rotate(-0.25deg); }
+    96%           { transform: translateX(1px)  rotate(0.25deg); }
+    98%           { transform: translateX(-0.5px); }
 }
 .lead-expander-wrap [data-testid="stExpander"] summary {
     padding: 16px 22px !important;
