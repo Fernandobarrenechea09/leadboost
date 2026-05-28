@@ -192,6 +192,16 @@ footer { visibility: hidden; }
     font-weight: 300;
     color: TEXT_DIM_COLOR;
 }
+.priority-scroll {
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 6px;
+    margin: 0 -2px;
+}
+.priority-scroll::-webkit-scrollbar { width: 4px; }
+.priority-scroll::-webkit-scrollbar-track { background: transparent; }
+.priority-scroll::-webkit-scrollbar-thumb { background: BORDER_COLOR; border-radius: 3px; }
+.priority-scroll::-webkit-scrollbar-thumb:hover { background: TEXT_DIM_COLOR; }
 .priority-row {
     display: flex;
     align-items: center;
@@ -1964,7 +1974,7 @@ def sec_label(name, right_html=''):
             '</span>'
             + right_html + '</div>')
 
-def compute_priority(leads_list, max_items=3):
+def compute_priority(leads_list, max_items=20):
     """Score each lead by urgency and return the top max_items needing action."""
     now = datetime.now()
     scored = []
@@ -2354,13 +2364,14 @@ st.markdown(hero, unsafe_allow_html=True)
 # PRIORITY — most urgent next actions for the agent
 # ======================================================
 if leads:
-    _priorities = compute_priority(leads, max_items=3)
+    _priorities = compute_priority(leads, max_items=20)
     if _priorities:
         _p_html = '<div class="priority-card">'
         _p_html += '<div class="priority-header">'
         _p_html += '<div class="priority-label">// PRIORITY &middot; WHAT TO DO NOW</div>'
         _p_html += '<div class="priority-meta">' + str(len(_priorities)) + ' action' + ('s' if len(_priorities) != 1 else '') + '</div>'
         _p_html += '</div>'
+        _p_html += '<div class="priority-scroll">'
         for _idx, _p in enumerate(_priorities, 1):
             _pl = _p['lead']
             _p_name = _pl.get('name', '-')
@@ -2384,7 +2395,8 @@ if leads:
             _p_html += '</div>'
             _p_html += '<a class="priority-action" href="' + _p_wa_link + '" target="_blank">// WHATSAPP</a>'
             _p_html += '</div>'
-        _p_html += '</div>'
+        _p_html += '</div>'  # close priority-scroll
+        _p_html += '</div>'  # close priority-card
         st.markdown(_p_html, unsafe_allow_html=True)
 
 # ======================================================
@@ -2620,51 +2632,6 @@ if leads:
             st.markdown(header, unsafe_allow_html=True)
             st.altair_chart(bar_chart, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
-
-# ======================================================
-# CADENCE — calendar heatmap of daily lead volume
-# ======================================================
-if leads:
-    # Compute busiest day for the explanation
-    _hm_busiest_count = 0
-    _hm_busiest_day = None
-    for l in leads:
-        ts = (l.get('timestamp') or '')[:10]
-        try:
-            d = datetime.strptime(ts, '%Y-%m-%d').date()
-            c = sum(1 for _l in leads if (_l.get('timestamp') or '')[:10] == ts)
-            if c > _hm_busiest_count:
-                _hm_busiest_count = c
-                _hm_busiest_day = d
-        except:
-            continue
-    busiest_text = ''
-    if _hm_busiest_day:
-        busiest_text = _hm_busiest_day.strftime('%b %d').upper() + ' &middot; ' + str(_hm_busiest_count) + ' LEAD' + ('S' if _hm_busiest_count != 1 else '')
-
-    st.markdown(sec_label('CADENCE', '<span class="section-count">last 12 weeks</span>'), unsafe_allow_html=True)
-    hm_svg = heatmap_svg(leads, ACCENT_WARM, weeks=12)
-    hm_html = '<div class="heatmap-wrap">'
-    hm_html += '<div class="heatmap-header">'
-    hm_html += '<div class="heatmap-title-block">'
-    hm_html += '<div class="heatmap-title">// DAILY LEAD VOLUME</div>'
-    hm_html += '<div class="heatmap-subtitle">Each square is a day. Darker squares mean more leads received on that day.</div>'
-    hm_html += '</div>'
-    hm_html += '<div class="heatmap-meta-block">'
-    hm_html += '<div class="heatmap-meta">' + str(total) + ' over 84 days</div>'
-    if busiest_text:
-        hm_html += '<div class="heatmap-busiest">BUSIEST &middot; ' + busiest_text + '</div>'
-    hm_html += '</div>'
-    hm_html += '</div>'
-    hm_html += '<div class="heatmap-svg-wrap">' + hm_svg + '</div>'
-    # Mini legend
-    hm_html += '<div class="heatmap-legend"><span>LESS</span>'
-    hm_html += '<span class="heatmap-legend-cells">'
-    for op in [0.10, 0.30, 0.50, 0.72, 1.0]:
-        hm_html += '<span class="heatmap-legend-cell" style="opacity:' + str(op) + ';"></span>'
-    hm_html += '</span><span>MORE</span></div>'
-    hm_html += '</div>'
-    st.markdown(hm_html, unsafe_allow_html=True)
 
 # ======================================================
 # CALENDAR — month view with lead activity per day
